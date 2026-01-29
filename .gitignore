@@ -96,7 +96,7 @@ docker-compose.override.yml
 *.sqlite3
 *.db
 *.dump
-*.sql
+# *.sql
 
 ############################
 # Cache & temp
