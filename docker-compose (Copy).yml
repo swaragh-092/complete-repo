@@ -1,0 +1,131 @@
+# version: "3.9"
+
+services:
+  postgres_db:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1234
+    ports:
+      - "5432:5432"
+
+    networks:
+      - administrator
+    
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-multiple-db.sql:/docker-entrypoint-initdb.d/init-multiple-db.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+
+
+  redis:
+    image: redis:7
+    container_name: redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+    networks:
+      - administrator
+
+
+  pms-v1:
+    build:
+      context: ./pms
+      dockerfile: Dockerfile
+    image: pms/nodejs:latest
+    container_name: pms
+    depends_on:
+      postgres_db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      
+      
+
+    environment:
+      DB_HOST: postgres_db
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: 1234
+      DB_NAME: pms
+
+    networks:
+      - administrator
+
+    # ports:
+    #   - "3000:8089"
+    command: ["server.js"]
+
+
+  super_administrator:
+    build:
+      context: ./super-administrator
+      dockerfile: Dockerfile
+    image: super_administrator:latest
+    container_name: super_administrator
+    depends_on:
+      postgres_db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+    environment:
+      DB_HOST: postgres_db
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: 1234
+      DB_NAME: super_administrator
+    networks:
+      - administrator
+    ports:
+      - "8000:8089"
+    command: ["server.js"]
+
+  api-gateway:
+    build:
+      context: ./api-gateway
+    container_name: api-gateway
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - redis
+      - postgres_db
+      - pms-v1
+      - super_administrator
+
+
+    # extra_hosts: # only to accept the outside host to the docker container
+    #   - "host.docker.internal:172.17.0.1"
+
+    
+    networks:
+      - administrator
+
+    volumes:
+      - ./api-gateway/certs:/etc/nginx/certs
+
+
+volumes:
+  postgres_data:
+  redis_data:
+
+
+networks:
+  administrator:
+    driver: bridge
