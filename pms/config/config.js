@@ -1,11 +1,11 @@
-// const domain = {
-//     superAdmin: 'http://super_administrator:8089/',
-//     auth: 'http://auth_service:8081/',
-// }
 const domain = {
-    superAdmin: 'http://localhost:2500',
-    auth: 'http://auth_service:8081',
+    superAdmin: 'http://super_administrator:8089/',
+    auth: 'http://auth_service:8081/',
 }
+// const domain = {
+//     superAdmin: 'http://localhost:2500',
+//     auth: 'http://auth_service:8081',
+// }
 
 const databaseDetails = {
     "default-shared" : {
