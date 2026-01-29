@@ -1,0 +1,289 @@
+# version: "3.9"
+
+services:
+  postgres_db:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${AUTH_DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${AUTH_DB_PASSWORD:?AUTH_DB_PASSWORD is required}
+    ports:
+      - "5432:5432"
+
+    networks:
+      - administrator
+    
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-multiple-db.sql:/docker-entrypoint-initdb.d/init-multiple-db.sql:ro
+      - ./auth-service/infrastructure/init-auth-db.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+
+
+  redis:
+    image: redis:7
+    container_name: redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+    networks:
+      - administrator
+
+
+  # ════════════════════════════════════════════════════════════════════════════
+  # BACKEND SERVICES
+  # ════════════════════════════════════════════════════════════════════════════
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # Auth Service (Node.js API)
+  # ─────────────────────────────────────────────────────────────────────────────
+  
+  auth-service:
+    build:
+      context: ./auth-service
+      dockerfile: infrastructure/Dockerfile
+    container_name: sso-auth-service
+    restart: unless-stopped
+    environment:
+      NODE_ENV: ${NODE_ENV:-production}
+      PORT: 4000
+
+      # Database
+      DB_HOST: postgres_db
+      DB_PORT: 5432
+      DB_NAME: ${AUTH_DB_NAME:-authzotion_db}
+      DB_USER: ${AUTH_DB_USER:-postgres}
+      DB_PASSWORD: ${AUTH_DB_PASSWORD:?AUTH_DB_PASSWORD is required}
+
+      # Keycloak
+      # Internal Docker URL (container to container)
+      KEYCLOAK_URL: ${KEYCLOAK_URL:-http://keycloak:8080}
+      # External Browser URL (browser to keycloak)
+      FRONTEND_AUTH_URL: ${FRONTEND_AUTH_URL:-https://keycloak.local.test:8443}
+      KEYCLOAK_REALM: ${KEYCLOAK_REALM:-my-projects}
+      KEYCLOAK_REALM_ID: ${KEYCLOAK_REALM_ID:-}
+      KEYCLOAK_ACCOUNT_UI_CLIENT_SECRET: ${KEYCLOAK_ACCOUNT_UI_CLIENT_SECRET:-}
+
+      # URLs
+      # URLs
+      FRONTEND_URL: ${FRONTEND_URL:-https://admin.local.test}
+      AUTH_SERVICE_URL: ${AUTH_SERVICE_URL:-https://auth.local.test}
+
+      # Session
+      SESSION_SECRET: ${SESSION_SECRET:?SESSION_SECRET is required}
+      SESSION_COOKIE_NAME: ${SESSION_COOKIE_NAME:-auth.sid}
+      SESSION_COOKIE_DOMAIN: ${SESSION_COOKIE_DOMAIN:-.local.test}
+      SESSION_COOKIE_SECURE: ${SESSION_COOKIE_SECURE:-true}
+      SESSION_COOKIE_SAMESITE: ${SESSION_COOKIE_SAMESITE:-none}
+
+      # Refresh Token
+      # Refresh Token
+      REFRESH_COOKIE_DOMAIN: ${REFRESH_COOKIE_DOMAIN:-.local.test}
+      REFRESH_COOKIE_SECURE: ${REFRESH_COOKIE_SECURE:-true}
+      REFRESH_COOKIE_SAMESITE: ${REFRESH_COOKIE_SAMESITE:-none}
+      REFRESH_COOKIE_MAX_AGE: ${REFRESH_COOKIE_MAX_AGE:-2592000}
+
+      # CORS & Proxy
+      TRUST_PROXY: ${TRUST_PROXY:-true}
+      CORS_FALLBACK_ORIGINS: ${CORS_FALLBACK_ORIGINS:-}
+
+      # SMTP
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS: ${SMTP_PASS:-}
+      FROM_EMAIL: ${FROM_EMAIL:-noreply@example.com}
+
+      # Security
+      FP_SALT: ${FP_SALT:-}
+      DEVICE_TRUST_DURATION_DAYS: ${DEVICE_TRUST_DURATION_DAYS:-30}
+      DEVICE_MAX_PER_USER: ${DEVICE_MAX_PER_USER:-10}
+      DEVICE_SIMILARITY_THRESHOLD: ${DEVICE_SIMILARITY_THRESHOLD:-85}
+    ports:
+      - "${AUTH_SERVICE_PORT:-4000}:4000"
+    volumes:
+      - auth-service-logs:/app/logs
+    depends_on:
+      postgres_db:
+        condition: service_healthy
+    networks:
+      - auth-network
+    healthcheck:
+      test: [ "CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:4000/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+
+  # ════════════════════════════════════════════════════════════════════════════
+  # FRONTEND APPLICATIONS
+  # ════════════════════════════════════════════════════════════════════════════
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # Auth UI (Admin Dashboard)
+  # ─────────────────────────────────────────────────────────────────────────────
+  auth-ui:
+    build:
+      context: ./auth-ui
+      dockerfile: infrastructure/Dockerfile
+      args:
+        VITE_CLIENT_KEY: ${VITE_AUTH_UI_CLIENT_KEY:-admin-ui}
+        VITE_AUTH_BASE_URL: ${VITE_AUTH_UI_AUTH_BASE_URL:-https://auth.local.test}
+        VITE_API_URL: ${VITE_AUTH_UI_API_URL:-https://auth.local.test}
+        VITE_AUTH_URL: ${VITE_AUTH_UI_AUTH_URL:-https://keycloak.local.test:8443}
+        VITE_ACCOUNT_UI_URL: ${VITE_LOGIN_ACCOUNT_UI_URL:-https://account.local.test}
+        VITE_CALLBACK_URL: ${VITE_AUTH_UI_CALLBACK_URL:-https://admin.local.test/callback}
+    container_name: sso-auth-ui
+    restart: unless-stopped
+    # Ports removed - accessed via Gateway
+    # ports:
+    #   - "${AUTH_UI_PORT:-5173}:80"
+    depends_on:
+      auth-service:
+        condition: service_healthy
+    networks:
+      - auth-network
+    healthcheck:
+      test: [ "CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:80/" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # Centralized Login (User Login Portal)
+  # ─────────────────────────────────────────────────────────────────────────────
+  centralized-login:
+    build:
+      context: ./centralized-login
+      dockerfile: infrastructure/Dockerfile
+      args:
+        VITE_CLIENT_KEY: ${VITE_LOGIN_CLIENT_KEY:-account-ui}
+        VITE_AUTH_BASE_URL: ${VITE_LOGIN_AUTH_BASE_URL:-https://auth.local.test}
+        VITE_ACCOUNT_UI_URL: ${VITE_LOGIN_ACCOUNT_UI_URL:-https://account.local.test}
+        VITE_REDIRECT_URI: ${VITE_LOGIN_REDIRECT_URI:-https://account.local.test/callback}
+    container_name: sso-centralized-login
+    restart: unless-stopped
+    # Ports removed - accessed via Gateway
+    # ports:
+    #   - "${CENTRALIZED_LOGIN_PORT:-5174}:80"
+    depends_on:
+      auth-service:
+        condition: service_healthy
+    networks:
+      - auth-network
+    healthcheck:
+      test: [ "CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:80/" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  pms-v1:
+    build:
+      context: ./pms
+      dockerfile: Dockerfile
+    image: pms/nodejs:latest
+    container_name: pms
+    depends_on:
+      postgres_db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      
+      
+
+    environment:
+      DB_HOST: postgres_db
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: 1234
+      DB_NAME: pms
+
+    networks:
+      - administrator
+
+    # ports:
+    #   - "3000:8089"
+    command: ["server.js"]
+
+
+  super_administrator:
+    build:
+      context: ./super-administrator
+      dockerfile: Dockerfile
+    image: super_administrator:latest
+    container_name: super_administrator
+    depends_on:
+      postgres_db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+    environment:
+      DB_HOST: postgres_db
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: 1234
+      DB_NAME: super_administrator
+    networks:
+      - administrator
+    ports:
+      - "8000:8089"
+    command: ["server.js"]
+
+  api-gateway:
+    build:
+      context: ./api-gateway
+    container_name: api-gateway
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - redis
+      - postgres_db
+      - pms-v1
+      - super_administrator
+      - auth-service
+
+
+    # extra_hosts: # only to accept the outside host to the docker container
+    #   - "host.docker.internal:172.17.0.1"
+
+    
+    networks:
+      - administrator
+
+    volumes:
+      - ./api-gateway/certs:/etc/nginx/certs
+
+
+volumes:
+  postgres_data:
+  redis_data:
+  auth-service-logs:
+    name: sso-auth-service-logs
+
+
+networks:
+  administrator:
+    driver: bridge
+  auth-network:
+    name: auth-network
+    external: true

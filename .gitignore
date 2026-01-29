@@ -1,0 +1,180 @@
+############################
+# OS Files
+############################
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+############################
+# Environment files
+############################
+.env
+.env.*
+!.env.example
+!.env.sample
+
+############################
+# Logs
+############################
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+############################
+# Dependency directories
+############################
+node_modules/
+bower_components/
+jspm_packages/
+
+############################
+# Build / Output
+############################
+dist/
+build/
+out/
+coverage/
+.tmp/
+.temp/
+.cache/
+
+############################
+# Runtime data
+############################
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+############################
+# IDE & Editor
+############################
+.vscode/
+!.vscode/extensions.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+############################
+# TypeScript
+############################
+*.tsbuildinfo
+
+############################
+# JavaScript
+############################
+.eslintcache
+
+############################
+# Testing
+############################
+coverage/
+.nyc_output/
+
+############################
+# Docker
+############################
+.docker/
+docker-data/
+docker-compose.override.yml
+
+############################
+# Database
+############################
+*.sqlite
+*.sqlite3
+*.db
+*.dump
+*.sql
+
+############################
+# Cache & temp
+############################
+.cache/
+.parcel-cache/
+.next/
+.nuxt/
+.svelte-kit/
+
+############################
+# Framework specific
+############################
+# React / Vite
+.vite/
+.esbuild/
+
+# Angular
+.angular/
+dist/
+
+# Vue
+.vuepress/dist/
+
+############################
+# Package manager
+############################
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+############################
+# Python
+############################
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+venv/
+.venv/
+env/
+pip-wheel-metadata/
+
+############################
+# Java
+############################
+*.class
+*.jar
+*.war
+*.ear
+*.iml
+.mvn/
+
+############################
+# Go
+############################
+bin/
+pkg/
+
+############################
+# Secrets / Keys
+############################
+*.pem
+*.key
+*.crt
+*.p12
+*.keystore
+
+############################
+# Backup files
+############################
+*~
+*.bak
+*.swp
+*.tmp
+
+############################
+# Misc
+############################
+nohup.out
+.history

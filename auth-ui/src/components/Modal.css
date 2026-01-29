@@ -1,0 +1,189 @@
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.modal {
+  background: white;
+  border-radius: 16px;
+  max-width: 600px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+.modal-header {
+  padding: 24px 24px 0 24px;
+  border-bottom: 1px solid #e5e7eb;
+  margin-bottom: 24px;
+}
+
+.modal-header h2 {
+  margin: 0 0 24px 0;
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.modal-content {
+  padding: 0 24px;
+}
+
+.modal-actions {
+  padding: 24px;
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  border-top: 1px solid #e5e7eb;
+  margin-top: 24px;
+}
+
+.cancel-btn, .confirm-btn {
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 2px solid transparent;
+}
+
+.cancel-btn {
+  background: #f3f4f6;
+  color: #374151;
+  border-color: #d1d5db;
+}
+
+.cancel-btn:hover {
+  background: #e5e7eb;
+}
+
+.confirm-btn.approve {
+  background: #10b981;
+  color: white;
+  border-color: #10b981;
+}
+
+.confirm-btn.approve:hover {
+  background: #059669;
+}
+
+.confirm-btn.reject {
+  background: #ef4444;
+  color: white;
+  border-color: #ef4444;
+}
+
+.confirm-btn.reject:hover {
+  background: #dc2626;
+}
+
+.confirm-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.summary-item {
+  margin-bottom: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.approval-consequences, .rejection-consequences {
+  margin: 24px 0;
+}
+
+.approval-consequences h4, .rejection-consequences h4 {
+  margin: 0 0 12px 0;
+  font-weight: 600;
+}
+
+.approval-consequences ul, .rejection-consequences ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.approval-consequences li, .rejection-consequences li {
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.warning-box {
+  background: #fef3c7;
+  border: 1px solid #f59e0b;
+  border-radius: 8px;
+  padding: 12px;
+  margin: 16px 0;
+  font-size: 14px;
+}
+
+.rejection-templates {
+  margin: 24px 0;
+}
+
+.template-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.template-btn {
+  padding: 8px 16px;
+  border: 2px solid #d1d5db;
+  border-radius: 20px;
+  background: white;
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.2s ease;
+}
+
+.template-btn:hover {
+  border-color: #3b82f6;
+}
+
+.template-btn.selected {
+  background: #3b82f6;
+  color: white;
+  border-color: #3b82f6;
+}
+
+.reason-input {
+  margin: 24px 0;
+}
+
+.reason-input label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+.reason-input textarea {
+  width: 100%;
+  padding: 12px;
+  border: 2px solid #d1d5db;
+  border-radius: 8px;
+  font-family: inherit;
+  resize: vertical;
+  min-height: 120px;
+}
+
+.reason-input textarea:focus {
+  outline: none;
+  border-color: #3b82f6;
+}
+
+.char-count {
+  text-align: right;
+  font-size: 12px;
+  color: #6b7280;
+  margin-top: 4px;
+}

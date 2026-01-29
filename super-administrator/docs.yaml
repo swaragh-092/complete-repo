@@ -1,0 +1,2932 @@
+openapi: 3.0.3
+info:
+  title: Super Administrator module
+  description: |
+    ### **What is the Super Administrator Module?**
+    
+    **The Super Administrator Module is the core administrative system of a hybrid multi-tenant platform. It provides centralized control for managing all tenants (organizations), but also exposes selected functionality to organization-level (tenant) administrators for operations like viewing subscription details, renewing plans, and accessing invoices.**
+  version: 1.0.0
+  contact: {}
+paths:
+  /api/organization/5930b8c1-0755-4937-b3f9-b244a004c0c3/admin:
+    post:
+      tags:
+        - Admin
+      summary: create new admin
+      description: |
+        `/api/organization/{organization_id}/admin`
+        
+        Creates a new organization administrator.  
+          
+        The user account is already created in **Keycloak**; this endpoint only stores the reference to the user by saving the `keycloak_user_id` under the specified organization.
+      operationId: postapiorganization5930b8c107554937b3f9b244a004c0c3admin
+      parameters: []
+      responses:
+        200:
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                example: {}
+        201:
+          description: create new admin
+          content:
+            application/json; charset=utf-8:
+              schema:
+                type: object
+                example:
+                  success: true
+                  message: OrganizationAdmin create successfully!
+                  data:
+                    id: 9f6e22ea-92f5-4516-843b-6cc968ee2eb3
+                    is_active: true
+                    created_at: "2025-08-28T12:59:30.521Z"
+                    organization_id: 5930b8c1-0755-4937-b3f9-b244a004c0c3
+                    keycloak_user_id: HOM220
+                    updatedAt: "2025-08-28T12:59:30.521Z"
+                    createdAt: "2025-08-28T12:59:30.521Z"
+                    created_ip: "::ffff:172.18.0.1"
+                    created_user_agent: PostmanRuntime/7.45.0
+                    updated_at: "2025-08-28T12:59:30.521Z"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                keycloak_user_id: HOM220
+    get:
+      tags:
+        - Admin
+      summary: get all admin
+      description: |
+        `/api/organization/{organization_id}/admin`
+        
+        Retrieves all administrators of the specified organization, identified by `organization_id`.
+      operationId: getapiorganization5930b8c107554937b3f9b244a004c0c3admin
+      parameters: []
+      responses:
+        200:
+          description: get all admin
+          content:
+            application/json; charset=utf-8:
+              schema:
+                type: object
+                example:
+                  success: true
+                  message: OrganizationAdmin getAll successfully!
+                  data:
+                    data:
+                      - id: 9f6e22ea-92f5-4516-843b-6cc968ee2eb3
+                        organization_id: 5930b8c1-0755-4937-b3f9-b244a004c0c3
+                        keycloak_user_id: HOM220
+                        is_active: true
+                        created_at: "2025-08-28T12:59:30.521Z"
+                        updated_at: "2025-08-28T13:00:40.009Z"
+                    pagination:
+                      totalItems: 1
+                      perPage: 10
+                      currentPage: 1
+                      totalPages: 1
+                      hasNextPage: false
+                      hasPrevPage: false
+  /api/organization/admin/9f6e22ea-92f5-4516-843b-6cc968ee2eb3/state:
+    put:
+      tags:
+        - Admin
+      summary: edit is active
+      description: |
+        `/api/organization/admin/{admin_id}/state`
+        
+        Updates the status of a specific organization admin.  
+          
+        This allows toggling the admin’s state between **active** and **suspended**.
+      operationId: putapiorganizationadmin9f6e22ea92f54516843b6cc968ee2eb3state
+      parameters: []
+      responses:
+        200:
+          description: edit is active
+          content:
+            application/json; charset=utf-8:
+              schema:
+                type: object
+                example:
+                  success: true
+                  message: Updated successfully
+                  data:
+                    id: 9f6e22ea-92f5-4516-843b-6cc968ee2eb3
+                    organization_id: 5930b8c1-0755-4937-b3f9-b244a004c0c3
+                    keycloak_user_id: HOM220
+                    is_active: true
+                    created_at: "2025-08-28T12:59:30.521Z"
+                    updated_at: "2025-08-28T13:00:07.057Z"
+                    updated_ip: "::ffff:172.18.0.1"
+                    updated_user_agent: PostmanRuntime/7.45.0
+                    updatedAt: "2025-08-28T13:00:07.057Z"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: string
+              example: |
+                {
+                   "state" : "active" // active or suspended
+                }
+  /api/organization/admin/9f6e22ea-92f5-4516-843b-6cc968ee2eb3:
+    get:
+      tags:
+        - Admin
+      summary: get by id
+      description: |
+        `/api/organization/admin/{admin_id}`
+        
+        Retrieves the details of a specific organization admin, identified by `admin_id`.
+      operationId: getapiorganizationadmin9f6e22ea92f54516843b6cc968ee2eb3
+      parameters: []
+      responses:
+        200:
+          description: get by id
+          content:
+            application/json; charset=utf-8:
+              schema:
+                type: object
+                example:
+                  success: true
+                  message: OrganizationAdmin get successfully!
+                  data:
+                    id: 9f6e22ea-92f5-4516-843b-6cc968ee2eb3
+                    organization_id: 5930b8c1-0755-4937-b3f9-b244a004c0c3
+                    keycloak_user_id: HOM220
+                    is_active: true
+                    created_at: "2025-08-28T12:59:30.521Z"
+                    updated_at: "2025-08-28T13:00:07.057Z"
+    delete:
+      tags:
+        - Admin
+      summary: Delete
+      description: |
+        `/api/organization/admin/{admin_id}`
+        
+        Removes the specified admin from the organization, identified by `admin_id`.
+      operationId: deleteapiorganizationadmin9f6e22ea92f54516843b6cc968ee2eb3
+      parameters: []
+      responses:
+        200:
+          description: Delete
+          content:
+            application/json; charset=utf-8:
+              schema:
+                type: object
+                example:
+                  success: true
+                  message: Deleted successfully
+  /api/organization/5930b8c1-0755-4937-b3f9-b244a004c0c3/location:
+    get:
+      tags:
+        - organization Location
+      summary: fetch location of organization
+      description: |
+        `/api/organization/{organization_id}/location`  
+          
+        Retrieves the stored location details of the specified organization, identified by `organization_id`.
+      operationId: getapiorganization5930b8c107554937b3f9b244a004c0c3location
+      parameters: []
+      responses:
+        200:
+          description: fetch location of organization
+          content:
+            application/json; charset=utf-8:
+              schema:
+                type: object
+                example:
+                  success: true
+                  message: OrganizationLocation Get successfully!
+                  data:
+                    id: bce724c5-ecbc-4ab1-9a09-27f0030b3ca0
+                    organization_id: 5930b8c1-0755-4937-b3f9-b244a004c0c3
+                    country: India
+                    state: karnataka
+                    district: Bangalore
+                    city: Hoskote
+                    pincode: 562114
+                    street: some street ..
+                    address: Address .... 
+                    locale: IND
+                    timezone: Asia/Kolkata
+                    lat: 12.971599
+                    lng: 77.594566
+                    created_at: "2025-08-28T13:01:59.825Z"
+                    updated_at: "2025-08-28T13:01:59.825Z"
+    put:
+      tags:
+        - organization Location
+      summary: Update Organization Location
+      description: |
+        `/api/organization/{organization_id}/location`  
+          
+        Updates the location details of the specified organization, identified by `organization_id`.
+      operationId: putapiorganization5930b8c107554937b3f9b244a004c0c3location
+      parameters: []
+      responses:
+        200:
+          description: Update Organization Location
+          content:
+            application/json; charset=utf-8:
+              schema:
+                type: object
+                example:
+                  success: true
+                  message: Updated successfully
+                  data:
+                    id: bce724c5-ecbc-4ab1-9a09-27f0030b3ca0
+                    created_at: "2025-08-28T13:01:59.825Z"
+                    organization_id: 5930b8c1-0755-4937-b3f9-b244a004c0c3
+                    country: India
+                    state: karnataka
+                    city: Hoskote
+                    pincode: 562114
+                    timezone: Asia/Kolkata
+                    lat: 12.971599
+                    lng: 77.594566
+                    street: some street ..
+                    address: Address .... 
+                    district: Bangalore
+                    locale: IND
+                    updatedAt: "2025-08-28T13:01:59.825Z"
+                    createdAt: "2025-08-28T13:01:59.825Z"
+                    created_ip: "::ffff:172.18.0.1"
+                    created_user_agent: PostmanRuntime/7.45.0
+                    updated_at: "2025-08-28T13:01:59.825Z"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: string
+              example: |
+                {
+                   "country" : "India", // optional
+                   "state" : "karnataka", //optional
+                   "city" : "Hoskote", // optional
+                   "pincode" : "562114", // optional
+                   "locale" : "IND", // optional
+                   "timezone" : "Asia/Kolkata", // optional
+                   "district" : "Bangalore", // optional
+                   "street" : "some street ..", // optional
+                   "address" : "Address .... ", // optional
+                   "lat" : "12.971599", // optional
+                   "lng" : "77.594566" // optional
+                }
+  /api/host/database/d932868f-74fc-4d95-a456-b0e8460546fd/module/f2a46761-6ab9-4d75-a0b1-97cea19cdd3d:
+    post:
+      tags:
+        - organization database
+      summary: Update the database of the organization.
+      description: |
+        `/api/host/database/{organization_id}/module/{module_version_id}`
+        
+        Updates or Create the database configuration of the specified organization (`organization_id`) for the given module (`module_version_id`).
+      operationId: postapihostdatabased932868f74fc4d95a456b0e8460546fdmodulef2a467616ab94d75a0b197cea19cdd3d
+      parameters: []
+      responses:
+        200:
+          description: Update the database of the organization.
+          content:
+            application/json; charset=utf-8:
+              schema:
+                type: object
+                example:
+                  success: true
+                  message: Database Update successfully!
+                  data:
+                    id: 617acb42-a225-4a61-9dd2-d1fe402be3bc
+                    organization_id: d932868f-74fc-4d95-a456-b0e8460546fd
+                    module_version_id: f2a46761-6ab9-4d75-a0b1-97cea19cdd3d
+                    db_host: postgres_db
+                    db_name: pms_nodejs
+                    db_user: postgres
+                    db_password_enc: C5m8c1HoQv1vQxfLTudvlA==
+                    schema_version: 14
+                    created_at: "2025-08-28T09:04:42.582Z"
+                    updated_at: "2025-08-28T13:06:14.061Z"
+                    updatedAt: "2025-08-28T13:06:14.061Z"
+                    updated_ip: "::ffff:172.18.0.1"
+                    updated_user_agent: PostmanRuntime/7.45.0
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: string
+              example: |
+                {
+                    "db_host": "postgres_db", // Mandatory for create | optional for update
+                    "db_name": "pms_nodejs",  // Mandatory for create | optional for update
+                    "db_password": "1234",  // Mandatory for create | optional for update
+                    "db_user": "postgres"  // Mandatory for create | optional for update
+                }
+    get:
+      tags:
+        - organization database
+      summary: get database of organization and module
+      description: |
+        `/api/host/database/{organization_id}/module/{module_verison_id}`
+        
+        Retrieves the database details for a specific organization and module, identified by `organization_id` and `module_version_id`.
+      operationId: getapihostdatabased932868f74fc4d95a456b0e8460546fdmodulef2a467616ab94d75a0b197cea19cdd3d
+      parameters: []
+      responses:
+        200:
+          description: get database of organization and module
+          content:
+            application/json; charset=utf-8:
+              schema:
+                type: object
+                example:
+                  success: true
+                  message: Database Get successfully!
+                  data:
+                    - id: 617acb42-a225-4a61-9dd2-d1fe402be3bc
+                      organization_id: d932868f-74fc-4d95-a456-b0e8460546fd
+                      module_version_id: f2a46761-6ab9-4d75-a0b1-97cea19cdd3d
+                      db_host: postgres_db
+                      db_name: pms_nodejs
+                      db_user: postgres
+                      db_password_enc: C5m8c1HoQv1vQxfLTudvlA==
+                      schema_version: 14
+                      created_at: "2025-08-28T09:04:42.582Z"
+                      updated_at: "2025-08-28T13:06:14.061Z"
+  /api/host/database/d932868f-74fc-4d95-a456-b0e8460546fd:
+    get:
+      tags:
+        - organization database
+      summary: get all database of org
+      description: |
+        `/api/host/database/{organization_id}`
+        
+        Retrieves the database configuration of the specified organization (`organization_id`) of all modules.
+      operationId: getapihostdatabased932868f74fc4d95a456b0e8460546fd
+      parameters: []
+      responses:
+        200:
+          description: get all database of org
+          content:
+            application/json; charset=utf-8:
+              schema:
+                type: object
+                example:
+                  success: true
+                  message: Database Get successfully!
+                  data:
+                    - id: 617acb42-a225-4a61-9dd2-d1fe402be3bc
+                      organization_id: d932868f-74fc-4d95-a456-b0e8460546fd
+                      module_version_id: f2a46761-6ab9-4d75-a0b1-97cea19cdd3d
+                      db_host: postgres_db
+                      db_name: pms_nodejs
+                      db_user: postgres
+                      db_password_enc: C5m8c1HoQv1vQxfLTudvlA==
+                      schema_version: 14
+                      created_at: "2025-08-28T09:04:42.582Z"
+                      updated_at: "2025-08-28T13:06:14.061Z"
+  /api/usage/d932868f-74fc-4d95-a456-b0e8460546fd:
+    get:
+      tags:
+        - update limit
+      summary: get usage
+      description: |
+        `/api/usage/{organization_id}`  
+          
+        Retrieves the current resource usage details of the specified organization (`organization_id`).
+      operationId: getapiusaged932868f74fc4d95a456b0e8460546fd
+      parameters: []
+      responses:
+        200:
+          description: get usage
+          content:
+            application/json; charset=utf-8:
+              schema:
+                type: object
+                example:
+                  success: true
+                  message: OrganizationLocation Get successfully!
+                  data:
+                    id: ba81a6f3-e4b3-4663-bdb9-acac0934f78d
+                    organization_id: d932868f-74fc-4d95-a456-b0e8460546fd
+                    user_count: 0
+                    user_limit: 34
+                    storage_usage_mb: 0
+                    storage_limit_mb: 33
+                    db_usage_mb: 0
+                    db_limit_mb: 22
+                    from_data: 2025-08-28
+                    sms_usage: 0
+                    sms_limit: 44
+                    total_sms_usage: 0
+                    email_usage: 0
+                    email_limit: 33
+                    total_email_usage: 0
+                    api_requests: 0
+                    api_requests_limit: 3000
+                    total_api_requests: 0
+                    created_at: "2025-08-28T13:08:49.236Z"
+                    updated_at: "2025-08-28T13:08:49.236Z"
+  /api/usage/d932868f-74fc-4d95-a456-b0e8460546fd/limit:
+    post:
+      tags:
+        - update limit
+      summary: update usage limit
+      description: |
+        `/api/usage/{organization_id}/limit`  
+          
+        Updates Or creates the resource usage limits for the specified organization (`organization_id`).
+      operationId: postapiusaged932868f74fc4d95a456b0e8460546fdlimit
+      parameters: []
+      responses:
+        200:
+          description: update usage limit
+          content:
+            application/json; charset=utf-8:
+              schema:
+                type: object
+                example:
+                  success: true
+                  message: Usage Limits created successfully
+                  data:
+                    id: ba81a6f3-e4b3-4663-bdb9-acac0934f78d
+                    user_count: 0
+                    storage_usage_mb: 0
+                    db_usage_mb: 0
+                    sms_usage: 0
+                    total_sms_usage: 0
+                    email_usage: 0
+                    total_email_usage: 0
+                    api_requests: 0
+                    total_api_requests: 0
+                    created_at: "2025-08-28T13:08:49.236Z"
+                    organization_id: d932868f-74fc-4d95-a456-b0e8460546fd
+                    user_limit: 34
+                    storage_limit_mb: 33
+                    db_limit_mb: 22
+                    sms_limit: 44
+                    email_limit: 33
+                    api_requests_limit: 3000
+                    from_data: 2025-08-28
+                    updatedAt: "2025-08-28T13:08:49.236Z"
+                    createdAt: "2025-08-28T13:08:49.236Z"
+                    created_ip: "::ffff:172.18.0.1"
+                    created_user_agent: PostmanRuntime/7.45.0
+                    updated_at: "2025-08-28T13:08:49.236Z"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: string
+              example: |
+                {
+                    "user_limit" : "34", // optional for update
+                    "storage_limit_mb" : "33",  // optional for update
+                    "db_limit_mb" : "22", // opitonal for update
+                    "sms_limit" : "44", // optional for update
+                    "email_limit" : "33", // optional for update
+                    "api_requests_limit" : "3000" // optional for update
+                }
+  /api/usage/d932868f-74fc-4d95-a456-b0e8460546fd/usage:
+    post:
+      tags:
+        - update limit
+      summary: update usage
+      description: |
+        `/api/usage/{organization_id}/usage`  
+          
+        Increments the current resource usage metrics for the specified organization (`organization_id`) by the provided values.
+      operationId: postapiusaged932868f74fc4d95a456b0e8460546fdusage
+      parameters: []
+      responses:
+        200:
+          description: update usage
+          content:
+            application/json; charset=utf-8:
+              schema:
+                type: object
+                example:
+                  success: true
+                  message: Usage History updated successfully
+                  data:
+                    id: ba81a6f3-e4b3-4663-bdb9-acac0934f78d
+                    organization_id: d932868f-74fc-4d95-a456-b0e8460546fd
+                    user_count: 4
+                    user_limit: 34
+                    storage_usage_mb: 6
+                    storage_limit_mb: 33
+                    db_usage_mb: 8
+                    db_limit_mb: 22
+                    from_data: 2025-08-28
+                    sms_usage: 10
+                    sms_limit: 44
+                    total_sms_usage: 10
+                    email_usage: 12
+                    email_limit: 33
+                    total_email_usage: 12
+                    api_requests: 10
+                    api_requests_limit: 3000
+                    total_api_requests: 10
+                    created_at: "2025-08-28T13:08:49.236Z"
+                    updated_at: "2025-08-28T13:09:11.746Z"
+                    updatedAt: "2025-08-28T13:09:11.745Z"
+                    updated_ip: "::ffff:172.18.0.1"
+                    updated_user_agent: PostmanRuntime/7.45.0
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: string
+              example: |
+                {
+                    "user_count" : "2", // optional
+                    "storage_usage_mb" : "3", // optional
+                    "db_usage_mb" : "4", // optional
+                    "sms_usage" : "5", // optional
+                    "email_usage" : "6", // optional
+                    "api_requests" : "5" // optional 
+                }
+  /api/organizations/basic-info/5930b8c1-0755-4937-b3f9-b244a004c0c3:
+    put:
+      tags:
+        - Organization (tenant)
+      summary: basic update (not only super admin)
+      description: |
+        `/api/organizations/basic-info/{organization_id}`  
+          
+        Updates the basic information of the specified organization (`organization_id`). This endpoint is available for both super administrators and tenant administrators.
+      operationId: putapiorganizationsbasicinfo5930b8c107554937b3f9b244a004c0c3
+      parameters: []
+      responses:
+        200:
+          description: basic update (not only super admin)
+          content:
+            application/json; charset=utf-8:
+              schema:
+                type: object
+                example:
+                  success: true
+                  message: Updated successfully
+                  data:
+                    id: 5930b8c1-0755-4937-b3f9-b244a004c0c3
+                    name: new name
+                    code: ORG-GOOG-20250828-A28EF6BB
+                    email: gururaj.hr@swaragh.co.in
+                    phone: 9880699054
+                    state: active
+                    description: new description
+                    owner_keycloak_id: keyClockUserId
+                    created_at: "2025-08-28T12:54:36.913Z"
+                    updated_at: "2025-08-28T12:55:51.360Z"
+                    updatedAt: "2025-08-28T12:55:51.345Z"
+                    updated_ip: "::ffff:172.18.0.1"
+                    updated_user_agent: PostmanRuntime/7.45.0
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: string
+              example: |
+                {
+                    "name" : "new name ", // optional 
+                    "description" : "new description" // optional
+                }
+  /api/organizations/state/5930b8c1-0755-4937-b3f9-b244a004c0c3:
+    put:
+      tags:
+        - Organization (tenant)
+      summary: state update (only super admin)
+      description: |
+        `/api/organizations/state/{organization_id}`  
+          
+        Updates the state of the specified organization (`organization_id`).
+      operationId: putapiorganizationsstate5930b8c107554937b3f9b244a004c0c3
+      parameters: []
+      responses:
+        200:
+          description: state update (only super admin)
+          content:
+            application/json; charset=utf-8:
+              schema:
+                type: object
+                example:
+                  success: true
+                  message: Updated successfully
+                  data:
+                    id: 5930b8c1-0755-4937-b3f9-b244a004c0c3
+                    name: new name
+                    code: ORG-GOOG-20250828-A28EF6BB
+                    email: gururaj.hr@swaragh.co.in
+                    phone: 9880699054
+                    state: suspended
+                    description: new description
+                    owner_keycloak_id: keyClockUserId
+                    created_at: "2025-08-28T12:54:36.913Z"
+                    updated_at: "2025-08-28T12:56:13.597Z"
+                    updatedAt: "2025-08-28T12:56:13.597Z"
+                    updated_ip: "::ffff:172.18.0.1"
+                    updated_user_agent: PostmanRuntime/7.45.0
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: string
+              example: |
+                {
+                    "state" : "suspended" // // optional | "active", "suspended", "inactive"
+                }
+  /api/organizations/5930b8c1-0755-4937-b3f9-b244a004c0c3:
+    get:
+      tags:
+        - Organization (tenant)
+      summary: get by id
+      description: |
+        `/api/organizations/{organization_id}`  
+          
+        Retrieves the details of the specified organization (`organization_id`).
+      operationId: getapiorganizations5930b8c107554937b3f9b244a004c0c3
+      parameters: []
+      responses:
+        200:
+          description: get by id
+          content:
+            application/json; charset=utf-8:
+              schema:
+                type: object
+                example:
+                  success: true
+                  message: Organization getById successfully!
+                  data:
+                    id: 5930b8c1-0755-4937-b3f9-b244a004c0c3
+                    name: new name
+                    code: ORG-GOOG-20250828-A28EF6BB
+                    email: gururaj.hr@swaragh.co.in
+                    phone: 9880699054
+                    state: suspended
+                    description: new description
+                    owner_keycloak_id: keyClockUserId
+                    created_at: "2025-08-28T12:54:36.913Z"
+                    updated_at: "2025-08-28T12:56:13.597Z"
+    delete:
+      tags:
+        - Organization (tenant)
+      summary: delete by id
+      description: |
+        `/api/organizations/{organization_id}`  
+          
+        Deletes the specified organization (`organization_id`).
+      operationId: deleteapiorganizations5930b8c107554937b3f9b244a004c0c3
+      parameters: []
+      responses:
+        200:
+          description: delete by id
+          content:
+            application/json; charset=utf-8:
+              schema:
+                type: object
+                example:
+                  success: true
+                  message: Deleted successfully
+  /api/organizations:
+    get:
+      tags:
+        - Organization (tenant)
+      summary: fetch all
+      description: |
+        `/api/organizations`  
+          
+        Retrieves a list of all organizations.
+      operationId: getapiorganizations
+      parameters: []
+      responses:
+        200:
+          description: fetch all
+          content:
+            application/json; charset=utf-8:
+              schema:
+                type: object
+                example:
+                  success: true
+                  message: Organization getAll successfully!
+                  data:
+                    data:
+                      - id: 5930b8c1-0755-4937-b3f9-b244a004c0c3
+                        name: new name
+                        code: ORG-GOOG-20250828-A28EF6BB
+                        email: gururaj.hr@swaragh.co.in
+                        phone: 9880699054
+                        state: suspended
+                        description: new description
+                        owner_keycloak_id: keyClockUserId
+                        created_at: "2025-08-28T12:54:36.913Z"
+                        updated_at: "2025-08-28T12:56:13.597Z"
+                      - id: d932868f-74fc-4d95-a456-b0e8460546fd
+                        name: Google
+                        code: ORG-GOOG-20250823-AC0C56E1
+                        email: gururaj.hr@google.co.in
+                        phone: 9880699055
+                        state: inactive
+                        description: Every where we are.
+                        owner_keycloak_id: Raj1310
+                        created_at: "2025-08-23T11:23:44.584Z"
+                        updated_at: "2025-08-23T11:23:44.584Z"
+                    pagination:
+                      totalItems: 2
+                      perPage: 10
+                      currentPage: 1
+                      totalPages: 1
+                      hasNextPage: false
+                      hasPrevPage: false
+  /api/organizations/:
+    post:
+      tags:
+        - Organization (tenant)
+      summary: create
+      description: |
+        `/api/organizations`  
+          
+        Creates a new organization with the provided details.
+      operationId: postapiorganizations
+      parameters: []
+      responses:
+        200:
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                example: {}
+        201:
+          description: create
+          content:
+            application/json; charset=utf-8:
+              schema:
+                type: object
+                example:
+                  success: true
+                  message: Organization create successfully!
+                  data:
+                    id: 5930b8c1-0755-4937-b3f9-b244a004c0c3
+                    created_at: "2025-08-28T12:54:36.913Z"
+                    name: Google
+                    state: active
+                    description: Every where we are.
+                    owner_keycloak_id: keyClockUserId
+                    email: gururaj.hr@swaragh.co.in
+                    phone: 9880699054
+                    code: ORG-GOOG-20250828-A28EF6BB
+                    updatedAt: "2025-08-28T12:54:36.913Z"
+                    createdAt: "2025-08-28T12:54:36.913Z"
+                    created_ip: "::ffff:172.18.0.1"
+                    created_user_agent: PostmanRuntime/7.45.0
+                    updated_at: "2025-08-28T12:54:36.913Z"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: string
+              example: |
+                {
+                    "name" : "Google", 
+                    "owner_keycloak_id" : "keyClockUserId",
+                    "email" : "gururaj.hr@swaragh.co.in",
+                    "phone" : "9880699054",
+                    "description" : "Every where we are.", // optional
+                    "state" : "active" // optional | "active", "suspended", "inactive"
+                }
+                
+  /api/module/8f101399-64ab-49a9-bd0a-3efc7f7ef988/feature:
+    post:
+      tags:
+        - module features
+      summary: Create module feature
+      description: |
+        `/api/module/{module_version_id}/feature`
+        
+        Creates a new feature for the specified module (`module_version_id`).
+      operationId: postapimodule8f10139964ab49a9bd0a3efc7f7ef988feature
+      parameters: []
+      responses:
+        200:
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                example: {}
+        201:
+          description: Create module feature
+          content:
+            application/json; charset=utf-8:
+              schema:
+                type: object
+                example:
+                  success: true
+                  message: ModuleFeature create successfully!
+                  data:
+                    id: afac5a51-e59f-47bc-9ea2-0770c5f564fc
+                    is_active: true
+                    created_at: "2025-08-28T13:16:48.025Z"
+                    module_version_id: 8f101399-64ab-49a9-bd0a-3efc7f7ef988
+                    code: py_main_cnd_new
+                    name: Python main cdn
+                    module_id: fdbb11d9-eb11-49d6-a880-d028667b5401
+                    updatedAt: "2025-08-28T13:16:48.025Z"
+                    createdAt: "2025-08-28T13:16:48.025Z"
+                    created_ip: "::ffff:172.18.0.1"
+                    created_user_agent: PostmanRuntime/7.45.0
+                    updated_at: "2025-08-28T13:16:48.025Z"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: string
+              example: |
+                // verify done
+                {
+                    "name" : "Python main cdn",
+                    "code" : "py_main_cnd_new"
+                }
+  /api/module/f2a46761-6ab9-4d75-a0b1-97cea19cdd3d/feature:
+    get:
+      tags:
+        - module features
+      summary: get all features of module of perticular verison
+      description: |
+        `/api/module/{module_version_id}/feature`
+        
+        Retrieves all features of the specified module (`module_version_id`).
+      operationId: getapimodulef2a467616ab94d75a0b197cea19cdd3dfeature
+      parameters: []
+      responses:
+        200:
+          description: get all features of module
+          content:
+            application/json; charset=utf-8:
+              schema:
+                type: object
+                example:
+                  success: true
+                  message: ModuleFeature getAll successfully!
+                  data:
+                    data:
+                      - id: d123e120-370f-496e-ade0-68bffdd7da8a
+                        module_id: d26b0f82-8a63-474d-bac5-c726cd27b8ba
+                        module_version_id: f2a46761-6ab9-4d75-a0b1-97cea19cdd3d
+                        code: py_pg
+                        name: Python packages
+                        is_active: true
+                        created_at: "2025-08-23T11:39:48.689Z"
+                        updated_at: "2025-08-23T11:39:48.689Z"
+                      - id: 6ba9ce9e-8ea6-4f69-9a23-f4ecf2dcecf7
+                        module_id: d26b0f82-8a63-474d-bac5-c726cd27b8ba
+                        module_version_id: f2a46761-6ab9-4d75-a0b1-97cea19cdd3d
+                        code: py_fe
+                        name: Python features
+                        is_active: true
+                        created_at: "2025-08-23T11:38:54.246Z"
+                        updated_at: "2025-08-23T11:38:54.246Z"
+                    pagination:
+                      totalItems: 2
+                      perPage: 10
+                      currentPage: 1
+                      totalPages: 1
+                      hasNextPage: false
+                      hasPrevPage: false
+  /api/feature/afac5a51-e59f-47bc-9ea2-0770c5f564fc:
+    put:
+      tags:
+        - module features
+      summary: update
+      description: |
+        `/api/feature/{feature_id}`  
+          
+        Updates the details of the specified feature (`feature_id`).
+      operationId: putapifeatureafac5a51e59f47bc9ea20770c5f564fc
+      parameters: []
+      responses:
+        200:
+          description: update
+          content:
+            application/json; charset=utf-8:
+              schema:
+                type: object
+                example:
+                  success: true
+                  message: Updated successfully
+                  data:
+                    id: afac5a51-e59f-47bc-9ea2-0770c5f564fc
+                    module_id: fdbb11d9-eb11-49d6-a880-d028667b5401
+                    module_version_id: 8f101399-64ab-49a9-bd0a-3efc7f7ef988
+                    code: wrap_up
+                    name: aganda
+                    description: "wrap up, aganda."
+                    is_active: true
+                    created_at: "2025-08-28T13:16:48.025Z"
+                    updated_at: "2025-08-28T13:17:53.268Z"
+                    updatedAt: "2025-08-28T13:17:53.268Z"
+                    updated_ip: "::ffff:172.18.0.1"
+                    updated_user_agent: PostmanRuntime/7.45.0
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                code: wrap_up
+                name: aganda
+                description: "wrap up, aganda."
+    get:
+      tags:
+        - module features
+      summary: get by id
+      description: |
+        `/api/feature/{feature_id}`  
+          
+        Retrieves the details of the specified feature (`feature_id`).
+      operationId: getapifeatureafac5a51e59f47bc9ea20770c5f564fc
+      parameters: []
+      responses:
+        200:
+          description: get by id
+          content:
+            application/json; charset=utf-8:
+              schema:
+                type: object
+                example:
+                  success: true
+                  message: ModuleFeature get successfully!
+                  data:
+                    id: afac5a51-e59f-47bc-9ea2-0770c5f564fc
+                    module_id: fdbb11d9-eb11-49d6-a880-d028667b5401
+                    module_version_id: 8f101399-64ab-49a9-bd0a-3efc7f7ef988
+                    code: wrap_up
+                    name: aganda
+                    description: "wrap up, aganda."
+                    is_active: false
+                    created_at: "2025-08-28T13:16:48.025Z"
+                    updated_at: "2025-08-28T13:18:09.330Z"
+    delete:
+      tags:
+        - module features
+      summary: delete 
+      description: |
+        `/api/feature/{feature_id}`
+        
+        Deletes the specified feature (`feature_id`).
+      operationId: deleteapifeatureafac5a51e59f47bc9ea20770c5f564fc
+      parameters: []
+      responses:
+        200:
+          description: delete
+          content:
+            application/json; charset=utf-8:
+              schema:
+                type: object
+                example:
+                  success: true
+                  message: Deleted successfully
+  /api/feature/state/afac5a51-e59f-47bc-9ea2-0770c5f564fc:
+    put:
+      tags:
+        - module features
+      summary: edit state
+      description: |
+        `/api/feature/state/{feature_id}`  
+          
+        Updates the state (e.g., active/inactive) of the specified feature (`feature_id`).
+      operationId: putapifeaturestateafac5a51e59f47bc9ea20770c5f564fc
+      parameters: []
+      responses:
+        200:
+          description: edit state
+          content:
+            application/json; charset=utf-8:
+              schema:
+                type: object
+                example:
+                  success: true
+                  message: Updated successfully
+                  data:
+                    id: afac5a51-e59f-47bc-9ea2-0770c5f564fc
+                    module_id: fdbb11d9-eb11-49d6-a880-d028667b5401
+                    module_version_id: 8f101399-64ab-49a9-bd0a-3efc7f7ef988
+                    code: wrap_up
+                    name: aganda
+                    description: "wrap up, aganda."
+                    is_active: false
+                    created_at: "2025-08-28T13:16:48.025Z"
+                    updated_at: "2025-08-28T13:18:09.330Z"
+                    updatedAt: "2025-08-28T13:18:09.330Z"
+                    updated_ip: "::ffff:172.18.0.1"
+                    updated_user_agent: PostmanRuntime/7.45.0
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                state: suspended
+  /api/modules:
+    post:
+      tags:
+        - module
+      summary: create module
+      description: |
+        `/api/modules`
+        
+        Creates a new module along with its initial version.
+      operationId: postapimodules
+      parameters: []
+      responses:
+        200:
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                example: {}
+        201:
+          description: create module
+          content:
+            application/json; charset=utf-8:
+              schema:
+                type: object
+                example:
+                  success: true
+                  message: Module create successfully!
+                  data:
+                    id: 9f5e5fa3-9076-41b0-9d52-1fa756036c90
+                    is_active: true
+                    created_at: "2025-08-30T05:13:09.313Z"
+                    code: pms_server
+                    name: Porject managemane system python
+                    description: asset
+                    updatedAt: "2025-08-30T05:13:09.313Z"
+                    createdAt: "2025-08-30T05:13:09.313Z"
+                    created_ip: "::ffff:172.18.0.1"
+                    created_user_agent: PostmanRuntime/7.45.0
+                    updated_at: "2025-08-30T05:13:09.313Z"
+                    version:
+                      id: 06167738-6f58-48f7-abf0-9066d3a43cdd
+                      is_active: true
+                      created_at: "2025-08-30T05:13:09.378Z"
+                      version: 1.00
+                      docker_container: pms_noder
+                      port: 8088
+                      module_id: 9f5e5fa3-9076-41b0-9d52-1fa756036c90
+                      updatedAt: "2025-08-30T05:13:09.378Z"
+                      createdAt: "2025-08-30T05:13:09.378Z"
+                      created_ip: "::ffff:172.18.0.1"
+                      created_user_agent: PostmanRuntime/7.45.0
+                      updated_at: "2025-08-30T05:13:09.378Z"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: string
+              example: |
+                
+                {
+                    "name" : "Porject managemane system python",
+                    "code" : "pms_server",
+                    "description" : "asset", // optional
+                    "docker_container" : "pms_noder",
+                    "port" : "8088"
+                }
+                
+    get:
+      tags:
+        - module
+      summary: fetch all
+      description: |
+        `/api/modules`  
+          
+        Retrieves all modules.
+      operationId: getapimodules
+      parameters: []
+      responses:
+        200:
+          description: fetch all
+          content:
+            application/json; charset=utf-8:
+              schema:
+                type: object
+                example:
+                  success: true
+                  message: Module getAll successfully!
+                  data:
+                    data:
+                      - id: c9319595-e36e-4cef-92b2-f0a011433f0c
+                        code: pms
+                        name: Project Mcccanagement Systems
+                        description: c is new work.
+                        is_active: false
+                        created_at: "2025-08-28T13:11:43.009Z"
+                        updated_at: "2025-08-28T13:14:24.428Z"
+                      - id: fdbb11d9-eb11-49d6-a880-d028667b5401
+                        code: pms_py
+                        name: Porject managemane system python
+                        description: asset
+                        is_active: true
+                        created_at: "2025-08-23T11:41:02.298Z"
+                        updated_at: "2025-08-23T11:41:02.298Z"
+                      - id: d26b0f82-8a63-474d-bac5-c726cd27b8ba
+                        code: pms_nd
+                        name: Porject managemane system Node
+                        description: asset
+                        is_active: true
+                        created_at: "2025-08-23T11:28:15.549Z"
+                        updated_at: "2025-08-23T11:28:15.549Z"
+                    pagination:
+                      totalItems: 3
+                      perPage: 10
+                      currentPage: 1
+                      totalPages: 1
+                      hasNextPage: false
+                      hasPrevPage: false
+  /api/modules/9f5e5fa3-9076-41b0-9d52-1fa756036c90:
+    post:
+      tags:
+        - module
+      summary: create module version
+      description: |
+        `/api/modules/{module_id}`  
+          
+        Creates a new version for the specified module (`module_id`).
+      operationId: postapimodules9f5e5fa3907641b09d521fa756036c90
+      parameters: []
+      responses:
+        200:
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                example: {}
+        201:
+          description: create module version
+          content:
+            application/json; charset=utf-8:
+              schema:
+                type: object
+                example:
+                  success: true
+                  message: Module version create successfully!
+                  data:
+                    id: 9f5e5fa3-9076-41b0-9d52-1fa756036c90
+                    code: pms_server
+                    name: Porject managemane system python
+                    description: asset
+                    is_active: true
+                    created_at: "2025-08-30T05:13:09.313Z"
+                    updated_at: "2025-08-30T05:13:09.313Z"
+                    version:
+                      id: 96c0bb33-55be-4013-9791-a8591938499d
+                      is_active: true
+                      created_at: "2025-08-30T05:13:45.562Z"
+                      docker_container: pms_python2
+                      description: asset
+                      version: 2.00
+                      port: 8089
+                      module_id: 9f5e5fa3-9076-41b0-9d52-1fa756036c90
+                      updatedAt: "2025-08-30T05:13:45.562Z"
+                      createdAt: "2025-08-30T05:13:45.562Z"
+                      created_ip: "::ffff:172.18.0.1"
+                      created_user_agent: PostmanRuntime/7.45.0
+                      updated_at: "2025-08-30T05:13:45.562Z"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: string
+              example: |
+                
+                {
+                    "name" : "Asset Management System",
+                    "description" : "asset", // optional
+                    "docker_container" : "pms_python2",
+                    "port" : "8089"
+                }
+                
+                
+  /api/modules/c9319595-e36e-4cef-92b2-f0a011433f0c:
+    put:
+      tags:
+        - module
+      summary: Edit module
+      description: |
+        `/api/modules/{module_id}`  
+          
+        Updates the details (name, code, description, etc.) of the specified module (`module_id`).
+      operationId: putapimodulesc9319595e36e4cef92b2f0a011433f0c
+      parameters: []
+      responses:
+        200:
+          description: Edit module
+          content:
+            application/json; charset=utf-8:
+              schema:
+                type: object
+                example:
+                  success: true
+                  message: Updated successfully
+                  data:
+                    id: c9319595-e36e-4cef-92b2-f0a011433f0c
+                    code: pms
+                    name: Project Mcccanagement Systems
+                    description: c is new work.
+                    is_active: true
+                    created_at: "2025-08-28T13:11:43.009Z"
+                    updated_at: "2025-08-28T13:12:54.846Z"
+                    updatedAt: "2025-08-28T13:12:54.845Z"
+                    updated_ip: "::ffff:172.18.0.1"
+                    updated_user_agent: PostmanRuntime/7.45.0
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                name: Project Mcccanagement Systems
+                code: pms
+                description: c is new work.
+    get:
+      tags:
+        - module
+      summary: get by id
+      description: |
+        `/api/modules/{module_id}`  
+          
+        Retrieves the details of the specified module (`module_id`).
+      operationId: getapimodulesc9319595e36e4cef92b2f0a011433f0c
+      parameters: []
+      responses:
+        200:
+          description: get by id
+          content:
+            application/json; charset=utf-8:
+              schema:
+                type: object
+                example:
+                  success: true
+                  message: Module Get successfully!
+                  data:
+                    id: c9319595-e36e-4cef-92b2-f0a011433f0c
+                    code: pms
+                    name: Project Mcccanagement Systems
+                    description: c is new work.
+                    is_active: false
+                    created_at: "2025-08-28T13:11:43.009Z"
+                    updated_at: "2025-08-28T13:14:24.428Z"
+                    versions:
+                      - id: fef2a195-e4dc-40db-9f23-92293aa52cb9
+                        module_id: c9319595-e36e-4cef-92b2-f0a011433f0c
+                        description: asset
+                        docker_container: pms_python2
+                        version: 2.00
+                        is_active: true
+                        created_at: "2025-08-28T13:12:09.284Z"
+                        updated_at: "2025-08-28T13:12:09.284Z"
+                      - id: 28e65f08-6322-4198-909e-fa0934821eee
+                        module_id: c9319595-e36e-4cef-92b2-f0a011433f0c
+                        description: Hai this is new work.
+                        docker_container: pmsas
+                        version: 1.01
+                        is_active: true
+                        created_at: "2025-08-28T13:11:43.051Z"
+                        updated_at: "2025-08-28T13:13:44.771Z"
+    delete:
+      tags:
+        - module
+      summary: Delete
+      description: |
+        `/api/modules/{module_id}`  
+          
+        Deletes the specified module (`module_id`).
+      operationId: deleteapimodulesc9319595e36e4cef92b2f0a011433f0c
+      parameters: []
+      responses:
+        200:
+          description: Delete
+          content:
+            application/json; charset=utf-8:
+              schema:
+                type: object
+                example:
+                  success: true
+                  message: Deleted successfully
+  /api/modules/c9319595-e36e-4cef-92b2-f0a011433f0c/version/28e65f08-6322-4198-909e-fa0934821eee:
+    put:
+      tags:
+        - module
+      summary: Edit module version data
+      description: |
+        `/api/modules/{module_id}/version/{version_id}`  
+          
+        Updates the details of a specific version (`version_id`) of the specified module (`module_id`).
+      operationId: putapimodulesc9319595e36e4cef92b2f0a011433f0cversion28e65f0863224198909efa0934821eee
+      parameters: []
+      responses:
+        200:
+          description: Edit module version data
+          content:
+            application/json; charset=utf-8:
+              schema:
+                type: object
+                example:
+                  success: true
+                  message: Updated successfully
+                  data:
+                    id: 28e65f08-6322-4198-909e-fa0934821eee
+                    module_id: c9319595-e36e-4cef-92b2-f0a011433f0c
+                    description: Hai this is new work.
+                    docker_container: pmsas
+                    version: 1.01
+                    is_active: true
+                    created_at: "2025-08-28T13:11:43.051Z"
+                    updated_at: "2025-08-28T13:13:44.771Z"
+                    updatedAt: "2025-08-28T13:13:44.771Z"
+                    updated_ip: "::ffff:172.18.0.1"
+                    updated_user_agent: PostmanRuntime/7.45.0
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                description: Hai this is new work.
+                docker_container: pmsas
+                is_active: true
+                port: 8090
+  /api/modules/state/c9319595-e36e-4cef-92b2-f0a011433f0c:
+    put:
+      tags:
+        - module
+      summary: Edit module state
+      description: |
+        `/api/modules/state/{module_id}`  
+          
+        Updates the state (e.g., active, suspended) of the specified module (`module_id`).
+      operationId: putapimodulesstatec9319595e36e4cef92b2f0a011433f0c
+      parameters: []
+      responses:
+        200:
+          description: Edit module state
+          content:
+            application/json; charset=utf-8:
+              schema:
+                type: object
+                example:
+                  success: true
+                  message: Updated successfully
+                  data:
+                    id: c9319595-e36e-4cef-92b2-f0a011433f0c
+                    code: pms
+                    name: Project Mcccanagement Systems
+                    description: c is new work.
+                    is_active: false
+                    created_at: "2025-08-28T13:11:43.009Z"
+                    updated_at: "2025-08-28T13:14:24.428Z"
+                    updatedAt: "2025-08-28T13:14:24.428Z"
+                    updated_ip: "::ffff:172.18.0.1"
+                    updated_user_agent: PostmanRuntime/7.45.0
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: string
+              example: |
+                {
+                    "state" : "suspended" // ["active", "suspended"]
+                }
+  /api/modules/version/fef2a195-e4dc-40db-9f23-92293aa52cb9:
+    delete:
+      tags:
+        - module
+      summary: Delete version
+      description: |
+        `/api/modules/version/{version_id}`  
+          
+        Deletes the specified module version (`version_id`).
+      operationId: deleteapimodulesversionfef2a195e4dc40db9f2392293aa52cb9
+      parameters: []
+      responses:
+        200:
+          description: Delete version
+          content:
+            application/json; charset=utf-8:
+              schema:
+                type: object
+                example:
+                  success: true
+                  message: Deleted successfully
+  /api/project/6bb2f964-abc2-4096-b360-de1bbea848bc/versions/module/8f101399-64ab-49a9-bd0a-3efc7f7ef988/features:
+    post:
+      tags:
+        - features
+      summary: add features to project modules
+      description: |
+        `/api/project/{project_id}/versions/module/{module_version_id}/features`
+        
+        Adds one or more features to the specified module (`module_version_id`) within the given project (`project_id`) for its active version.
+      operationId: postapiproject6bb2f964abc24096b360de1bbea848bcversionsmodule8f10139964ab49a9bd0a3efc7f7ef988features
+      parameters: []
+      responses:
+        200:
+          description: add features to project modules
+          content:
+            application/json; charset=utf-8:
+              schema:
+                type: object
+                example:
+                  success: true
+                  message: Project Feature Add successfully!
+                  data:
+                    project:
+                      id: 6bb2f964-abc2-4096-b360-de1bbea848bc
+                      name: Asset
+                      short_name: Asset
+                      sub_domain: asset
+                      is_active: false
+                      created_at: "2025-08-23T11:46:29.241Z"
+                      updated_at: "2025-08-23T11:46:29.241Z"
+                      version:
+                        id: e723927e-8f87-4e58-8b39-8c2984f8459b
+                        project_id: 6bb2f964-abc2-4096-b360-de1bbea848bc
+                        version: 2.01
+                        is_used: false
+                        created_at: "2025-08-28T13:28:21.503Z"
+                        updated_at: "2025-08-28T13:28:32.572Z"
+                        snapshot_modules:
+                          - id: 5ad57184-1369-446e-a5c4-9a8847e58432
+                            module_feature_snapshot_id: e723927e-8f87-4e58-8b39-8c2984f8459b
+                            module_version_id: f2a46761-6ab9-4d75-a0b1-97cea19cdd3d
+                            created_at: "2025-08-28T13:28:21.576Z"
+                            updated_at: "2025-08-28T13:28:21.576Z"
+                            snapshot_module_features:
+                              - id: d30408f8-63a5-4e80-994f-00e24ba55ccd
+                                snapshot_module_id: 5ad57184-1369-446e-a5c4-9a8847e58432
+                                feature_id: 6ba9ce9e-8ea6-4f69-9a23-f4ecf2dcecf7
+                                created_at: "2025-08-28T13:28:21.594Z"
+                                updated_at: "2025-08-28T13:28:21.594Z"
+                              - id: d8d3ed4e-cc5a-4da8-ba65-b138f5121d47
+                                snapshot_module_id: 5ad57184-1369-446e-a5c4-9a8847e58432
+                                feature_id: d123e120-370f-496e-ade0-68bffdd7da8a
+                                created_at: "2025-08-28T13:28:21.594Z"
+                                updated_at: "2025-08-28T13:28:21.594Z"
+                          - id: 5791685c-e018-490c-8298-352364d9d7b7
+                            module_feature_snapshot_id: e723927e-8f87-4e58-8b39-8c2984f8459b
+                            module_version_id: 8f101399-64ab-49a9-bd0a-3efc7f7ef988
+                            created_at: "2025-08-28T13:28:21.634Z"
+                            updated_at: "2025-08-28T13:28:21.634Z"
+                            snapshot_module_features:
+                              - id: 804efbac-df7a-4fe8-86d8-63f7d7cc657b
+                                snapshot_module_id: 5791685c-e018-490c-8298-352364d9d7b7
+                                feature_id: 0850fc70-59c4-4550-9995-29a707d22a8f
+                                created_at: "2025-08-28T13:28:21.685Z"
+                                updated_at: "2025-08-28T13:28:21.685Z"
+                              - id: 37b41f7c-83bd-42dd-b4ec-6cc7199ee82e
+                                snapshot_module_id: 5791685c-e018-490c-8298-352364d9d7b7
+                                feature_id: 733ea635-05b2-4753-b2b8-2fd4b789e208
+                                created_at: "2025-08-28T13:28:21.685Z"
+                                updated_at: "2025-08-28T13:28:21.685Z"
+                    module_version_id: 8f101399-64ab-49a9-bd0a-3efc7f7ef988
+                    added_feature_ids: []
+                    skipped_features:
+                      - feature_id: 6ba9ce9e-8ea6-4f69-9a23-f4ecf2dcecf7
+                        reason: invalid_feature_for_module
+                      - feature_id: d123e120-370f-496e-ade0-68bffdd7da8a
+                        reason: invalid_feature_for_module
+                      - feature_id: 0850fc70-59c4-4550-9995-29a707d22a8f
+                        reason: already_present
+                      - feature_id: 733ea635-05b2-4753-b2b8-2fd4b789e208
+                        reason: already_present
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                feature_ids:
+                  - 6ba9ce9e-8ea6-4f69-9a23-f4ecf2dcecf7
+                  - d123e120-370f-496e-ade0-68bffdd7da8a
+                  - 0850fc70-59c4-4550-9995-29a707d22a8f
+                  - 733ea635-05b2-4753-b2b8-2fd4b789e208
+    delete:
+      tags:
+        - features
+      summary: delete features to project modules
+      description: |
+        `/api/project/{project_id}/versions/module/{module_version_id}/features`
+        
+        Removes one or more features from the specified module (`module_version_id`) within the given project (`project_id`) for its active version.
+      operationId: deleteapiproject6bb2f964abc24096b360de1bbea848bcversionsmodule8f10139964ab49a9bd0a3efc7f7ef988features
+      parameters: []
+      responses:
+        200:
+          description: delete features to project modules
+          content:
+            application/json; charset=utf-8:
+              schema:
+                type: object
+                example:
+                  success: true
+                  message: Feature removal completed
+                  data:
+                    project:
+                      id: 6bb2f964-abc2-4096-b360-de1bbea848bc
+                      name: Asset
+                      short_name: Asset
+                      sub_domain: asset
+                      is_active: false
+                      created_at: "2025-08-23T11:46:29.241Z"
+                      updated_at: "2025-08-23T11:46:29.241Z"
+                      version:
+                        id: e723927e-8f87-4e58-8b39-8c2984f8459b
+                        project_id: 6bb2f964-abc2-4096-b360-de1bbea848bc
+                        version: 2.02
+                        is_used: false
+                        created_at: "2025-08-28T13:28:21.503Z"
+                        updated_at: "2025-08-28T13:29:19.204Z"
+                        snapshot_modules:
+                          - id: 5ad57184-1369-446e-a5c4-9a8847e58432
+                            module_feature_snapshot_id: e723927e-8f87-4e58-8b39-8c2984f8459b
+                            module_version_id: f2a46761-6ab9-4d75-a0b1-97cea19cdd3d
+                            created_at: "2025-08-28T13:28:21.576Z"
+                            updated_at: "2025-08-28T13:28:21.576Z"
+                            snapshot_module_features:
+                              - id: d30408f8-63a5-4e80-994f-00e24ba55ccd
+                                snapshot_module_id: 5ad57184-1369-446e-a5c4-9a8847e58432
+                                feature_id: 6ba9ce9e-8ea6-4f69-9a23-f4ecf2dcecf7
+                                created_at: "2025-08-28T13:28:21.594Z"
+                                updated_at: "2025-08-28T13:28:21.594Z"
+                              - id: d8d3ed4e-cc5a-4da8-ba65-b138f5121d47
+                                snapshot_module_id: 5ad57184-1369-446e-a5c4-9a8847e58432
+                                feature_id: d123e120-370f-496e-ade0-68bffdd7da8a
+                                created_at: "2025-08-28T13:28:21.594Z"
+                                updated_at: "2025-08-28T13:28:21.594Z"
+                          - id: 5791685c-e018-490c-8298-352364d9d7b7
+                            module_feature_snapshot_id: e723927e-8f87-4e58-8b39-8c2984f8459b
+                            module_version_id: 8f101399-64ab-49a9-bd0a-3efc7f7ef988
+                            created_at: "2025-08-28T13:28:21.634Z"
+                            updated_at: "2025-08-28T13:28:21.634Z"
+                            snapshot_module_features:
+                              - id: 804efbac-df7a-4fe8-86d8-63f7d7cc657b
+                                snapshot_module_id: 5791685c-e018-490c-8298-352364d9d7b7
+                                feature_id: 0850fc70-59c4-4550-9995-29a707d22a8f
+                                created_at: "2025-08-28T13:28:21.685Z"
+                                updated_at: "2025-08-28T13:28:21.685Z"
+                              - id: 37b41f7c-83bd-42dd-b4ec-6cc7199ee82e
+                                snapshot_module_id: 5791685c-e018-490c-8298-352364d9d7b7
+                                feature_id: 733ea635-05b2-4753-b2b8-2fd4b789e208
+                                created_at: "2025-08-28T13:28:21.685Z"
+                                updated_at: "2025-08-28T13:28:21.685Z"
+                    module_version_id: 8f101399-64ab-49a9-bd0a-3efc7f7ef988
+                    updatedSnapshotModuleFeature:
+                      removed_feature_ids: []
+                      skipped_features:
+                        - feature_id: d1926dce-b469-4fea-9ef5-d375ec50772b
+                          reason: invalid_feature_for_module
+  /api/project/0eaf1e2d-6551-48bd-b841-32545951a1ca/versions/modules:
+    post:
+      tags:
+        - Module
+      summary: add modules to project
+      description: |
+        `/api/project/{project_id}/versions/modules`
+        
+        Adds one or more modules (for specific module version, no more one module version can add) to the specified project (`project_id`) for its active version.
+      operationId: postapiproject0eaf1e2d655148bdb84132545951a1caversionsmodules
+      parameters: []
+      responses:
+        200:
+          description: add modules to project
+          content:
+            application/json; charset=utf-8:
+              schema:
+                type: object
+                example:
+                  success: true
+                  message: Project Update successfully!
+                  data:
+                    project:
+                      id: 0eaf1e2d-6551-48bd-b841-32545951a1ca
+                      name: Project Management System
+                      short_name: PMS
+                      sub_domain: pmsnew
+                      is_active: true
+                      created_at: "2025-08-23T11:46:13.570Z"
+                      updated_at: "2025-08-28T13:22:05.817Z"
+                      version:
+                        id: 310c2532-4084-4f87-825b-123c7b7cc299
+                        project_id: 0eaf1e2d-6551-48bd-b841-32545951a1ca
+                        version: 1.12
+                        is_used: false
+                        created_at: "2025-08-23T11:50:14.948Z"
+                        updated_at: "2025-08-28T13:23:03.146Z"
+                        snapshot_modules:
+                          - id: 55e965d6-2482-4523-96a3-ba3252c9ee19
+                            module_feature_snapshot_id: 310c2532-4084-4f87-825b-123c7b7cc299
+                            module_version_id: f2a46761-6ab9-4d75-a0b1-97cea19cdd3d
+                            created_at: "2025-08-23T11:50:15.045Z"
+                            updated_at: "2025-08-23T11:50:15.045Z"
+                            snapshot_module_features:
+                              - id: b90401a9-f5aa-458b-b911-17b760362dbc
+                                snapshot_module_id: 55e965d6-2482-4523-96a3-ba3252c9ee19
+                                feature_id: 6ba9ce9e-8ea6-4f69-9a23-f4ecf2dcecf7
+                                created_at: "2025-08-23T11:51:49.676Z"
+                                updated_at: "2025-08-23T11:51:49.676Z"
+                              - id: 71b3bf11-b8bc-485f-a2ec-fb2703952404
+                                snapshot_module_id: 55e965d6-2482-4523-96a3-ba3252c9ee19
+                                feature_id: d123e120-370f-496e-ade0-68bffdd7da8a
+                                created_at: "2025-08-23T12:04:55.950Z"
+                                updated_at: "2025-08-23T12:04:55.950Z"
+                    added: []
+                    removed: []
+                    skipped:
+                      - module_id: d26b0f82-8a63-474d-bac5-c726cd27b8ba
+                        module_version_id: f2a46761-6ab9-4d75-a0b1-97cea19cdd3d
+                        reason: already exists
+                    reused_snapshot: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                module_version_ids:
+                  - f2a46761-6ab9-4d75-a0b1-97cea19cdd3d
+    delete:
+      tags:
+        - Module
+      summary: remove modules to project
+      description: |
+        `/api/project/{project_id}/versions/modules`
+        
+        Removes one or more modules (module vesrion ) from the specified project (`project_id`) for its active version.
+      operationId: deleteapiproject0eaf1e2d655148bdb84132545951a1caversionsmodules
+      parameters: []
+      responses:
+        200:
+          description: remove modules to project
+          content:
+            application/json; charset=utf-8:
+              schema:
+                type: object
+                example:
+                  success: true
+                  message: Project Update successfully!
+                  data:
+                    project:
+                      id: 0eaf1e2d-6551-48bd-b841-32545951a1ca
+                      name: Project Management System
+                      short_name: PMS
+                      sub_domain: pmsnew
+                      is_active: true
+                      created_at: "2025-08-23T11:46:13.570Z"
+                      updated_at: "2025-08-28T13:22:05.817Z"
+                      version:
+                        id: 310c2532-4084-4f87-825b-123c7b7cc299
+                        project_id: 0eaf1e2d-6551-48bd-b841-32545951a1ca
+                        version: 1.13
+                        is_used: false
+                        created_at: "2025-08-23T11:50:14.948Z"
+                        updated_at: "2025-08-28T13:27:50.946Z"
+                        snapshot_modules: []
+                    added: []
+                    removed:
+                      - 55e965d6-2482-4523-96a3-ba3252c9ee19
+                    skipped: []
+                    reused_snapshot: true
+  /api/project/0eaf1e2d-6551-48bd-b841-32545951a1ca:
+    put:
+      tags:
+        - project
+      summary: Update project
+      description: |
+        `/api/project/{project_id}`  
+          
+        Updates the details of the specified project (`project_id`).
+      operationId: putapiproject0eaf1e2d655148bdb84132545951a1ca
+      parameters: []
+      responses:
+        200:
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                example: {}
+        201:
+          description: Update project
+          content:
+            application/json; charset=utf-8:
+              schema:
+                type: object
+                example:
+                  success: true
+                  message: Project Create successfully!
+                  data:
+                    id: 0eaf1e2d-6551-48bd-b841-32545951a1ca
+                    name: Project Management System
+                    short_name: PMS
+                    sub_domain: pmsnew
+                    is_active: true
+                    created_at: "2025-08-23T11:46:13.570Z"
+                    updated_at: "2025-08-28T13:22:05.817Z"
+                    updatedAt: "2025-08-28T13:22:05.817Z"
+                    updated_ip: "::ffff:172.18.0.1"
+                    updated_user_agent: PostmanRuntime/7.45.0
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: string
+              example: |
+                {
+                    "name" : "Project Management System", // optional 
+                    "short_name" : "PMS", // optional
+                    "is_active" : "true",  // optional 
+                    "sub_domain" : "pmsnew" // optional
+                
+                }
+    get:
+      tags:
+        - project
+      summary: get project by id
+      description: |
+        `/api/project/{project_id}`  
+          
+        Retrieves the details of the specified project (`project_id`), including **all its versions** (but not modules/features per version).
+      operationId: getapiproject0eaf1e2d655148bdb84132545951a1ca
+      parameters: []
+      responses:
+        200:
+          description: get project by id
+          content:
+            application/json; charset=utf-8:
+              schema:
+                type: object
+                example:
+                  success: true
+                  message: Project Get successfully!
+                  data:
+                    id: 0eaf1e2d-6551-48bd-b841-32545951a1ca
+                    name: Alumini
+                    short_name: Alumini
+                    sub_domain: alumini
+                    is_active: false
+                    created_at: "2025-08-23T11:46:13.570Z"
+                    updated_at: "2025-08-23T11:46:13.570Z"
+                    versions:
+                      - id: 310c2532-4084-4f87-825b-123c7b7cc299
+                        project_id: 0eaf1e2d-6551-48bd-b841-32545951a1ca
+                        version: 1.10
+                        is_used: false
+                        created_at: "2025-08-23T11:50:14.948Z"
+                        updated_at: "2025-08-23T12:58:45.874Z"
+  /api/project/:
+    post:
+      tags:
+        - project
+      summary: Create project
+      description: |
+        `/api/project`  
+          
+        Creates a new project.
+      operationId: postapiproject
+      parameters: []
+      responses:
+        200:
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                example: {}
+        201:
+          description: Create project
+          content:
+            application/json; charset=utf-8:
+              schema:
+                type: object
+                example:
+                  success: true
+                  message: Project Create successfully!
+                  data:
+                    id: 5edfcc6a-31b5-4574-8d50-ae28d9fdd3b6
+                    is_active: false
+                    created_at: "2025-08-28T13:20:26.680Z"
+                    name: Project PMS
+                    short_name: project
+                    sub_domain: new-pro
+                    updatedAt: "2025-08-28T13:20:26.680Z"
+                    createdAt: "2025-08-28T13:20:26.680Z"
+                    created_ip: "::ffff:172.18.0.1"
+                    created_user_agent: PostmanRuntime/7.45.0
+                    updated_at: "2025-08-28T13:20:26.680Z"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                name: Project PMS
+                short_name: project
+                sub_domain: new-pro
+    get:
+      tags:
+        - project
+      summary: get all project
+      description: |
+        `/api/project`  
+          
+        Retrieves a list of all projects.
+      operationId: getapiproject
+      parameters: []
+      responses:
+        200:
+          description: get all project
+          content:
+            application/json; charset=utf-8:
+              schema:
+                type: object
+                example:
+                  success: true
+                  message: Project Get successfully!
+                  data:
+                    data:
+                      - id: 5edfcc6a-31b5-4574-8d50-ae28d9fdd3b6
+                        name: Project PMS
+                        short_name: project
+                        sub_domain: new-pro
+                        is_active: false
+                        created_at: "2025-08-28T13:20:26.680Z"
+                        updated_at: "2025-08-28T13:20:26.680Z"
+                      - id: 6bb2f964-abc2-4096-b360-de1bbea848bc
+                        name: Asset
+                        short_name: Asset
+                        sub_domain: asset
+                        is_active: false
+                        created_at: "2025-08-23T11:46:29.241Z"
+                        updated_at: "2025-08-23T11:46:29.241Z"
+                      - id: 0eaf1e2d-6551-48bd-b841-32545951a1ca
+                        name: Alumini
+                        short_name: Alumini
+                        sub_domain: alumini
+                        is_active: false
+                        created_at: "2025-08-23T11:46:13.570Z"
+                        updated_at: "2025-08-23T11:46:13.570Z"
+                    pagination:
+                      totalItems: 3
+                      perPage: 10
+                      currentPage: 1
+                      totalPages: 1
+                      hasNextPage: false
+                      hasPrevPage: false
+  /api/project/6bb2f964-abc2-4096-b360-de1bbea848bc/version/38def754-0caa-4fa1-a317-ad9ef35fc6a2:
+    get:
+      tags:
+        - project
+      summary: get version with all modules and features
+      description: |
+        `/api/project/{project_id}/version/{version_id}`  
+          
+        Retrieves the details of the specified project version (`version_id`), including **all modules and features** for that version.
+      operationId: getapiproject6bb2f964abc24096b360de1bbea848bcversion38def7540caa4fa1a317ad9ef35fc6a2
+      parameters: []
+      responses:
+        200:
+          description: get version with all modules and features
+          content:
+            application/json; charset=utf-8:
+              schema:
+                type: object
+                example:
+                  success: true
+                  message: Project Get successfully!
+                  data:
+                    id: 6bb2f964-abc2-4096-b360-de1bbea848bc
+                    name: Asset
+                    short_name: Asset
+                    sub_domain: asset
+                    is_active: false
+                    created_at: "2025-08-23T11:46:29.241Z"
+                    updated_at: "2025-08-23T11:46:29.241Z"
+                    versions:
+                      - id: 38def754-0caa-4fa1-a317-ad9ef35fc6a2
+                        project_id: 6bb2f964-abc2-4096-b360-de1bbea848bc
+                        version: 1.04
+                        is_used: true
+                        created_at: "2025-08-23T11:53:09.729Z"
+                        updated_at: "2025-08-25T06:32:10.738Z"
+                        snapshot_modules:
+                          - id: a2650f97-b86c-4dd1-a29a-b8e04361e936
+                            module_feature_snapshot_id: 38def754-0caa-4fa1-a317-ad9ef35fc6a2
+                            module_version_id: f2a46761-6ab9-4d75-a0b1-97cea19cdd3d
+                            created_at: "2025-08-23T11:53:46.809Z"
+                            updated_at: "2025-08-23T11:53:46.809Z"
+                            module_version:
+                              id: f2a46761-6ab9-4d75-a0b1-97cea19cdd3d
+                              module_id: d26b0f82-8a63-474d-bac5-c726cd27b8ba
+                              docker_container: pms_nodejs
+                              version: 1.00
+                              is_active: true
+                              created_at: "2025-08-23T11:28:15.616Z"
+                              updated_at: "2025-08-23T11:28:15.616Z"
+                              module:
+                                id: d26b0f82-8a63-474d-bac5-c726cd27b8ba
+                                code: pms_nd
+                                name: Porject managemane system Node
+                                description: asset
+                                is_active: true
+                                created_at: "2025-08-23T11:28:15.549Z"
+                                updated_at: "2025-08-23T11:28:15.549Z"
+                            snapshot_module_features:
+                              - id: 36107453-58e8-4f41-91ab-c2fe0cc37493
+                                snapshot_mod: a2650f97-b86c-4dd1-a29a-b8e04361e936
+                                feature_id: 6ba9ce9e-8ea6-4f69-9a23-f4ecf2dcecf7
+                                created_at: "2025-08-25T06:28:31.899Z"
+                                updated_at: "2025-08-25T06:28:31.899Z"
+                                feature:
+                                  id: 6ba9ce9e-8ea6-4f69-9a23-f4ecf2dcecf7
+                                  modu: f2a46761-6ab9-4d75-a0b1-97cea19cdd3d
+                                  code: py_fe
+                                  name: Python features
+                                  is_a: true
+                                  crea: "2025-08-23T11:38:54.246Z"
+                                  upda: "2025-08-23T11:38:54.246Z"
+                              - id: 449d88b0-60d8-4265-8992-b9cd12dda0c6
+                                snapshot_mod: a2650f97-b86c-4dd1-a29a-b8e04361e936
+                                feature_id: d123e120-370f-496e-ade0-68bffdd7da8a
+                                created_at: "2025-08-25T06:28:31.899Z"
+                                updated_at: "2025-08-25T06:28:31.899Z"
+                                feature:
+                                  id: d123e120-370f-496e-ade0-68bffdd7da8a
+                                  modu: f2a46761-6ab9-4d75-a0b1-97cea19cdd3d
+                                  code: py_pg
+                                  name: Python packages
+                                  is_a: true
+                                  crea: "2025-08-23T11:39:48.689Z"
+                                  upda: "2025-08-23T11:39:48.689Z"
+                          - id: f9faff4c-62f1-4950-b8b5-5d9d3c8c5eae
+                            module_feature_snapshot_id: 38def754-0caa-4fa1-a317-ad9ef35fc6a2
+                            module_version_id: 8f101399-64ab-49a9-bd0a-3efc7f7ef988
+                            created_at: "2025-08-23T11:53:46.809Z"
+                            updated_at: "2025-08-23T11:53:46.809Z"
+                            module_version:
+                              id: 8f101399-64ab-49a9-bd0a-3efc7f7ef988
+                              module_id: fdbb11d9-eb11-49d6-a880-d028667b5401
+                              docker_container: pms_python
+                              version: 1.00
+                              is_active: true
+                              created_at: "2025-08-23T11:41:02.365Z"
+                              updated_at: "2025-08-23T11:41:02.365Z"
+                              module:
+                                id: fdbb11d9-eb11-49d6-a880-d028667b5401
+                                code: pms_py
+                                name: Porject managemane system python
+                                description: asset
+                                is_active: true
+                                created_at: "2025-08-23T11:41:02.298Z"
+                                updated_at: "2025-08-23T11:41:02.298Z"
+                            snapshot_module_features:
+                              - id: 352090fd-5422-47bb-a1c6-0ecd92374f06
+                                snapshot_mod: f9faff4c-62f1-4950-b8b5-5d9d3c8c5eae
+                                feature_id: 0850fc70-59c4-4550-9995-29a707d22a8f
+                                created_at: "2025-08-25T06:29:09.066Z"
+                                updated_at: "2025-08-25T06:29:09.066Z"
+                                feature:
+                                  id: 0850fc70-59c4-4550-9995-29a707d22a8f
+                                  modu: 8f101399-64ab-49a9-bd0a-3efc7f7ef988
+                                  code: py_main
+                                  name: Python main
+                                  is_a: true
+                                  crea: "2025-08-23T11:41:48.751Z"
+                                  upda: "2025-08-23T11:41:48.751Z"
+                              - id: 8ae1fba1-d089-4070-abf2-1aba2e4f0703
+                                snapshot_mod: f9faff4c-62f1-4950-b8b5-5d9d3c8c5eae
+                                feature_id: 733ea635-05b2-4753-b2b8-2fd4b789e208
+                                created_at: "2025-08-25T06:29:09.066Z"
+                                updated_at: "2025-08-25T06:29:09.066Z"
+                                feature:
+                                  id: 733ea635-05b2-4753-b2b8-2fd4b789e208
+                                  modu: 8f101399-64ab-49a9-bd0a-3efc7f7ef988
+                                  code: py_main_cnd
+                                  name: Python main cdn
+                                  is_a: true
+                                  crea: "2025-08-23T11:42:14.295Z"
+                                  upda: "2025-08-23T11:42:14.295Z"
+  /api/plan/3d8d768c-2381-4a28-bf24-189a55bf16dd/projects:
+    delete:
+      tags:
+        - project
+      summary: remove projects from plan
+      description: |
+        `/api/plan/{plan_id}/projects`  
+          
+        Removes one or more projects (and their versions) from the specified plan (`plan_id`).
+      operationId: deleteapiplan3d8d768c23814a28bf24189a55bf16ddprojects
+      parameters: []
+      responses:
+        200:
+          description: remove projects from plan
+          content:
+            application/json; charset=utf-8:
+              schema:
+                type: object
+                example:
+                  success: true
+                  message: Projects removed from plan successfully
+    post:
+      tags:
+        - project
+      summary: add projects to plan
+      description: |
+        `/api/plan/{plan_id}/projects`  
+          
+        Adds one or more projects (including specific versions) to the specified plan (`plan_id`).
+      operationId: postapiplan3d8d768c23814a28bf24189a55bf16ddprojects
+      parameters: []
+      responses:
+        200:
+          description: add projects to plan
+          content:
+            application/json; charset=utf-8:
+              schema:
+                type: object
+                example:
+                  success: true
+                  message: Projects added to plan successfully
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                project_version_ids:
+                  - 310c2532-4084-4f87-825b-123c7b7cc299
+  /api/plan:
+    post:
+      tags:
+        - plans
+      summary: create plan
+      description: |
+        `/api/plan`  
+          
+        Creates a new subscription plan.
+      operationId: postapiplan
+      parameters: []
+      responses:
+        200:
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                example: {}
+        201:
+          description: create plan
+          content:
+            application/json; charset=utf-8:
+              schema:
+                type: object
+                example:
+                  success: true
+                  message: Plan Create successfully!
+                  data:
+                    id: 4a4b004a-a6ee-4744-ad72-4d92fadaa349
+                    is_active: true
+                    created_at: "2025-08-28T13:29:38.203Z"
+                    type: bundle
+                    billing_cycle: monthly
+                    price: 1400.00
+                    name: all plans
+                    pause_days: 40
+                    allow_trial: true
+                    is_public: true
+                    updatedAt: "2025-08-28T13:29:38.203Z"
+                    createdAt: "2025-08-28T13:29:38.203Z"
+                    created_ip: "::ffff:172.18.0.1"
+                    created_user_agent: PostmanRuntime/7.45.0
+                    updated_at: "2025-08-28T13:29:38.203Z"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: string
+              example: |
+                {
+                    "type" : "bundle", // individual or bundle
+                    "billing_cycle" : "monthly",
+                    "price" : "1400",
+                    "name" : "all plans",
+                    "pause_days" : "+40", // optional 
+                    "allow_trial" : "true", // optional 
+                    "is_public" : "true" // optionsl 
+                }
+    get:
+      tags:
+        - plans
+      summary: fetch all
+      description: |
+        `/api/plan`  
+          
+        Retrieves a list of all subscription plans.
+      operationId: getapiplan
+      parameters: []
+      responses:
+        200:
+          description: fetch all
+          content:
+            application/json; charset=utf-8:
+              schema:
+                type: object
+                example:
+                  success: true
+                  message: Plan Fetch successfully!
+                  data:
+                    - id: 4a4b004a-a6ee-4744-ad72-4d92fadaa349
+                      name: sdfasdf
+                      type: bundle
+                      billing_cycle: yearly
+                      price: 35.00
+                      allow_trial: false
+                      pause_days: 40
+                      is_active: false
+                      is_public: false
+                      created_at: "2025-08-28T13:29:38.203Z"
+                      updated_at: "2025-08-28T13:30:05.222Z"
+                      plan_projects: []
+                    - id: 3d8d768c-2381-4a28-bf24-189a55bf16dd
+                      name: all plans
+                      type: bundle
+                      billing_cycle: monthly
+                      price: 1400.00
+                      allow_trial: true
+                      pause_days: 40
+                      is_active: true
+                      is_public: true
+                      recent_snapshot_id: ba600fb4-c874-4c8b-8d06-dd181b600aec
+                      created_at: "2025-08-25T06:31:12.832Z"
+                      updated_at: "2025-08-25T06:32:10.754Z"
+                      plan_projects:
+                        - id: b9f0a31d-633f-4931-8c09-36d2c27bc0af
+                          project_id: 6bb2f964-abc2-4096-b360-de1bbea848bc
+                          plan_id: 3d8d768c-2381-4a28-bf24-189a55bf16dd
+                          version_id: 38def754-0caa-4fa1-a317-ad9ef35fc6a2
+                          created_at: "2025-08-25T06:32:10.712Z"
+                          updated_at: "2025-08-25T06:32:10.712Z"
+                          project:
+                            id: 6bb2f964-abc2-4096-b360-de1bbea848bc
+                            name: Asset
+                            short_name: Asset
+                            sub_domain: asset
+                            is_active: false
+                            created_at: "2025-08-23T11:46:29.241Z"
+                            updated_at: "2025-08-23T11:46:29.241Z"
+                          version:
+                            id: 38def754-0caa-4fa1-a317-ad9ef35fc6a2
+                            project_id: 6bb2f964-abc2-4096-b360-de1bbea848bc
+                            version: 1.04
+                            is_used: true
+                            created_at: "2025-08-23T11:53:09.729Z"
+                            updated_at: "2025-08-25T06:32:10.738Z"
+  /api/plan/4a4b004a-a6ee-4744-ad72-4d92fadaa349:
+    put:
+      tags:
+        - plans
+      summary: update plan
+      description: |
+        /api/plan/{plan_id}
+        
+        Updates the details of the specified subscription plan (`plan_id`).
+      operationId: putapiplan4a4b004aa6ee4744ad724d92fadaa349
+      parameters: []
+      responses:
+        200:
+          description: update plan
+          content:
+            application/json; charset=utf-8:
+              schema:
+                type: object
+                example:
+                  success: true
+                  message: Updated successfully
+                  data:
+                    id: 4a4b004a-a6ee-4744-ad72-4d92fadaa349
+                    name: sdfasdf
+                    type: bundle
+                    billing_cycle: yearly
+                    price: 35
+                    allow_trial: false
+                    pause_days: 40
+                    is_active: false
+                    is_public: false
+                    created_at: "2025-08-28T13:29:38.203Z"
+                    updated_at: "2025-08-28T13:30:05.222Z"
+                    updatedAt: "2025-08-28T13:30:05.222Z"
+                    updated_ip: "::ffff:172.18.0.1"
+                    updated_user_agent: PostmanRuntime/7.45.0
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: string
+              example: |
+                {
+                    "billing_cycle" : "yearly",  // optional 
+                    "price" : "35",  // optional
+                    "name" : "sdfasdf",   // optional
+                    "pause_days" : "30",  // optional
+                    "allow_trial" : "false" ,  // optional
+                    "is_active" : "false" ,  // optional
+                    "is_public" : "false"  // optional
+                }
+    delete:
+      tags:
+        - plans
+      summary: Delete plan
+      description: |
+        `/api/plan/{plan_id}`  
+          
+        Deletes the specified subscription plan (`plan_id`).
+      operationId: deleteapiplan4a4b004aa6ee4744ad724d92fadaa349
+      parameters: []
+      responses:
+        200:
+          description: Delete plan
+          content:
+            application/json; charset=utf-8:
+              schema:
+                type: object
+                example:
+                  success: true
+                  message: Deleted successfully
+    get:
+      tags:
+        - plans
+      summary: get by id
+      description: |
+        `/api/plan/{plan_id}`  
+          
+        Retrieves the details of the specified subscription plan (`plan_id`).
+      operationId: getapiplan4a4b004aa6ee4744ad724d92fadaa349
+      parameters: []
+      responses:
+        200:
+          description: get by id
+          content:
+            application/json; charset=utf-8:
+              schema:
+                type: object
+                example:
+                  success: true
+                  message: Plan Fetch successfully!
+                  data:
+                    id: 4a4b004a-a6ee-4744-ad72-4d92fadaa349
+                    name: sdfasdf
+                    type: bundle
+                    billing_cycle: yearly
+                    price: 35.00
+                    allow_trial: false
+                    pause_days: 40
+                    is_active: false
+                    is_public: false
+                    created_at: "2025-08-28T13:29:38.203Z"
+                    updated_at: "2025-08-28T13:30:05.222Z"
+                    plan_projects: []
+  /api/payment/4a40debb-2ce0-46a8-9593-e841f7b9b421:
+    post:
+      tags:
+        - payment
+      summary: make payment
+      description: |
+        `/api/payment/{invoice_id}`  
+          
+        Processes payment for the specified invoice (`invoice_id`). Successful payment activates the associated subscription.
+      operationId: postapipayment4a40debb2ce046a89593e841f7b9b421
+      parameters: []
+      responses:
+        200:
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                example: {}
+        201:
+          description: make payment
+          content:
+            application/json; charset=utf-8:
+              schema:
+                type: object
+                example:
+                  success: true
+                  message: Payment created successfully
+                  data:
+                    invoice:
+                      id: 4a40debb-2ce0-46a8-9593-e841f7b9b421
+                      organization_id: d932868f-74fc-4d95-a456-b0e8460546fd
+                      subscription_id: 55cb4aea-ff56-4fbb-8b8b-81e0f11ff974
+                      invoice_number: INV-ORG-GOOG-20250823-AC0C56E1-20250828-0001
+                      update_expire_time: "2025-08-28T13:47:58.249Z"
+                      amount: 1400.00
+                      currency: INR
+                      status: paid
+                      issue_date: "2025-08-28T13:32:58.249Z"
+                      paid_on: "2025-08-28T13:33:16.824Z"
+                      payment_gateway_ref: qym9x8785e
+                      created_at: "2025-08-28T13:32:58.317Z"
+                      updated_at: "2025-08-28T13:33:16.825Z"
+                      updatedAt: "2025-08-28T13:33:16.825Z"
+                      updated_ip: "::ffff:172.18.0.1"
+                      updated_user_agent: PostmanRuntime/7.45.0
+      # requestBody:
+      #   required: true
+      #   content:
+      #     application/json:
+  /api/pause/subscription/ab9bb806-fa36-48b9-a43b-774f019783e5:
+    post:
+      tags:
+        - pause
+      summary: subscription pause
+      description: |
+        `/api/pause/subscription/{subscription_id}`  
+          
+        Pauses the specified subscription (`subscription_id`), temporarily suspending its services.
+      operationId: postapipausesubscriptionab9bb806fa3648b9a43b774f019783e5
+      parameters: []
+      responses:
+        200:
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                example: {}
+        201:
+          description: subscription pause
+          content:
+            application/json; charset=utf-8:
+              schema:
+                type: object
+                example:
+                  success: true
+                  message: Subscription will paused from 2025-08-29 to 2025-08-30
+                  data:
+                    id: d2fe6aec-3127-4cfc-b817-35c122c2b89f
+                    is_completed: false
+                    is_active: false
+                    created_at: "2025-08-28T13:35:11.478Z"
+                    organization_id: d932868f-74fc-4d95-a456-b0e8460546fd
+                    start_date: 2025-08-29
+                    end_date: 2025-08-30
+                    reason: Testing
+                    subscription_id: ab9bb806-fa36-48b9-a43b-774f019783e5
+                    updatedAt: "2025-08-28T13:35:11.478Z"
+                    createdAt: "2025-08-28T13:35:11.478Z"
+                    created_ip: "::ffff:172.18.0.1"
+                    created_user_agent: PostmanRuntime/7.45.0
+                    updated_at: "2025-08-28T13:35:11.478Z"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                reason: Testing
+                start_date: 2025-08-29
+                end_date: 2025-08-30
+    delete:
+      tags:
+        - pause
+      summary: stop pause
+      description: |
+        `/api/pause/subscription/{subscription_id}`  
+          
+        Stops the active pause for the specified subscription (`subscription_id`), reactivating its services immediately.
+      operationId: deleteapipausesubscriptionab9bb806fa3648b9a43b774f019783e5
+      parameters: []
+      responses:
+        200:
+          description: stop pause
+          content:
+            application/json; charset=utf-8:
+              schema:
+                type: object
+                example:
+                  success: true
+                  message: Pause cancelled successfully
+  /api/pause/d2fe6aec-3127-4cfc-b817-35c122c2b89f/subscription/ab9bb806-fa36-48b9-a43b-774f019783e5:
+    delete:
+      tags:
+        - pause
+      summary: cancel pause
+      description: |
+        `/api/pause/{pause_id}/subscription/{subscription_id}`  
+          
+        Cancels the specified pause (`pause_id`) for the subscription (`subscription_id`), resuming normal subscription activity.
+      operationId: deleteapipaused2fe6aec31274cfcb81735c122c2b89fsubscriptionab9bb806fa3648b9a43b774f019783e5
+      parameters: []
+      responses:
+        200:
+          description: cancel pause
+          content:
+            application/json; charset=utf-8:
+              schema:
+                type: object
+                example:
+                  success: true
+                  message: Pause cancelled successfully
+  /api/subscription/d932868f-74fc-4d95-a456-b0e8460546fd/plan/3d8d768c-2381-4a28-bf24-189a55bf16dd:
+    post:
+      tags:
+        - subscription
+      summary: subscribe
+      description: |
+        `/api/subscription/{organization_id}/plan/{plan_id}`  
+          
+        Creates a new subscription for the specified organization (`organization_id`) under the given plan (`plan_id`).
+      operationId: postapisubscriptiond932868f74fc4d95a456b0e8460546fdplan3d8d768c23814a28bf24189a55bf16dd
+      parameters: []
+      responses:
+        200:
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                example: {}
+        201:
+          description: subscribe
+          content:
+            application/json; charset=utf-8:
+              schema:
+                type: object
+                example:
+                  success: true
+                  message: Subscription Create successfully!
+                  data:
+                    invoice:
+                      id: 4a40debb-2ce0-46a8-9593-e841f7b9b421
+                      currency: INR
+                      created_at: "2025-08-28T13:32:58.317Z"
+                      organization_id: d932868f-74fc-4d95-a456-b0e8460546fd
+                      subscription_id: 55cb4aea-ff56-4fbb-8b8b-81e0f11ff974
+                      invoice_number: INV-ORG-GOOG-20250823-AC0C56E1-20250828-0001
+                      update_expire_time: "2025-08-28T13:47:58.249Z"
+                      amount: 1400.00
+                      status: pending
+                      issue_date: "2025-08-28T13:32:58.249Z"
+                      updatedAt: "2025-08-28T13:32:58.317Z"
+                      createdAt: "2025-08-28T13:32:58.317Z"
+                      created_ip: "::ffff:172.18.0.1"
+                      created_user_agent: PostmanRuntime/7.45.0
+                      updated_at: "2025-08-28T13:32:58.317Z"
+                    subscription:
+                      id: 55cb4aea-ff56-4fbb-8b8b-81e0f11ff974
+                      in_pause: false
+                      payment: pending
+                      created_at: "2025-08-28T13:32:58.151Z"
+                      organization_id: d932868f-74fc-4d95-a456-b0e8460546fd
+                      plan_id: 3d8d768c-2381-4a28-bf24-189a55bf16dd
+                      snapshot_plan_id: ba600fb4-c874-4c8b-8d06-dd181b600aec
+                      status: feature_subscritpion
+                      pause_days_left: 40
+                      billing_cycle: monthly
+                      updatedAt: "2025-08-28T13:32:58.151Z"
+                      createdAt: "2025-08-28T13:32:58.151Z"
+                      created_ip: "::ffff:172.18.0.1"
+                      created_user_agent: PostmanRuntime/7.45.0
+                      updated_at: "2025-08-28T13:32:58.151Z"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                is_trial: false
+  /api/email/d932868f-74fc-4d95-a456-b0e8460546fd:
+    post:
+      tags:
+        - email package
+      summary: update email package
+      description: |
+        `/api/email/{organization_id}`
+        
+        Updates or creates the email package configuration for the specified organization (`organization_id`). Request body fields like `provider`, `smtp_user`, `smtp_host`, `use_default_price`, and `price_per_email` can be updated.
+      operationId: postapiemaild932868f74fc4d95a456b0e8460546fd
+      parameters: []
+      responses:
+        200:
+          description: update email package
+          content:
+            application/json; charset=utf-8:
+              schema:
+                type: object
+                example:
+                  success: true
+                  message: Email Package saved successfully
+                  data:
+                    id: 11bcc50b-3785-4106-8f0d-c0e2bf009f23
+                    created_at: "2025-08-28T13:38:05.296Z"
+                    organization_id: d932868f-74fc-4d95-a456-b0e8460546fd
+                    provider: ask
+                    smtp_user: asdf
+                    smtp_host: fgsdf
+                    use_default_price: true
+                    updatedAt: "2025-08-28T13:38:05.296Z"
+                    createdAt: "2025-08-28T13:38:05.296Z"
+                    created_ip: "::ffff:172.18.0.1"
+                    created_user_agent: PostmanRuntime/7.45.0
+                    updated_at: "2025-08-28T13:38:05.296Z"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: string
+              example: |
+                {
+                    "use_default_price" : "true", // bool | only use while updating 
+                    "provider" : "ask",
+                    "smtp_user" : "asdf",
+                    "smtp_host" : "fgsdf"
+                
+                    
+                }
+    get:
+      tags:
+        - email package
+      summary: get email package
+      description: |
+        `/api/email/{organization_id}`  
+          
+        Retrieves the current email package configuration for the specified organization (`organization_id`).
+      operationId: getapiemaild932868f74fc4d95a456b0e8460546fd
+      parameters: []
+      responses:
+        200:
+          description: get email package
+          content:
+            application/json; charset=utf-8:
+              schema:
+                type: object
+                example:
+                  success: true
+                  message: OrganizationLocation Get successfully!
+                  data:
+                    id: 11bcc50b-3785-4106-8f0d-c0e2bf009f23
+                    organization_id: d932868f-74fc-4d95-a456-b0e8460546fd
+                    provider: ask
+                    smtp_user: asdf
+                    smtp_host: fgsdf
+                    use_default_price: true
+                    created_at: "2025-08-28T13:38:05.296Z"
+                    updated_at: "2025-08-28T13:38:05.296Z"
+  /api/sms/d932868f-74fc-4d95-a456-b0e8460546fd:
+    post:
+      tags:
+        - sms package
+      summary: update sms package
+      description: |
+        `/api/sms/{organization_id}`  
+          
+        Updates or creates the SMS package configuration for the specified organization (`organization_id`). Request body fields like `provider`, `sms_key`, `sms_sender_id`, `use_default_price`, and `price_per_sms` (or `price_per_email` if you meant that) can be updated.
+      operationId: postapismsd932868f74fc4d95a456b0e8460546fd
+      parameters: []
+      responses:
+        200:
+          description: update sms package
+          content:
+            application/json; charset=utf-8:
+              schema:
+                type: object
+                example:
+                  success: true
+                  message: Email Package saved successfully
+                  data:
+                    id: eec9c8b2-d4ec-4076-bc59-62df1fefa1db
+                    created_at: "2025-08-28T13:38:55.494Z"
+                    organization_id: d932868f-74fc-4d95-a456-b0e8460546fd
+                    provider: some provider
+                    sms_key: some key
+                    sms_sender_id: some id
+                    use_default_price: true
+                    updatedAt: "2025-08-28T13:38:55.494Z"
+                    createdAt: "2025-08-28T13:38:55.494Z"
+                    created_ip: "::ffff:172.18.0.1"
+                    created_user_agent: PostmanRuntime/7.45.0
+                    updated_at: "2025-08-28T13:38:55.494Z"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: string
+              example: |
+                {
+                    "provider" : "some provider", // optional when updating 
+                    "sms_key" : "some key", // optional when updating 
+                    "sms_sender_id" : "some id", // optional when updating 
+                    "price_per_email" : "0.02", // optional | if not given will takes default value while initial create
+                    "use_default_price" : "true" // bool | only use while updating 
+                }
+    get:
+      tags:
+        - sms package
+      summary: get sms package
+      description: |
+        `/api/sms/{organization_id}`  
+          
+        Retrieves the current SMS package configuration for the specified organization (`organization_id`).
+      operationId: getapismsd932868f74fc4d95a456b0e8460546fd
+      parameters: []
+      responses:
+        200:
+          description: get sms package
+          content:
+            application/json; charset=utf-8:
+              schema:
+                type: object
+                example:
+                  success: true
+                  message: OrganizationLocation Get successfully!
+                  data:
+                    id: eec9c8b2-d4ec-4076-bc59-62df1fefa1db
+                    organization_id: d932868f-74fc-4d95-a456-b0e8460546fd
+                    provider: some provider
+                    sms_key: some key
+                    sms_sender_id: some id
+                    use_default_price: true
+                    created_at: "2025-08-28T13:38:55.494Z"
+                    updated_at: "2025-08-28T13:38:55.494Z"
+  /api/settings/notification:
+    post:
+      tags:
+        - notification settings
+      summary: update notification
+      description: |
+        `/api/settings/notification`  
+          
+        Updates a notification setting. Request body includes fields like `category` (e.g., email), `threshold_percent`, and `enabled` (true/false).
+      operationId: postapisettingsnotification
+      parameters: []
+      responses:
+        200:
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                example: {}
+        201:
+          description: update notification
+          content:
+            application/json; charset=utf-8:
+              schema:
+                type: object
+                example:
+                  success: true
+                  message: Notification settings created successfully
+                  data:
+                    id: ac92a9c0-8726-4db7-86ed-dc735ae49d19
+                    created_at: "2025-08-28T13:39:25.673Z"
+                    category: email
+                    threshold_percent: 22
+                    enabled: true
+                    updatedAt: "2025-08-28T13:39:25.673Z"
+                    createdAt: "2025-08-28T13:39:25.673Z"
+                    created_ip: "::ffff:172.18.0.1"
+                    created_user_agent: PostmanRuntime/7.45.0
+                    updated_at: "2025-08-28T13:39:25.673Z"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                category: email
+                threshold_percent: 22
+                enabled: true
+    get:
+      tags:
+        - notification settings
+      summary: get all notification
+      description: |
+        `/api/settings/notification`  
+          
+        Retrieves all notification settings.
+      operationId: getapisettingsnotification
+      parameters: []
+      responses:
+        200:
+          description: get all notification
+          content:
+            application/json; charset=utf-8:
+              schema:
+                type: object
+                example:
+                  success: true
+                  message: Notification settings retrieved successfully
+                  data:
+                    - id: ac92a9c0-8726-4db7-86ed-dc735ae49d19
+                      category: email
+                      threshold_percent: 22
+                      enabled: true
+                      created_at: "2025-08-28T13:39:25.673Z"
+                      updated_at: "2025-08-28T13:39:25.673Z"
+  /api/settings/notification/ac92a9c0-8726-4db7-86ed-dc735ae49d19:
+    get:
+      tags:
+        - notification settings
+      summary: get notification by id
+      description: |
+        `/api/settings/notification/{notification_id}`  
+          
+        Retrieves the notification setting details for the specified notification (`notification_id`).
+      operationId: getapisettingsnotificationac92a9c087264db786eddc735ae49d19
+      parameters: []
+      responses:
+        200:
+          description: get notification by id
+          content:
+            application/json; charset=utf-8:
+              schema:
+                type: object
+                example:
+                  success: true
+                  message: Notification settings retrieved successfully
+                  data:
+                    id: ac92a9c0-8726-4db7-86ed-dc735ae49d19
+                    category: email
+                    threshold_percent: 22
+                    enabled: true
+                    created_at: "2025-08-28T13:39:25.673Z"
+                    updated_at: "2025-08-28T13:39:25.673Z"
+  /api/required-data/d932868f-74fc-4d95-a456-b0e8460546fd/asset/pms_nd:
+    get:
+      summary: get required data for server routing
+      description: |
+        `/api/required-data/{organization_id}/{sub_domain_of_project}/{module_code}`
+        
+        Get the data where required for routing and database for every request
+      operationId: getapirequireddatad932868f74fc4d95a456b0e8460546fdassetpms_nd
+      parameters: []
+      responses:
+        200:
+          description: get required data for server routing
+          content:
+            application/json; charset=utf-8:
+              schema:
+                type: object
+                example:
+                  success: true
+                  message: Data Get successfully!
+                  data:
+                    project:
+                      id: 6bb2f964-abc2-4096-b360-de1bbea848bc
+                      name: Asset
+                      short_name: Asset
+                      sub_domain: asset
+                      is_active: false
+                    organization:
+                      id: d932868f-74fc-4d95-a456-b0e8460546fd
+                      name: Google
+                      code: ORG-GOOG-20250823-AC0C56E1
+                      state: inactive
+                    module_features:
+                      module_version:
+                        id: f2a46761-6ab9-4d75-a0b1-97cea19cdd3d
+                        module_id: d26b0f82-8a63-474d-bac5-c726cd27b8ba
+                        docker_container: pms_nodejs
+                        port: 8089
+                        version: 1.00
+                        is_active: true
+                        created_at: "2025-08-23T11:28:15.616Z"
+                        updated_at: "2025-08-23T11:28:15.616Z"
+                        module:
+                          id: d26b0f82-8a63-474d-bac5-c726cd27b8ba
+                          code: pms_nd
+                          name: Porject managemane system Node
+                          description: asset
+                          is_active: true
+                          created_at: "2025-08-23T11:28:15.549Z"
+                          updated_at: "2025-08-23T11:28:15.549Z"
+                      features:
+                        - id: 36107453-58e8-4f41-91ab-c2fe0cc37493
+                          snapshot_module_id: a2650f97-b86c-4dd1-a29a-b8e04361e936
+                          feature_id: 6ba9ce9e-8ea6-4f69-9a23-f4ecf2dcecf7
+                          created_at: "2025-08-25T06:28:31.899Z"
+                          updated_at: "2025-08-25T06:28:31.899Z"
+                          feature:
+                            id: 6ba9ce9e-8ea6-4f69-9a23-f4ecf2dcecf7
+                            module_id: d26b0f82-8a63-474d-bac5-c726cd27b8ba
+                            module_versio: f2a46761-6ab9-4d75-a0b1-97cea19cdd3d
+                            code: py_fe
+                            name: Python features
+                            is_active: true
+                            created_at: "2025-08-23T11:38:54.246Z"
+                            updated_at: "2025-08-23T11:38:54.246Z"
+                        - id: 449d88b0-60d8-4265-8992-b9cd12dda0c6
+                          snapshot_module_id: a2650f97-b86c-4dd1-a29a-b8e04361e936
+                          feature_id: d123e120-370f-496e-ade0-68bffdd7da8a
+                          created_at: "2025-08-25T06:28:31.899Z"
+                          updated_at: "2025-08-25T06:28:31.899Z"
+                          feature:
+                            id: d123e120-370f-496e-ade0-68bffdd7da8a
+                            module_id: d26b0f82-8a63-474d-bac5-c726cd27b8ba
+                            module_versio: f2a46761-6ab9-4d75-a0b1-97cea19cdd3d
+                            code: py_pg
+                            name: Python packages
+                            is_active: true
+                            created_at: "2025-08-23T11:39:48.689Z"
+                            updated_at: "2025-08-23T11:39:48.689Z"
+                    upstream_container: "pms_nodejs:8089"
+                    database: r+WkKwMyTG1O2n3pubYngIyjVal3OGNWtirzfUrszyj+tNKqCA+KkbcbcabzAZj1n1zSwqD1KHvGB1hU7GznqHWhHVaCEkV/EkYLXg28bnJRPG02IUdJVjF0ve74+eDxcPkCU4lUBHmdiBTAHZUpMnq/hWUQPcGqUVyecw354NCZHy3sL4hDNEjjiyzz3UDAJrwPg3TiOZ34ugOcIzRmhjm6ZMJ96BmDjfQJ162q4GEeQ4R5Uf8y4YDfZJt72ITR7gECuFzubHY23Mn4XnzRHlLRIrYYzjtMbRHeomlw4g+9Ne9+6W46CYNTL/ZStoKI8HgrCTKStjg+KwGheWPt41T7Gr8RUgMyZZSp9Y+AkSJHtQLf4dovvtDYxXojnTXiaZPzVtHBGF3RvNq/LDET+zBomabDaqz8lauwrfal834qD35oGTo9NQHv26YOkOZ68IKVS6jyuOBZsVWKnX26j7xLb0HshK/Wj2IC1Ees5UH0cgSeQrdAc0EXCDokZGHH
+components:
+  schemas: {}
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
+    digestAuth:
+      type: http
+      scheme: digest
+tags:
+  - name: Organization (tenant)
+    description: All this APIs are related for the Organization related CRUD operations.
+  - name: Admin
+    description: Organization Admins can be maintained here.
+  - name: organization Location
+    description: "APIs to manage an organization’s location details, including creation, update, retrieval, and deletion of address-related information."
+  - name: organization database
+    description: "Maintains the database configurations for a tenant, covering both organization-level and module-specific data."
+  - name: update limit
+    description: "Manages resource usage tracking and usage limits for the organization, including users, storage, database, SMS, email, and API requests."
+  - name: module
+    description: "Contains APIs for managing modules, their features, and version control."
+  - name: module features
+    description: "Manages the features available within a module, including creation, updates, and retrieval."
+  - name: project
+    description: |
+      Contains APIs for managing projects.  
+        
+      Project versions are handled internally and cannot be managed directly.  
+        
+      However, modules and their features can be maintained for projects based on their versions as needed.
+  - name: Module
+    description: |
+      Manages modules assigned to a specific project.  
+        
+      Modules are linked to the project’s internal version system, and their configuration can vary based on the project version.
+  - name: features
+    description: |
+      Manages features of the modules within a project.  
+        
+      Features are tied to specific modules and can be enabled, disabled, or customized according to the project’s version requirements.
+  - name: plans
+    description: "Contains APIs to manage subscription plans, including creating, updating, and assigning plans an d to manage projects for the plan"
+  - name: subscription
+    description: "Contains APIs for managing subscriptions, including creation, updates, retrieval, and deletion of subscription records, as well as handling associated payments and invoices."
+  - name: payment
+    description: Contains APIs to process payments for generated invoices. Successful payments trigger the activation of the related subscriptions.
+  - name: pause
+    description: "Contains APIs to manage the pausing and resuming of subscriptions, allowing temporary suspension and reactivation of subscription services."
+  - name: email package
+    description: "Manages email service packages for organizations, including provider settings, SMTP configuration, and pricing."
+  - name: sms package
+    description: "Manages SMS service packages for organizations, including provider settings, SMS keys, sender IDs, and pricing."
+  - name: notification settings
+    description: "Manages notification settings including categories, thresholds, and enable/disable flags for the organization’s alerts."

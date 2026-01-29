@@ -1,0 +1,41 @@
+# Dependencies
+node_modules
+npm-debug.log*
+
+# Git
+.git
+.gitignore
+
+# Environment files (use docker-compose env instead)
+.env
+.env.*
+!.env.docker.example
+
+# Documentation
+*.md
+!README.md
+
+# Archives
+*.zip
+*.tar.gz
+
+# Logs
+logs/
+*.log
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Test files
+test.js
+seed-test-data.js
+
+# Shell scripts
+*.sh

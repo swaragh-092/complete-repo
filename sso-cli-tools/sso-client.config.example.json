@@ -1,0 +1,34 @@
+{
+    "$schema": "./sso-client.config.schema.json",
+    "protocol": "https",
+    "domain": "local.test",
+    "dockerMode": false,
+    "authServicePort": 4000,
+    "accountUiPort": 5174,
+    "theme": "default",
+    "features": {
+        "enableMFA": true,
+        "enableSocialLogin": true,
+        "enablePasswordless": false,
+        "enableIdleTimeout": true,
+        "enableCrossTabSync": true,
+        "enableSessionValidation": true,
+        "enableProactiveRefresh": true,
+        "enableDarkMode": true,
+        "enableThemeSwitcher": true,
+        "generateTests": false,
+        "generateStorybook": false,
+        "generateDocker": false,
+        "enableAuditLogs": true
+    },
+    "session": {
+        "tokenRefreshBuffer": 120,
+        "sessionValidationInterval": 300000,
+        "idleTimeoutMs": 1800000,
+        "skipValidationWhenHidden": true,
+        "validateOnVisibility": false,
+        "apiTimeout": 10000,
+        "validationRetries": 3,
+        "retryDelay": 1000
+    }
+}

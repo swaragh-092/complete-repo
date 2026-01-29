@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  instance1:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - INSTANCE_NAME=Instance 1
+    ports:
+      - "3001:8089"
+    networks:
+      - app_net
+
+  instance2:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - INSTANCE_NAME=Instance 2
+    ports:
+      - "3002:8089"
+    networks:
+      - app_net
+
+  instance3:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - INSTANCE_NAME=Instance 3
+    ports:
+      - "3003:8089"
+    networks:
+      - app_net
+
+networks:
+  app_net:
+    driver: bridge

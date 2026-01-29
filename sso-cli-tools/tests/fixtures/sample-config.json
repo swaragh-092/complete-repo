@@ -1,0 +1,14 @@
+{
+    "client_key": "test-app",
+    "name": "Test Application",
+    "client_id": "test-app-client",
+    "redirect_url": "https://test-app.local.test:5173/callback",
+    "callback_url": "https://auth.local.test:4000/auth/callback/test-app",
+    "requires_organization": false,
+    "organization_model": null,
+    "onboarding_flow": null,
+    "realm": "my-projects",
+    "description": "Test application for unit tests",
+    "icon": "🧪",
+    "primary_color": "#10B981"
+}
