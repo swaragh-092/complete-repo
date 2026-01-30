@@ -308,6 +308,9 @@ services:
       DB_ZONE: "+05:30"
       REDIS_HOST: redis
       REDIS_PORT: 6379
+      ENC_KEY: ${ENC_KEY:-12345678901234567890123456789012}
+      ENC_IV: ${ENC_IV:-1234567890123456}
+      DB_PREFIX: ${DB_PREFIX:-sa}
     networks:
       - auth-network
     command: [ "server.js" ]
