@@ -9,7 +9,7 @@ const cors = require("cors");
 const path = require("path");
 const cookieParser = require("cookie-parser");
 
-const errorHandler = require("./middleware/errorHandler.middleware");
+// const errorHandler = require("./middleware/errorHandler.middleware");
 
 
 
@@ -39,9 +39,18 @@ app.use(
 // });
 
 // routers 
-app.use(require("./middleware/dataValidation.middleware"));
-app.use(require("./middleware/dbConnection.middleware")); 
+// app.use(require("./middleware/dataValidation.middleware"));
+// app.use(require("./middleware/dbConnection.middleware")); 
 
+
+// health check route
+app.get("/health", (req, res) => {
+  res.status(200).json({
+    status: "ok",
+    uptime: process.uptime(),
+    timestamp: Date.now()
+  });
+});
 
 app.use("/"+process.env.DB_PROJECT_BASE_PATH, require("./routes"));
 

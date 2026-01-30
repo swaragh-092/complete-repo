@@ -9,6 +9,32 @@
 # ══════════════════════════════════════════════════════════════════════════════
 
 services:
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # Gateway (Nginx Reverse Proxy)
+  # ─────────────────────────────────────────────────────────────────────────────
+  gateway:
+    build:
+      context: ./gateway
+    container_name: gateway
+    restart: unless-stopped
+    ports:
+      - "443:443"
+      - "80:80"
+    networks:
+      - auth-network
+    depends_on:
+      auth-service:
+        condition: service_healthy
+      postgres-auth:
+        condition: service_healthy
+      postgres-pms:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      
+
+
   # ════════════════════════════════════════════════════════════════════════════
   # DATABASES
   # ════════════════════════════════════════════════════════════════════════════
@@ -41,8 +67,10 @@ services:
   # ─────────────────────────────────────────────────────────────────────────────
   postgres-pms:
     image: postgres:16
-    container_name: sso-postgres-pms
+    container_name: postgres-pms
     restart: unless-stopped
+    # ports:
+    #   - "5432:5432"
     environment:
       POSTGRES_USER: ${PMS_DB_USER:-postgres}
       POSTGRES_PASSWORD: ${PMS_DB_PASSWORD:-1234}
@@ -64,6 +92,8 @@ services:
   redis:
     image: redis:7
     restart: unless-stopped
+    ports:
+      - "6379:6379"
     volumes:
       - redis-data:/data
     command: redis-server --appendonly yes
@@ -196,7 +226,7 @@ services:
 
   # ─────────────────────────────────────────────────────────────────────────────
   # Centralized Login (User Login Portal)
-  # ─────────────────────────────────────────────────────────────────────────────
+  # # ─────────────────────────────────────────────────────────────────────────────
   centralized-login:
     build:
       context: ./centralized-login
@@ -223,25 +253,7 @@ services:
       retries: 3
       start_period: 10s
 
-  # ─────────────────────────────────────────────────────────────────────────────
-  # Gateway (Nginx Reverse Proxy)
-  # ─────────────────────────────────────────────────────────────────────────────
-  gateway:
-    image: nginx:alpine
-    container_name: sso-gateway
-    restart: unless-stopped
-    ports:
-      - "443:443"
-      - "80:80"
-    volumes:
-      - ./gateway/nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./certs/cert.pem:/etc/nginx/certs/cert.pem:ro
-      - ./certs/key.pem:/etc/nginx/certs/key.pem:ro
-    networks:
-      - auth-network
-    depends_on:
-      auth-service:
-        condition: service_healthy
+  
 
   # ════════════════════════════════════════════════════════════════════════════
   # PMS & SUPER ADMINISTRATOR SERVICES
@@ -255,8 +267,10 @@ services:
       context: ./pms
       dockerfile: Dockerfile
     image: pms/nodejs:latest
-    container_name: sso-pms
     restart: unless-stopped
+    container_name: pms
+    ports:
+      - 3010:3010
     depends_on:
       postgres-pms:
         condition: service_healthy
@@ -275,7 +289,7 @@ services:
       - auth-network
     command: [ "server.js" ]
     healthcheck:
-      test: [ "CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/health" ]
+      test: [ "CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3010/health" ]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -334,9 +348,12 @@ services:
       FRONT_END_DOMAIN: ${FRONT_END_DOMAIN}
     networks:
       - auth-network
+    ports:
+      - 4010:4010
+    
     command: [ "server.js" ]
     healthcheck:
-      test: [ "CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:2500/health" ]
+      test: [ "CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:4010/health" ]
       interval: 30s
       timeout: 10s
       retries: 3
