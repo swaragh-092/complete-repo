@@ -63,7 +63,6 @@ services:
   # ─────────────────────────────────────────────────────────────────────────────
   redis:
     image: redis:7
-    container_name: sso-redis
     restart: unless-stopped
     volumes:
       - redis-data:/data
@@ -290,7 +289,7 @@ services:
       context: ./super-administrator
       dockerfile: Dockerfile
     image: super_administrator:latest
-    container_name: sso-super-administrator
+    container_name: super-administrator
     restart: unless-stopped
     depends_on:
       postgres-pms:
@@ -338,6 +337,5 @@ volumes:
   auth-service-logs:
     name: sso-auth-service-logs
   redis-data:
-    name: sso-redis-data
   postgres-pms-data:
     name: sso-postgres-pms-data
