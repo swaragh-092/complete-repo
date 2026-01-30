@@ -298,18 +298,40 @@ services:
         condition: service_healthy
     environment:
       NODE_ENV: ${NODE_ENV:-production}
+      ENV: ${ENV}
+      PORT: ${PORT}
+
       DB_HOST: postgres-pms
       DB_PORT: 5432
-      DB_USER: ${PMS_DB_USER:-postgres}
-      DB_PASSWORD: ${PMS_DB_PASSWORD:-1234}
-      DB_NAME: super_administrator
+      DB_USER: ${PMS_DB_USER}
+      DB_PASSWORD: ${PMS_DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
       DB_TYPE: postgres
       DB_ZONE: "+05:30"
+      DB_PREFIX: ${DB_PREFIX}
+
       REDIS_HOST: redis
       REDIS_PORT: 6379
-      ENC_KEY: ${ENC_KEY:-12345678901234567890123456789012}
-      ENC_IV: ${ENC_IV:-1234567890123456}
-      DB_PREFIX: ${DB_PREFIX:-sa}
+
+      ENC_KEY: ${ENC_KEY}
+      ENC_IV: ${ENC_IV}
+
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
+      ACCESS_TOKEN_EXPIRE_TIME: ${ACCESS_TOKEN_EXPIRE_TIME}
+      REFRESH_TOKEN_EXPIRE_TIME: ${REFRESH_TOKEN_EXPIRE_TIME}
+      RESET_PASSWORD_TOKEN_EXPIRE_TIME: ${RESET_PASSWORD_TOKEN_EXPIRE_TIME}
+
+      MAIL_ADDRESS: ${MAIL_ADDRESS}
+      MAIL_PASSWORD: ${MAIL_PASSWORD}
+      MAIL_SERVICE: ${MAIL_SERVICE}
+      MAIL_INTERVAL: ${MAIL_INTERVAL}
+
+      GLOBAL: http://localhost:8080/
+      APP: http://localhost:8080/
+      APP_NAME: nodejs-starter
+      LOGO: images/logo.webp
+      FRONT_END_DOMAIN: ${FRONT_END_DOMAIN}
     networks:
       - auth-network
     command: [ "server.js" ]

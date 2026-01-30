@@ -1,0 +1,26 @@
+
+
+
+
+
+# Application Configuration
+VITE_CLIENT_KEY={{CLIENT_KEY}}
+VITE_PORT={{PORT}}
+VITE_APP_NAME={{APP_NAME}}
+
+# Authentication Service URLs (HTTPS enabled)
+# These are generated from SSO_CONFIG in sso-client.js
+VITE_AUTH_BASE_URL={{AUTH_BASE_URL}}
+VITE_ACCOUNT_UI_URL={{ACCOUNT_UI_URL}}
+VITE_REDIRECT_URI={{REDIRECT_URI}}
+
+# ✅ Organization Configuration
+VITE_REQUIRES_ORGANIZATION={{REQUIRES_ORGANIZATION}}
+VITE_ORGANIZATION_MODEL={{ORGANIZATION_MODEL}}
+VITE_ONBOARDING_FLOW={{ONBOARDING_FLOW}}
+
+# Development
+NODE_ENV=development
+
+# TLS (for self-signed mkcert certificates)
+NODE_TLS_REJECT_UNAUTHORIZED=0
