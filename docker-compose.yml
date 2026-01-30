@@ -36,6 +36,46 @@ services:
       retries: 5
       start_period: 10s
 
+  # ─────────────────────────────────────────────────────────────────────────────
+  # PostgreSQL for PMS and Super Administrator
+  # ─────────────────────────────────────────────────────────────────────────────
+  postgres-pms:
+    image: postgres:16
+    container_name: sso-postgres-pms
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${PMS_DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${PMS_DB_PASSWORD:-1234}
+    volumes:
+      - postgres-pms-data:/var/lib/postgresql/data
+      - ./init-multiple-db.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    networks:
+      - auth-network
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${PMS_DB_USER:-postgres}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # Redis (Required for PMS and Super Administrator)
+  # ─────────────────────────────────────────────────────────────────────────────
+  redis:
+    image: redis:7
+    container_name: sso-redis
+    restart: unless-stopped
+    volumes:
+      - redis-data:/data
+    command: redis-server --appendonly yes
+    networks:
+      - auth-network
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
   # ════════════════════════════════════════════════════════════════════════════
   # BACKEND SERVICES
   # ════════════════════════════════════════════════════════════════════════════
@@ -204,27 +244,79 @@ services:
       auth-service:
         condition: service_healthy
 
+  # ════════════════════════════════════════════════════════════════════════════
+  # PMS & SUPER ADMINISTRATOR SERVICES
+  # ════════════════════════════════════════════════════════════════════════════
+
   # ─────────────────────────────────────────────────────────────────────────────
-  # Client: docker
+  # PMS (Project Management System)
   # ─────────────────────────────────────────────────────────────────────────────
-  # docker:
-  #   build:
-  #     context: ./dockerrrr/docker
-  #     dockerfile: infrastructure/Dockerfile
-  #     args:
-  #       - VITE_CLIENT_KEY=docker
-  #       - VITE_AUTH_BASE_URL=https://auth.local.test
-  #       - VITE_API_URL=https://auth.local.test/api/admin
-  #       - VITE_AUTH_URL=https://auth.local.test/auth
-  #       - VITE_ACCOUNT_UI_URL=https://account.local.test
-  #       - VITE_CALLBACK_URL=https://docker.local.test/callback
-  #   container_name: sso-client-docker
-  #   restart: unless-stopped
-  #   depends_on:
-  #     auth-service:
-  #       condition: service_healthy
-  #   networks:
-  #     - auth-network
+  pms:
+    build:
+      context: ./pms
+      dockerfile: Dockerfile
+    image: pms/nodejs:latest
+    container_name: sso-pms
+    restart: unless-stopped
+    depends_on:
+      postgres-pms:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      NODE_ENV: ${NODE_ENV:-production}
+      DB_HOST: postgres-pms
+      DB_PORT: 5432
+      DB_USER: ${PMS_DB_USER:-postgres}
+      DB_PASSWORD: ${PMS_DB_PASSWORD:-1234}
+      DB_NAME: pms
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    networks:
+      - auth-network
+    command: [ "server.js" ]
+    healthcheck:
+      test: [ "CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8089/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # Super Administrator
+  # ─────────────────────────────────────────────────────────────────────────────
+  super-administrator:
+    build:
+      context: ./super-administrator
+      dockerfile: Dockerfile
+    image: super_administrator:latest
+    container_name: sso-super-administrator
+    restart: unless-stopped
+    depends_on:
+      postgres-pms:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      NODE_ENV: ${NODE_ENV:-production}
+      DB_HOST: postgres-pms
+      DB_PORT: 5432
+      DB_USER: ${PMS_DB_USER:-postgres}
+      DB_PASSWORD: ${PMS_DB_PASSWORD:-1234}
+      DB_NAME: super_administrator
+      DB_TYPE: postgres
+      DB_ZONE: "+05:30"
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    networks:
+      - auth-network
+    command: [ "server.js" ]
+    healthcheck:
+      test: [ "CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8089/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
 
 # ══════════════════════════════════════════════════════════════════════════════
 # NETWORKS
@@ -242,3 +334,7 @@ volumes:
     name: sso-postgres-auth-data
   auth-service-logs:
     name: sso-auth-service-logs
+  redis-data:
+    name: sso-redis-data
+  postgres-pms-data:
+    name: sso-postgres-pms-data

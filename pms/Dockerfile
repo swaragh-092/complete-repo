@@ -1,24 +1,20 @@
-FROM ubuntu:latest
+# Use lightweight Alpine-based Node.js image
+FROM node:20-alpine
 
-# Set the working directory in the image
+# Set the working directory
 WORKDIR /app
 
-RUN apt-get update && \
-    apt-get install -y curl && \
-    curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
-    apt-get install -y nodejs
+# Install only if we need native dependencies
+RUN apk add --no-cache wget
 
-# Copy the files from the host file system to the image file system
+# Copy package files first (for better layer caching)
+COPY package*.json ./
+
+# Install dependencies
+RUN npm ci --only=production && npm cache clean --force
+
+# Copy application code
 COPY . .
 
-# Install the necessary packages
-
-RUN npm install &&\
-    apt-get clean
-
-# Set environment variables
-# ENV NAME World
-
-# Run a command to start the application
-ENTRYPOINT [ "node" ]
-CMD ["server.js"]
+# Run the application
+CMD ["node", "server.js"]
