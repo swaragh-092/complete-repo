@@ -7,8 +7,8 @@
 const crypto = require('crypto');
 require('dotenv').config();
 
-const ENCRYPTION_KEY = process.env.ENC_KEY; // 32 bytes
-const IV = process.env.ENC_IV; // 16 bytes
+const ENCRYPTION_KEY = process.env.ENC_KEY || "00000000000000000000000000000000"; // 32 bytes
+const IV = process.env.ENC_IV || "1111111111111111"; // 16 bytes
 
 if (ENCRYPTION_KEY.length !== 32) {
 throw new Error('Encryption key must be 32 bytes');

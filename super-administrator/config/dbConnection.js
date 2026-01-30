@@ -9,15 +9,17 @@ const Sequelize = require('sequelize');
 require('dotenv').config();
 
 const config = {
-        database: process.env.DB_NAME ,
-        username: process.env.DB_USER ,
-        password: process.env.DB_PASSWORD ,
-        host: process.env.DB_HOST,
-        port: process.env.DB_PORT,
-        dialect: process.env.DB_TYPE,
-        timezone: process.env.DB_ZONE,
+        database: process.env.DB_NAME || "super_administrator" ,
+        username: process.env.DB_USER || "postgres" ,
+        password: process.env.DB_PASSWORD || "1234",
+        host: process.env.DB_HOST || "localhost",
+        port: process.env.DB_PORT || 5432,
+        dialect: process.env.DB_TYPE || "postgres",
+        timezone: process.env.DB_ZONE || "+05:30",
         logging: process.env.ENV?.toLowerCase() === "development", // Disabled logging for production for performance and security
 }
+
+console.log(config);
 
 const sequelize = new Sequelize(config);
 

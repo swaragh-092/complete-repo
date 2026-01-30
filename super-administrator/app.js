@@ -10,7 +10,7 @@ const path = require("path");
 const cookieParser = require("cookie-parser");
 
 // runs the queue processor every 30 seconds
-require("./queue/queueProcessor");
+// require("./queue/queueProcessor");
 
 // runs all cron jobs
 require("./jobs/CronJobs");
@@ -43,6 +43,16 @@ app.use(async (req, res, next) => {
 app.use(express.static(path.join(__dirname, "public")));
 
 app.use('/api', require('./routes'));
+
+// health check route
+app.get("/health", (req, res) => {
+  res.status(200).json({
+    status: "ok",
+    uptime: process.uptime(),
+    timestamp: Date.now()
+  });
+});
+
 
 
 // 404 response for invalid routes
