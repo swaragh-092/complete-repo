@@ -11,6 +11,7 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  TablePagination,
   Paper,
   IconButton,
   Dialog,
@@ -57,6 +58,8 @@ function Organizations() {
     tenant_id: ''
   });
   const [search, setSearch] = useState('');
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
 
   // Fetch organizations
   const { data: organizations = [] } = useQuery({
@@ -69,6 +72,18 @@ function Organizations() {
     org.name?.toLowerCase().includes(search.toLowerCase()) ||
     org.tenant_id?.toLowerCase().includes(search.toLowerCase())
   );
+
+  // Paginated organizations
+  const paginatedOrganizations = filteredOrganizations.slice(
+    page * rowsPerPage,
+    page * rowsPerPage + rowsPerPage
+  );
+
+  // Handle search change
+  const handleSearch = (value) => {
+    setSearch(value);
+    setPage(0); // Reset to first page on search
+  };
 
   // Create organization mutation
   const createMutation = useMutation({
@@ -169,7 +184,7 @@ function Organizations() {
       {/* Search */}
       <Paper sx={{ mb: 3, p: 2 }} elevation={0}>
         <SearchFilter
-          onSearch={setSearch}
+          onSearch={handleSearch}
           placeholder="Search organizations by name or tenant..."
           initialValue={search}
         />
@@ -190,7 +205,7 @@ function Organizations() {
             </TableRow>
           </TableHead>
           <TableBody>
-            {filteredOrganizations.map((org) => (
+            {paginatedOrganizations.map((org) => (
               <TableRow key={org.id}>
                 <TableCell>
                   <Box
@@ -250,6 +265,18 @@ function Organizations() {
             )}
           </TableBody>
         </Table>
+        <TablePagination
+          component="div"
+          count={filteredOrganizations.length}
+          page={page}
+          onPageChange={(e, newPage) => setPage(newPage)}
+          rowsPerPage={rowsPerPage}
+          onRowsPerPageChange={(e) => {
+            setRowsPerPage(parseInt(e.target.value, 10));
+            setPage(0);
+          }}
+          rowsPerPageOptions={[5, 10, 25, 50]}
+        />
       </TableContainer>
 
       {/* Action Menu */}

@@ -30,6 +30,7 @@ import idpService from '../../services/idpService';
 import IdentityProviderCreateWizard from '../../components/identity-providers/IdentityProviderCreateWizard';
 import IdentityProviderDeleteDialog from '../../components/identity-providers/IdentityProviderDeleteDialog';
 import EmptyState from '../../components/EmptyState';
+import SearchFilter from '../../components/SearchFilter';
 
 function IdentityProvidersList() {
   const { realmName } = useParams();
@@ -41,12 +42,26 @@ function IdentityProvidersList() {
   const [deleteData, setDeleteData] = useState(null);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [search, setSearch] = useState('');
 
   // Fetch IdPs
   const { data: idps = [], isLoading, error } = useQuery({
     queryKey: ['identity-providers', realmName],
     queryFn: () => idpService.getIdentityProviders(realmName)
   });
+
+  // Client-side search filtering
+  const filteredIdps = idps.filter(idp =>
+    idp.alias?.toLowerCase().includes(search.toLowerCase()) ||
+    idp.displayName?.toLowerCase().includes(search.toLowerCase()) ||
+    idp.providerId?.toLowerCase().includes(search.toLowerCase())
+  );
+
+  // Handle search change
+  const handleSearch = (value) => {
+    setSearch(value);
+    setPage(0); // Reset to first page on search
+  };
 
   // Create Mutation
   const createMutation = useMutation({
@@ -116,13 +131,22 @@ function IdentityProvidersList() {
         </Button>
       </Box>
 
+      {/* Search */}
+      <Paper sx={{ mb: 3, p: 2 }} elevation={0}>
+        <SearchFilter
+          onSearch={handleSearch}
+          placeholder="Search providers by alias or name..."
+          initialValue={search}
+        />
+      </Paper>
+
       {/* List */}
-      {idps.length === 0 ? (
+      {filteredIdps.length === 0 ? (
         <EmptyState
           title="No Identity Providers"
-          message="Configure social login or external IdPs for this realm."
-          actionLabel="Add Provider"
-          onAction={() => setCreateOpen(true)}
+          message={search ? `No providers match "${search}"` : 'Configure social login or external IdPs for this realm.'}
+          actionLabel={search ? undefined : 'Add Provider'}
+          onAction={search ? undefined : () => setCreateOpen(true)}
         />
       ) : (
         <TableContainer component={Paper}>
@@ -136,7 +160,7 @@ function IdentityProvidersList() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {idps.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((idp) => (
+              {filteredIdps.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((idp) => (
                 <TableRow key={idp.internalId || idp.alias} hover>
                   <TableCell>
                     <Typography variant="subtitle2">{idp.alias}</Typography>
@@ -177,7 +201,7 @@ function IdentityProvidersList() {
           </Table>
           <TablePagination
             component="div"
-            count={idps.length}
+            count={filteredIdps.length}
             page={page}
             onPageChange={(e, newPage) => setPage(newPage)}
             rowsPerPage={rowsPerPage}

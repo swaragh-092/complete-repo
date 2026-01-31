@@ -11,22 +11,20 @@ import {
   Button,
   Chip,
   Avatar,
-  TextField,
-  InputAdornment,
+  Paper,
   Fade,
   TablePagination,
   useTheme
 } from '@mui/material';
 import {
-  Search as SearchIcon,
   Apps as AppsIcon,
-  Language as WebIcon,
-  Settings as SettingsIcon,
-  Launch as LaunchIcon
+  Launch as LaunchIcon,
+  Settings as SettingsIcon
 } from '@mui/icons-material';
 import api, { extractData } from '../services/api';
 import LoadingSpinner from '../components/LoadingSpinner';
 import EmptyState from '../components/EmptyState';
+import SearchFilter from '../components/SearchFilter';
 
 function Applications() {
   const theme = useTheme();
@@ -46,6 +44,12 @@ function Applications() {
     app.name?.toLowerCase().includes(search.toLowerCase()) || 
     app.clientId?.toLowerCase().includes(search.toLowerCase())
   );
+
+  // Handle search change
+  const handleSearch = (value) => {
+    setSearch(value);
+    setPage(0); // Reset to first page on search
+  };
 
   if (isLoading) return <LoadingSpinner />;
 
@@ -71,21 +75,16 @@ function Applications() {
               Manage and access your registered applications
             </Typography>
           </Box>
-          <TextField
-            placeholder="Search applications..."
-            size="small"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchIcon color="action" />
-                </InputAdornment>
-              ),
-            }}
-            sx={{ width: 300 }}
-          />
         </Box>
+
+        {/* Search */}
+        <Paper sx={{ mb: 3, p: 2 }} elevation={0}>
+          <SearchFilter
+            onSearch={handleSearch}
+            placeholder="Search applications..."
+            initialValue={search}
+          />
+        </Paper>
 
         {filteredApps.length === 0 ? (
           <EmptyState 

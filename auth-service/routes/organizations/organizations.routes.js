@@ -201,14 +201,15 @@ router.post('/', asyncHandler(async (req, res) => {
     // ============================================================================
     // STEP 2: Get Authenticated User
     // ============================================================================
-    const userId = req.user?.sub;
-    if (!userId) {
+    // Use keycloak_id which is always set by authMiddleware, not sub which may be null
+    const keycloakId = req.user?.keycloak_id;
+    if (!keycloakId) {
       await transaction.rollback();
       throw new AppError('User authentication required', 401, 'UNAUTHORIZED');
     }
 
     const user = await UserMetadata.findOne({
-      where: { keycloak_id: userId }
+      where: { keycloak_id: keycloakId }
     });
 
     if (!user) {

@@ -11,6 +11,7 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  TablePagination,
   Paper,
   IconButton,
   Dialog,
@@ -73,6 +74,8 @@ function Permissions() {
   });
   const [bulkPermissions, setBulkPermissions] = useState('');
   const [search, setSearch] = useState('');
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
 
   // Fetch permissions
   const { data: permissions = [], isLoading } = useQuery({
@@ -86,6 +89,12 @@ function Permissions() {
     p.description?.toLowerCase().includes(search.toLowerCase()) ||
     p.resource?.toLowerCase().includes(search.toLowerCase())
   );
+
+  // Handle search change
+  const handleSearch = (value) => {
+    setSearch(value);
+    setPage(0); // Reset to first page on search
+  };
 
   // Fetch permission statistics
   const { data: stats = {} } = useQuery({
@@ -326,7 +335,7 @@ function Permissions() {
       {/* Search */}
       <Paper sx={{ mb: 3, p: 2 }} elevation={0}>
         <SearchFilter
-          onSearch={setSearch}
+          onSearch={handleSearch}
           placeholder="Search permissions by name, resource, or description..."
           initialValue={search}
         />
@@ -338,6 +347,13 @@ function Permissions() {
           onMenuClick={handleMenuClick}
           isLoading={isLoading}
           search={search}
+          page={page}
+          rowsPerPage={rowsPerPage}
+          onPageChange={(e, newPage) => setPage(newPage)}
+          onRowsPerPageChange={(e) => {
+            setRowsPerPage(parseInt(e.target.value, 10));
+            setPage(0);
+          }}
         />
       </TabPanel>
 
@@ -365,6 +381,13 @@ function Permissions() {
           onMenuClick={handleMenuClick}
           isLoading={isLoading}
           search={search}
+          page={page}
+          rowsPerPage={rowsPerPage}
+          onPageChange={(e, newPage) => setPage(newPage)}
+          onRowsPerPageChange={(e) => {
+            setRowsPerPage(parseInt(e.target.value, 10));
+            setPage(0);
+          }}
         />
       </TabPanel>
 
@@ -531,7 +554,12 @@ orders:create, Create new orders`}
   );
 }
 
-function PermissionsTable({ permissions, onMenuClick, isLoading, hideResource = false, search }) {
+function PermissionsTable({ permissions, onMenuClick, isLoading, hideResource = false, search, page = 0, rowsPerPage = 10, onPageChange, onRowsPerPageChange }) {
+  // Paginate the permissions
+  const paginatedPermissions = permissions.slice(
+    page * rowsPerPage,
+    page * rowsPerPage + rowsPerPage
+  );
   if (isLoading) {
     return <Typography>Loading permissions...</Typography>;
   }
@@ -552,7 +580,7 @@ function PermissionsTable({ permissions, onMenuClick, isLoading, hideResource = 
           </TableRow>
         </TableHead>
         <TableBody>
-          {permissions.map((permission) => (
+          {paginatedPermissions.map((permission) => (
             <TableRow key={permission.id}>
               <TableCell>
                 <Box display="flex" alignItems="center">
@@ -618,8 +646,19 @@ function PermissionsTable({ permissions, onMenuClick, isLoading, hideResource = 
             </TableRow>
           )}
         </TableBody>
-      </Table>
-    </TableContainer>
+        </Table>
+        {onPageChange && (
+          <TablePagination
+            component="div"
+            count={permissions.length}
+            page={page}
+            onPageChange={onPageChange}
+            rowsPerPage={rowsPerPage}
+            onRowsPerPageChange={onRowsPerPageChange}
+            rowsPerPageOptions={[5, 10, 25, 50]}
+          />
+        )}
+      </TableContainer>
   );
 }
 

@@ -36,6 +36,7 @@ import {
 } from '@mui/icons-material';
 import roleService from '../../services/roleService';
 import EmptyState from '../../components/EmptyState';
+import SearchFilter from '../../components/SearchFilter';
 
 function RealmRoles() {
   const { realmName } = useParams();
@@ -50,12 +51,25 @@ function RealmRoles() {
   // Pagination state
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [search, setSearch] = useState('');
 
   // Fetch Roles
   const { data: roles = [], isLoading, error } = useQuery({
     queryKey: ['realm-roles', realmName],
     queryFn: () => roleService.getRealmRoles(realmName)
   });
+
+  // Client-side search filtering
+  const filteredRoles = roles.filter(role =>
+    role.name?.toLowerCase().includes(search.toLowerCase()) ||
+    role.description?.toLowerCase().includes(search.toLowerCase())
+  );
+
+  // Handle search change
+  const handleSearch = (value) => {
+    setSearch(value);
+    setPage(0); // Reset to first page on search
+  };
 
   // Create/Update Mutation
   const mutation = useMutation({
@@ -161,6 +175,15 @@ function RealmRoles() {
         </Button>
       </Box>
 
+      {/* Search */}
+      <Paper sx={{ mb: 3, p: 2 }} elevation={0}>
+        <SearchFilter
+          onSearch={handleSearch}
+          placeholder="Search roles by name or description..."
+          initialValue={search}
+        />
+      </Paper>
+
       {/* List */}
       <TableContainer component={Paper}>
         <Table>
@@ -173,19 +196,19 @@ function RealmRoles() {
             </TableRow>
           </TableHead>
           <TableBody>
-            {roles.length === 0 ? (
+            {filteredRoles.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={4} align="center">
                   <EmptyState
                     title="No Realm Roles"
-                    message="Create roles to assign permissions to users."
-                    actionLabel="Create Role"
-                    onAction={() => handleOpen()}
+                    message={search ? `No roles match "${search}"` : 'Create roles to assign permissions to users.'}
+                    actionLabel={search ? undefined : 'Create Role'}
+                    onAction={search ? undefined : () => handleOpen()}
                   />
                 </TableCell>
               </TableRow>
             ) : (
-              roles.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((role) => (
+              filteredRoles.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((role) => (
                 <TableRow key={role.id || role.name} hover>
                   <TableCell>
                     <Box display="flex" alignItems="center" gap={1}>
@@ -227,7 +250,7 @@ function RealmRoles() {
         </Table>
         <TablePagination
           component="div"
-          count={roles.length}
+          count={filteredRoles.length}
           page={page}
           onPageChange={(e, newPage) => setPage(newPage)}
           rowsPerPage={rowsPerPage}

@@ -11,6 +11,7 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  TablePagination,
   Paper,
   IconButton,
   Dialog,
@@ -78,6 +79,8 @@ function DatabaseRoles() {
     org_id: ''
   });
   const [search, setSearch] = useState('');
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
 
   // Fetch database roles
   const { data: roles = [], isLoading } = useQuery({
@@ -90,6 +93,12 @@ function DatabaseRoles() {
     role.name?.toLowerCase().includes(search.toLowerCase()) ||
     role.description?.toLowerCase().includes(search.toLowerCase())
   );
+
+  // Handle search change
+  const handleSearch = (value) => {
+    setSearch(value);
+    setPage(0); // Reset to first page on search
+  };
 
   // Fetch permissions for role creation/editing
   const { data: permissions = [] } = useQuery({
@@ -243,7 +252,7 @@ function DatabaseRoles() {
       {/* Search */}
       <Paper sx={{ mb: 3, p: 2 }} elevation={0}>
         <SearchFilter
-          onSearch={setSearch}
+          onSearch={handleSearch}
           placeholder="Search roles by name or description..."
           initialValue={search}
         />
@@ -255,6 +264,13 @@ function DatabaseRoles() {
           onMenuClick={handleMenuClick}
           isLoading={isLoading}
           search={search}
+          page={page}
+          rowsPerPage={rowsPerPage}
+          onPageChange={(e, newPage) => setPage(newPage)}
+          onRowsPerPageChange={(e) => {
+            setRowsPerPage(parseInt(e.target.value, 10));
+            setPage(0);
+          }}
         />
       </TabPanel>
 
@@ -264,6 +280,13 @@ function DatabaseRoles() {
           onMenuClick={handleMenuClick}
           isLoading={isLoading}
           search={search}
+          page={page}
+          rowsPerPage={rowsPerPage}
+          onPageChange={(e, newPage) => setPage(newPage)}
+          onRowsPerPageChange={(e) => {
+            setRowsPerPage(parseInt(e.target.value, 10));
+            setPage(0);
+          }}
         />
       </TabPanel>
 
@@ -273,6 +296,13 @@ function DatabaseRoles() {
           onMenuClick={handleMenuClick}
           isLoading={isLoading}
           search={search}
+          page={page}
+          rowsPerPage={rowsPerPage}
+          onPageChange={(e, newPage) => setPage(newPage)}
+          onRowsPerPageChange={(e) => {
+            setRowsPerPage(parseInt(e.target.value, 10));
+            setPage(0);
+          }}
         />
       </TabPanel>
 
@@ -477,7 +507,12 @@ function DatabaseRoles() {
   );
 }
 
-function RolesTable({ roles, onMenuClick, isLoading, search }) {
+function RolesTable({ roles, onMenuClick, isLoading, search, page = 0, rowsPerPage = 10, onPageChange, onRowsPerPageChange }) {
+  // Paginate the roles
+  const paginatedRoles = roles.slice(
+    page * rowsPerPage,
+    page * rowsPerPage + rowsPerPage
+  );
   if (isLoading) {
     return <Typography>Loading roles...</Typography>;
   }
@@ -497,7 +532,7 @@ function RolesTable({ roles, onMenuClick, isLoading, search }) {
           </TableRow>
         </TableHead>
         <TableBody>
-          {roles.map((role) => (
+          {paginatedRoles.map((role) => (
             <TableRow key={role.id}>
               <TableCell>
                 <Box display="flex" alignItems="center">
@@ -554,6 +589,17 @@ function RolesTable({ roles, onMenuClick, isLoading, search }) {
           )}
         </TableBody>
       </Table>
+      {onPageChange && (
+        <TablePagination
+          component="div"
+          count={roles.length}
+          page={page}
+          onPageChange={onPageChange}
+          rowsPerPage={rowsPerPage}
+          onRowsPerPageChange={onRowsPerPageChange}
+          rowsPerPageOptions={[5, 10, 25, 50]}
+        />
+      )}
     </TableContainer>
   );
 }

@@ -11,9 +11,7 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install dependencies
-RUN npm ci --legacy-peer-deps \
-    sed -i "s/from '\.\/token';/from '\.\/token';\nimport { getTimeUntilExpiry } from '\.\/token';/g" node_modules/@spidy092/auth-client/core.js && \
-    sed -i "s/const { getTimeUntilExpiry } = require('\.\/token');//g" node_modules/@spidy092/auth-client/core.js
+RUN npm ci --legacy-peer-deps
 
 # Copy source code
 COPY . .

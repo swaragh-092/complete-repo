@@ -33,7 +33,8 @@ import {
   MenuItem,
   Select,
   InputLabel,
-  FormControl
+  FormControl,
+  TablePagination
 } from '@mui/material';
 import {
   CheckCircle as CheckCircleIcon,
@@ -51,6 +52,7 @@ import {
   Code as CodeIcon,
   Close as CloseIcon
 } from '@mui/icons-material';
+import SearchFilter from '../components/SearchFilter';
 
 export default function ClientRequests() {
   const theme = useTheme();
@@ -68,6 +70,9 @@ export default function ClientRequests() {
   const [editFormData, setEditFormData] = useState({});
   const [actionLoading, setActionLoading] = useState(false);
   const [stats, setStats] = useState({ pending: 0, approved: 0, rejected: 0 });
+  const [search, setSearch] = useState('');
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(9);
 
   const loadRequests = async () => {
     try {
@@ -96,6 +101,26 @@ export default function ClientRequests() {
     loadStats();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filter]);
+
+  // Client-side search filtering
+  const filteredRequests = requests.filter(req =>
+    req.name?.toLowerCase().includes(search.toLowerCase()) ||
+    req.client_key?.toLowerCase().includes(search.toLowerCase()) ||
+    req.developer_email?.toLowerCase().includes(search.toLowerCase()) ||
+    req.developer_name?.toLowerCase().includes(search.toLowerCase())
+  );
+
+  // Paginated requests
+  const paginatedRequests = filteredRequests.slice(
+    page * rowsPerPage,
+    page * rowsPerPage + rowsPerPage
+  );
+
+  // Handle search change
+  const handleSearch = (value) => {
+    setSearch(value);
+    setPage(0); // Reset to first page on search
+  };
 
   // === Action Handlers ===
   const handleView = async (request) => {
@@ -388,12 +413,21 @@ export default function ClientRequests() {
           </Tabs>
         </Paper>
 
+        {/* Search */}
+        <Paper sx={{ mb: 3, p: 2 }} elevation={0}>
+          <SearchFilter
+            onSearch={handleSearch}
+            placeholder="Search by client name, key, or developer..."
+            initialValue={search}
+          />
+        </Paper>
+
         {/* Content */}
         {loading ? (
           <Box display="flex" justifyContent="center" py={8}>
             <CircularProgress />
           </Box>
-        ) : requests.length === 0 ? (
+        ) : filteredRequests.length === 0 ? (
           <Paper sx={{ p: 6, textAlign: 'center' }}>
             <PendingIcon sx={{ fontSize: 64, color: 'text.secondary', mb: 2 }} />
             <Typography variant="h6" color="text.secondary" gutterBottom>
@@ -406,13 +440,28 @@ export default function ClientRequests() {
             </Typography>
           </Paper>
         ) : (
-          <Grid container spacing={3}>
-            {requests.map((request) => (
-              <Grid item xs={12} md={6} lg={4} key={request.id}>
-                <RequestCard request={request} />
-              </Grid>
-            ))}
-          </Grid>
+          <>
+            <Grid container spacing={3}>
+              {paginatedRequests.map((request) => (
+                <Grid item xs={12} md={6} lg={4} key={request.id}>
+                  <RequestCard request={request} />
+                </Grid>
+              ))}
+            </Grid>
+            <TablePagination
+              component="div"
+              count={filteredRequests.length}
+              page={page}
+              onPageChange={(e, newPage) => setPage(newPage)}
+              rowsPerPage={rowsPerPage}
+              onRowsPerPageChange={(e) => {
+                setRowsPerPage(parseInt(e.target.value, 10));
+                setPage(0);
+              }}
+              rowsPerPageOptions={[6, 9, 12, 24]}
+              sx={{ mt: 2 }}
+            />
+          </>
         )}
 
         {/* ========== VIEW DETAILS DIALOG ========== */}
