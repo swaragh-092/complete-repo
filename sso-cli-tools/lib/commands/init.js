@@ -202,25 +202,40 @@ export async function initCommand(options = {}, createViteFiles = null) {
     const answers = await promptUserConfig(currentPort);
 
     try {
+        // Note: answers.generateDocker is passed to createViteFiles
+        // which handles Docker-specific URL generation without affecting CLI communication
+
         // 1. Create local files with organization support (if function provided)
         if (createViteFiles) {
-            logger.step('📝 Creating configuration files...\n');
+            if (answers.generateDocker) {
+                logger.info('🐳 Docker mode - generating portless URLs for deployment\n');
+            }
+            logger.step('📝 Creating configuration files...');
             await createViteFiles(answers);
         }
 
         // 2. Submit registration request with organization details
         logger.step('📤 Submitting registration request...\n');
 
+        // Determine URLs based on Docker mode selection
+        const useDockerUrls = answers.generateDocker || SSO_CONFIG.dockerMode;
+        const redirectUrl = useDockerUrls
+            ? `${SSO_CONFIG.protocol}://${answers.clientKey}.${SSO_CONFIG.domain}/callback`
+            : SSO_CONFIG.getRedirectUrl(answers.clientKey, answers.port);
+        const callbackUrl = useDockerUrls
+            ? `${SSO_CONFIG.protocol}://auth.${SSO_CONFIG.domain}/auth/callback/${answers.clientKey}`
+            : SSO_CONFIG.getCallbackUrl(answers.clientKey);
+
         const requestData = {
             name: answers.appName,
             clientKey: answers.clientKey,
-            redirectUrl: SSO_CONFIG.getRedirectUrl(answers.clientKey, answers.port),
-            callbackUrl: SSO_CONFIG.getCallbackUrl(answers.clientKey),
+            redirectUrl: redirectUrl,
+            callbackUrl: callbackUrl,
             description: answers.description,
             developerEmail: answers.developerEmail,
             developerName: answers.developerName,
             framework: 'React + Vite',
-            purpose: 'Development',
+            purpose: useDockerUrls ? 'Docker Deployment' : 'Development',
             // Organization Configuration
             requiresOrganization: answers.requiresOrganization || false,
             organizationModel: answers.organizationModel || null,
