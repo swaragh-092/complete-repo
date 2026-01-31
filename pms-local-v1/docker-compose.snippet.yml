@@ -1,0 +1,13 @@
+  pms-local-v1:
+    build:
+      context: ./pms-local-v1
+      dockerfile: infrastructure/Dockerfile
+      args:
+        - VITE_CLIENT_KEY=pms-local-v1
+        - VITE_AUTH_BASE_URL=https://auth.local.test
+        - VITE_API_URL=https://auth.local.test/api/admin
+        - VITE_AUTH_URL=https://auth.local.test/auth
+        - VITE_ACCOUNT_UI_URL=https://account.local.test
+        - VITE_CALLBACK_URL=https://pms-local-v1.local.test/callback
+    networks:
+      - sso-network
