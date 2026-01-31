@@ -55,6 +55,15 @@ export function OrganizationProvider({ children }) {
     try {
       const orgs = await getMyOrganizations();
       setOrganizations(orgs);
+      
+      // Auto-select primary organization if none selected
+      if (!currentOrganization && orgs.length > 0) {
+        const primary = orgs.find(o => o.isPrimary) || orgs[0];
+        setCurrentOrganizationState(primary);
+        persistOrganizationToStorage(primary);
+        console.log('[OrgContext] Auto-selected organization:', primary.name);
+      }
+      
       return orgs;
     } catch (err) {
       setError(err.message || 'Failed to fetch organizations');
@@ -63,7 +72,7 @@ export function OrganizationProvider({ children }) {
     } finally {
       setLoading(false);
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, currentOrganization, persistOrganizationToStorage]);
 
   /**
    * Create a new organization
