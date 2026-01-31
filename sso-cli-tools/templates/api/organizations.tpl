@@ -22,37 +22,47 @@ export async function getMyOrganizations() {
     
     console.log('📋 Organizations API response:', data);
     
-    // Normalize response format
-    const organizations = [];
+    // Use Map to deduplicate by ID
+    const orgMap = new Map();
     
-    // Add primary organization if exists
+    // Add primary organization first (if exists)
     if (data.primary_organization) {
-      organizations.push({
+      orgMap.set(data.primary_organization.id, {
         ...data.primary_organization,
         isPrimary: true
       });
     }
     
-    // Add memberships - API returns 'memberships' with nested organization/role
+    // Add memberships - skip if already exists (primary takes precedence)
     if (data.memberships && Array.isArray(data.memberships)) {
-      organizations.push(...data.memberships.map(membership => ({
-        // Extract organization from membership
-        id: membership.organization?.id || membership.id,
-        name: membership.organization?.name || membership.name,
-        tenant_id: membership.organization?.tenant_id,
-        // Include role info
-        role: membership.role,
-        isPrimary: false,
-        membership_type: membership.membership_type || 'member'
-      })));
+      data.memberships.forEach(membership => {
+        const orgId = membership.organization?.id || membership.id;
+        if (!orgMap.has(orgId)) {
+          orgMap.set(orgId, {
+            id: orgId,
+            name: membership.organization?.name || membership.name,
+            tenant_id: membership.organization?.tenant_id,
+            role: membership.role,
+            isPrimary: false,
+            membership_type: membership.membership_type || 'member'
+          });
+        } else {
+          // Update existing with role info if it was the primary
+          const existing = orgMap.get(orgId);
+          if (!existing.role) {
+            existing.role = membership.role;
+          }
+        }
+      });
     }
     
     // Also support legacy member_organizations key
     if (data.member_organizations && Array.isArray(data.member_organizations)) {
-      organizations.push(...data.member_organizations.map(org => ({
-        ...org,
-        isPrimary: false
-      })));
+      data.member_organizations.forEach(org => {
+        if (!orgMap.has(org.id)) {
+          orgMap.set(org.id, { ...org, isPrimary: false });
+        }
+      });
     }
     
     // Also support direct array response
@@ -60,6 +70,7 @@ export async function getMyOrganizations() {
       return data;
     }
     
+    const organizations = Array.from(orgMap.values());
     console.log('📋 Normalized organizations:', organizations);
     return organizations;
   } catch (error) {
