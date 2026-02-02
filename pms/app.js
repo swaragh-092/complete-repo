@@ -52,8 +52,8 @@ app.get("/health", (req, res) => {
   });
 });
 
-app.use("/"+process.env.DB_PROJECT_BASE_PATH, require("./routes"));
 
+app.use("/"+ require('./config/config').MODULE_CODE, require("./routes"));
 
 // 404 response for invalid routes
 app.use((req, res,) => {

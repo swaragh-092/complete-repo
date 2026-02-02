@@ -63,14 +63,38 @@ services:
       start_period: 10s
 
   # ─────────────────────────────────────────────────────────────────────────────
-  # PostgreSQL for PMS and Super Administrator
+  # PostgreSQL for pms
   # ─────────────────────────────────────────────────────────────────────────────
-  postgres-pms:
+  db-pms:
     image: postgres:16
     container_name: postgres-pms
     restart: unless-stopped
-    # ports:
-    #   - "5432:5432"
+    ports:
+      - "5411:5432"
+    environment:
+      POSTGRES_USER: ${PMS_DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${PMS_DB_PASSWORD:-1234}
+    volumes:
+      - postgres-pms-data:/var/lib/postgresql/data
+    networks:
+      - auth-network
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${PMS_DB_USER:-postgres}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # PostgreSQL for super-adminostrator
+  # ─────────────────────────────────────────────────────────────────────────────
+  db-super-admin:
+    image: postgres:16
+    container_name: postgres-pms
+    restart: unless-stopped
+    ports:
+      - "5412:5432"
     environment:
       POSTGRES_USER: ${PMS_DB_USER:-postgres}
       POSTGRES_PASSWORD: ${PMS_DB_PASSWORD:-1234}

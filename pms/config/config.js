@@ -1,13 +1,15 @@
-const domain = {
+require('dotenv').config();
+
+const DOMAIN = {
     superAdmin: 'http://super-administrator:8089/',
     auth: 'http://auth-service:4000/',
 }
-// const domain = {
+// const DOMAIN = {
 //     superAdmin: 'http://localhost:2500',
 //     auth: 'http://auth-service:4000',
 // }
 
-const databaseDetails = {
+const DATABASE_DETAILS = {
     "default-shared": {
         name: process.env.DB_NAME || 'pms',
         user: process.env.DB_USER || 'postgres',
@@ -28,8 +30,18 @@ const databaseDetails = {
     }
 }
 
+const REDIS_CONNECTION = {
+    host : process.env.PMS_ENV === "docker" ? "redis" : "localhost",
+    port : 6379,
+    password : ""
+}
+
 module.exports = {
-    domain,
-    moduleCode: "pms_mod",
-    databaseDetails
+    DOMAIN,
+    MODULE_CODE: "pms_mod",
+    DATABASE_DETAILS,
+    REDIS_CONNECTION
 };
+
+
+

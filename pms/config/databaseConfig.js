@@ -9,13 +9,13 @@ const initModels = require("../models/initModels");
 
 const connections = {};
 
-const {databaseDetails} = require('./config');
+const {DATABASE_DETAILS} = require('./config');
 
 async function getTenantSequelize(connectionId) {
   if (connections[connectionId]) {
     return connections[connectionId];
   }
-  const connection = databaseDetails[connectionId];
+  const connection = DATABASE_DETAILS[connectionId];
 
   console.log("Database connection details:", connection);
 
