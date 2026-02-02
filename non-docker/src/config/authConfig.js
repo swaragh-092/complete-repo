@@ -7,16 +7,16 @@
 import { auth } from '@spidy092/auth-client';
 
 const config = {
-  clientKey: '{{CLIENT_KEY}}',
+  clientKey: 'non-docker',
   authBaseUrl: import.meta.env.VITE_AUTH_BASE_URL,
   accountUiUrl: import.meta.env.VITE_ACCOUNT_UI_URL,
   redirectUri: import.meta.env.VITE_REDIRECT_URI,
-  
+
   // ✅ Organization Configuration
   requiresOrganization: import.meta.env.VITE_REQUIRES_ORGANIZATION === 'true',
   organizationModel: import.meta.env.VITE_ORGANIZATION_MODEL,
   onboardingFlow: import.meta.env.VITE_ONBOARDING_FLOW,
-  
+
   // ========== SESSION SECURITY CONFIGURATION (matches centalized-login) ==========
   tokenRefreshBuffer: 120, // Refresh 2 minutes before expiry (same as centalized-login)
   sessionValidationInterval: 5 * 60 * 1000, // Validate every 5 minutes (same as centalized-login)
@@ -26,7 +26,7 @@ const config = {
   validateOnVisibility: false, // Disabled - was causing session_deleted_while_hidden errors
   enableIdleTimeout: true,
   skipValidationWhenHidden: true, // Skip validation when tab is hidden
-  
+
   // API configuration
   api: {
     baseURL: import.meta.env.VITE_AUTH_BASE_URL,
@@ -36,7 +36,7 @@ const config = {
 };
 
 
-console.log('🔑 {{APP_NAME}} auth config:', {
+console.log('🔑 non-docker auth config:', {
   clientKey: config.clientKey,
   requiresOrganization: config.requiresOrganization,
   sessionValidation: config.enableSessionValidation,
@@ -45,7 +45,7 @@ console.log('🔑 {{APP_NAME}} auth config:', {
 auth.setConfig(config);
 
 // ========== CROSS-TAB LOGOUT SYNC ==========
-const AUTH_CHANNEL_NAME = 'auth_{{CLIENT_KEY}}_channel';
+const AUTH_CHANNEL_NAME = 'auth_non-docker_channel';
 let authChannel = null;
 
 function initCrossTabSync() {
@@ -64,7 +64,7 @@ function initCrossTabSync() {
       auth.clearToken();
       auth.clearRefreshToken();
       stopSessionSecurity();
-      
+
       const loginUrl = new URL('/login', window.location.origin);
       loginUrl.searchParams.set('expired', 'true');
       loginUrl.searchParams.set('reason', reason || 'logout_from_other_tab');

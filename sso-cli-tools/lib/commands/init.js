@@ -218,13 +218,15 @@ export async function initCommand(options = {}, createViteFiles = null) {
         logger.step('📤 Submitting registration request...\n');
 
         // Determine URLs based on Docker mode selection
+        // Client redirect URL depends on whether CLIENT is dockerized (portless) or not (with port)
         const useDockerUrls = answers.generateDocker || SSO_CONFIG.dockerMode;
         const redirectUrl = useDockerUrls
             ? `${SSO_CONFIG.protocol}://${answers.clientKey}.${SSO_CONFIG.domain}/callback`
             : SSO_CONFIG.getRedirectUrl(answers.clientKey, answers.port);
-        const callbackUrl = useDockerUrls
-            ? `${SSO_CONFIG.protocol}://auth.${SSO_CONFIG.domain}/auth/callback/${answers.clientKey}`
-            : SSO_CONFIG.getCallbackUrl(answers.clientKey);
+
+        // Callback URL is where Keycloak redirects to (auth-service)
+        // Always uses gateway URL if auth is behind gateway (which is the common case)
+        const callbackUrl = SSO_CONFIG.getCallbackUrl(answers.clientKey);
 
         const requestData = {
             name: answers.appName,
