@@ -38,12 +38,12 @@ import {
   Brightness4,
   Brightness7,
 } from '@mui/icons-material';
-{{#if REQUIRES_ORGANIZATION}}
+
 import { useOrganization } from '../context/OrganizationContext';
 import { useWorkspace } from '../context/WorkspaceContext';
 import WorkspaceSwitcher from './WorkspaceSwitcher';
 import CreateOrganizationModal from './organization/CreateOrganizationModal';
-{{/if}}
+
 
 const drawerWidth = 280;
 
@@ -57,12 +57,12 @@ export default function Layout({ toggleColorMode, mode }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [userMenuAnchor, setUserMenuAnchor] = useState(null);
-  {{#if REQUIRES_ORGANIZATION}}
+  
   const { currentOrganization, organizations, switchOrganization, loading: orgLoading } = useOrganization();
   const { currentWorkspace, hasWorkspace } = useWorkspace();
   const [orgMenuAnchor, setOrgMenuAnchor] = useState(null);
   const [createOrgModalOpen, setCreateOrgModalOpen] = useState(false);
-  {{/if}}
+  
 
   // Fetch user profile
   useEffect(() => {
@@ -81,14 +81,14 @@ export default function Layout({ toggleColorMode, mode }) {
     fetchUser();
   }, []);
 
-  {{#if REQUIRES_ORGANIZATION}}
+  
   // Redirect if no organization selected
   useEffect(() => {
     if (!orgLoading && !currentOrganization) {
       navigate('/select-organization', { replace: true });
     }
   }, [currentOrganization, orgLoading, navigate]);
-  {{/if}}
+  
 
   const handleDrawerToggle = () => setMobileOpen(!mobileOpen);
 
@@ -114,9 +114,9 @@ export default function Layout({ toggleColorMode, mode }) {
 
   const navItems = [
     { text: 'Dashboard', icon: <DashboardIcon />, path: '/dashboard' },
-    {{#if REQUIRES_ORGANIZATION}}
+    
     { text: 'Invite Members', icon: <InviteIcon />, path: '/invite-members' },
-    {{/if}}
+    
   ];
 
   const getUserInitial = () => {
@@ -136,12 +136,12 @@ export default function Layout({ toggleColorMode, mode }) {
     <>
       <Toolbar>
         <Typography variant="h6" fontWeight={700} color="primary">
-          {{APP_NAME}}
+          non-docker
         </Typography>
       </Toolbar>
       <Divider />
 
-      {{#if REQUIRES_ORGANIZATION}}
+      
       {/* Organization Info */}
       {currentOrganization && (
         <Box sx={{ p: 2, bgcolor: 'action.hover', borderRadius: 1, m: 1.5 }}>
@@ -149,7 +149,7 @@ export default function Layout({ toggleColorMode, mode }) {
           <Typography variant="subtitle2" fontWeight={600}>{currentOrganization?.name || currentOrganization?.org_name}</Typography>
         </Box>
       )}
-      {{/if}}
+      
 
       <List sx={{ px: 1.5, flex: 1 }}>
         {navItems.map((item) => (
@@ -160,10 +160,10 @@ export default function Layout({ toggleColorMode, mode }) {
               sx={{
                 borderRadius: 2,
                 '&.Mui-selected': {
-                  background: '{{THEME_GRADIENT}}',
+                  background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
                   color: 'white',
                   '& .MuiListItemIcon-root': { color: 'white' },
-                  '&:hover': { background: '{{THEME_GRADIENT_HOVER}}' },
+                  '&:hover': { background: 'linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)' },
                 },
               }}
             >
@@ -215,7 +215,7 @@ export default function Layout({ toggleColorMode, mode }) {
                 width: 36,
                 height: 36,
                 borderRadius: 1.5,
-                background: '{{THEME_GRADIENT}}',
+                background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -224,7 +224,7 @@ export default function Layout({ toggleColorMode, mode }) {
               <DashboardIcon sx={{ color: 'white', fontSize: 20 }} />
             </Box>
             <Typography variant="h6" fontWeight={700} sx={{ display: { xs: 'none', sm: 'block' } }}>
-              {{APP_NAME}}
+              non-docker
             </Typography>
           </Box>
 
@@ -232,7 +232,7 @@ export default function Layout({ toggleColorMode, mode }) {
 
           {/* Right Actions */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            {{#if REQUIRES_ORGANIZATION}}
+            
             {/* Organization Switcher */}
             <Tooltip title="Switch Organization">
               <IconButton onClick={(e) => setOrgMenuAnchor(e.currentTarget)}>
@@ -246,7 +246,7 @@ export default function Layout({ toggleColorMode, mode }) {
                 <WorkspaceSwitcher variant="button" />
               </Box>
             )}
-            {{/if}}
+            
 
             {/* Theme Toggle */}
             {toggleColorMode && (
@@ -269,7 +269,7 @@ export default function Layout({ toggleColorMode, mode }) {
         </Toolbar>
       </AppBar>
 
-      {{#if REQUIRES_ORGANIZATION}}
+      
       {/* Organization Menu */}
       <Menu
         anchorEl={orgMenuAnchor}
@@ -304,7 +304,7 @@ export default function Layout({ toggleColorMode, mode }) {
         onClose={() => setCreateOrgModalOpen(false)}
         onSuccess={(newOrg) => console.log('Created org:', newOrg?.name)}
       />
-      {{/if}}
+      
 
       {/* User Menu */}
       <Menu

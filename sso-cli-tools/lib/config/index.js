@@ -55,6 +55,10 @@ export const SSO_CONFIG = {
     // Docker/Gateway mode (no ports in URLs)
     dockerMode: process.env.SSO_DOCKER_MODE === 'true' || fileConfig.dockerMode || false,
 
+    // Auth service behind gateway (always use portless URLs for auth callbacks)
+    // This is common when auth-service is dockerized but client is not
+    authBehindGateway: process.env.SSO_AUTH_BEHIND_GATEWAY === 'true' || fileConfig.authBehindGateway || true,
+
     // Auth service port
     authServicePort: parseInt(
         process.env.SSO_AUTH_PORT || fileConfig.authServicePort || '4000',
@@ -120,8 +124,11 @@ export const SSO_CONFIG = {
      * @returns {string} Auth service callback URL
      */
     getCallbackUrl(clientKey) {
-        // Auth service is always accessed via internal network or gateway
-        // But the callback URL registered in Keycloak must match what the browser sends
+        // Auth service callback URL should always use gateway (portless) when auth is behind gateway
+        // This is the URL registered in Keycloak and must match what the browser sends
+        if (this.authBehindGateway || this.dockerMode) {
+            return `${this.protocol}://auth.${this.domain}/auth/callback/${clientKey}`;
+        }
         return `${this.authServiceUrl}/auth/callback/${clientKey}`;
     },
 };

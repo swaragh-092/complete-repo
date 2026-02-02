@@ -134,14 +134,16 @@ function readTemplate(templateName) {
 // These generate portless URLs for Docker deployments without affecting CLI communication
 // ============================================================================
 function getDockerAwareAuthUrl(useDocker) {
-  if (useDocker) {
+  // If auth-service is behind gateway OR client is dockerized, use portless gateway URL
+  if (useDocker || SSO_CONFIG.authBehindGateway) {
     return `${SSO_CONFIG.protocol}://auth.${SSO_CONFIG.domain}`;
   }
   return SSO_CONFIG.authServiceUrl;
 }
 
 function getDockerAwareAccountUrl(useDocker) {
-  if (useDocker) {
+  // If auth is behind gateway OR client is dockerized, use portless gateway URL
+  if (useDocker || SSO_CONFIG.authBehindGateway) {
     return `${SSO_CONFIG.protocol}://account.${SSO_CONFIG.domain}`;
   }
   return SSO_CONFIG.accountUiUrl;
@@ -717,6 +719,13 @@ program
         await generateFile(
           'components/OrganizationManager.tpl',
           'src/components/organization/OrganizationManager.jsx',
+          templateVars
+        );
+
+        // ✅ Create Organization Modal (for existing users to create new orgs)
+        await generateFile(
+          'components/CreateOrganizationModal.tpl',
+          'src/components/organization/CreateOrganizationModal.jsx',
           templateVars
         );
 

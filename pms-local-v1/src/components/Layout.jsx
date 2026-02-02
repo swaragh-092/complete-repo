@@ -42,6 +42,7 @@ import {
 import { useOrganization } from '../context/OrganizationContext';
 import { useWorkspace } from '../context/WorkspaceContext';
 import WorkspaceSwitcher from './WorkspaceSwitcher';
+import CreateOrganizationModal from './organization/CreateOrganizationModal';
 
 
 const drawerWidth = 280;
@@ -60,6 +61,7 @@ export default function Layout({ toggleColorMode, mode }) {
   const { currentOrganization, organizations, switchOrganization, loading: orgLoading } = useOrganization();
   const { currentWorkspace, hasWorkspace } = useWorkspace();
   const [orgMenuAnchor, setOrgMenuAnchor] = useState(null);
+  const [createOrgModalOpen, setCreateOrgModalOpen] = useState(false);
   
 
   // Fetch user profile
@@ -290,11 +292,18 @@ export default function Layout({ toggleColorMode, mode }) {
           </MenuItem>
         ))}
         <Divider />
-        <MenuItem onClick={() => { navigate('/create-organization'); setOrgMenuAnchor(null); }}>
+        <MenuItem onClick={() => { setOrgMenuAnchor(null); setCreateOrgModalOpen(true); }}>
           <ListItemIcon><OrgIcon fontSize="small" /></ListItemIcon>
           Create New Organization
         </MenuItem>
       </Menu>
+
+      {/* Create Organization Modal */}
+      <CreateOrganizationModal
+        open={createOrgModalOpen}
+        onClose={() => setCreateOrgModalOpen(false)}
+        onSuccess={(newOrg) => console.log('Created org:', newOrg?.name)}
+      />
       
 
       {/* User Menu */}
