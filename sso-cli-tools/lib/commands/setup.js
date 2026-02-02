@@ -48,8 +48,21 @@ export async function setupCommand() {
     logger.keyValue('Account UI', SSO_CONFIG.accountUiUrl);
 
     logger.blank();
+    console.log(chalk.cyan('⚙️  Current Configuration:\n'));
+    logger.keyValue('Docker Mode', SSO_CONFIG.dockerMode ? 'Enabled' : 'Disabled');
+    logger.keyValue('Auth Behind Gateway', SSO_CONFIG.authBehindGateway ? 'Yes (default)' : 'No');
+    logger.keyValue('Domain', SSO_CONFIG.domain);
+    logger.keyValue('Protocol', SSO_CONFIG.protocol);
+
+    if (!SSO_CONFIG.authBehindGateway) {
+        logger.keyValue('Auth Port', SSO_CONFIG.authServicePort.toString());
+        logger.keyValue('Account UI Port', SSO_CONFIG.accountUiPort.toString());
+    }
+
+    logger.blank();
     console.log(chalk.cyan('📚 Documentation:\n'));
     console.log(chalk.gray('   See README.md for detailed documentation'));
+    console.log(chalk.gray('   See docs/DEPLOYMENT_MODES.md for deployment options'));
 }
 
 export default setupCommand;

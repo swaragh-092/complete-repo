@@ -28,11 +28,6 @@
       "default": false,
       "description": "Enable Docker mode (no ports in URLs)"
     },
-    "authBehindGateway": {
-      "type": "boolean",
-      "default": true,
-      "description": "Auth service runs behind gateway (no ports in URLs)"
-    },
     "authServicePort": {
       "type": "integer",
       "minimum": 1024,

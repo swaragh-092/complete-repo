@@ -79,14 +79,16 @@ export const SSO_CONFIG = {
 
     // Computed URLs (getters)
     get authServiceUrl() {
-        if (this.dockerMode) {
+        // Use portless URL when dockerMode is true OR auth is behind gateway
+        if (this.dockerMode || this.authBehindGateway) {
             return `${this.protocol}://auth.${this.domain}`;
         }
         return `${this.protocol}://auth.${this.domain}:${this.authServicePort}`;
     },
 
     get accountUiUrl() {
-        if (this.dockerMode) {
+        // Use portless URL when dockerMode is true OR auth is behind gateway
+        if (this.dockerMode || this.authBehindGateway) {
             return `${this.protocol}://account.${this.domain}`;
         }
         return `${this.protocol}://account.${this.domain}:${this.accountUiPort}`;
