@@ -76,7 +76,6 @@ services:
       POSTGRES_PASSWORD: ${PMS_DB_PASSWORD:-1234}
     volumes:
       - postgres-pms-data:/var/lib/postgresql/data
-      - ./init-multiple-db.sql:/docker-entrypoint-initdb.d/init.sql:ro
     networks:
       - auth-network
     healthcheck:
