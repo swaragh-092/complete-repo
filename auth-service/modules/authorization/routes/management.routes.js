@@ -2,15 +2,15 @@
 
 const express = require('express');
 const Joi = require('joi');
-const asyncHandler = require('../middleware/asyncHandler');
-const { authMiddleware } = require('../middleware/authMiddleware');
-const { AppError } = require('../middleware/errorHandler');
-const { authorize, authorizeRBAC } = require('../middleware/authorization.middleware');
-const { Policy, Relationship, ResourceAttribute } = require('../config/database');
-const PolicyEngine = require('../services/policy-engine.service');
-const RelationshipGraph = require('../services/relationship-graph.service');
-const AuthorizationService = require('../services/authorization.service');
-const ResponseHandler = require('../utils/responseHandler');
+const asyncHandler = require('../../../middleware/asyncHandler');
+const { authMiddleware } = require('../../../middleware/authMiddleware');
+const { AppError } = require('../../../middleware/errorHandler');
+const { authorize, authorizeRBAC } = require('../middleware');
+const { Policy, Relationship, ResourceAttribute } = require('../../../config/database');
+const PolicyEngine = require('../engine/policy-engine');
+const RelationshipGraph = require('../engine/relationship-graph');
+const AuthorizationService = require('../engine/access-control');
+const ResponseHandler = require('../../../utils/responseHandler');
 
 const router = express.Router();
 

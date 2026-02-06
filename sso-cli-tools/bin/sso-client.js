@@ -332,6 +332,61 @@ async function createViteFiles(answers) {
     const orgWorkspacesTemplate = readTemplate('components/OrganizationWorkspaces.tpl');
     fs.writeFileSync('src/components/organization/OrganizationWorkspaces.jsx', orgWorkspacesTemplate);
     console.log(chalk.green('✅ Created OrganizationWorkspaces component'));
+
+    // ============================================================================
+    // ✅ NEW: Generate RBAC (Role-Based Access Control) files
+    // ============================================================================
+    console.log(chalk.blue('\n🔐 Generating RBAC (authorization) files...'));
+
+    // Create constants directory
+    fs.mkdirSync('src/constants', { recursive: true });
+
+    // Permission constants
+    const permissionsTemplate = readTemplate('rbac/permissions.tpl');
+    fs.writeFileSync('src/constants/permissions.js', replaceTemplate(permissionsTemplate, {
+      clientId: answers.clientKey
+    }));
+    console.log(chalk.green('✅ Created src/constants/permissions.js'));
+
+    // Permission hooks
+    fs.mkdirSync('src/hooks', { recursive: true });
+    const usePermissionsTemplate = readTemplate('rbac/usePermissions.tpl');
+    fs.writeFileSync('src/hooks/usePermissions.jsx', replaceTemplate(usePermissionsTemplate, {
+      clientId: answers.clientKey
+    }));
+    console.log(chalk.green('✅ Created src/hooks/usePermissions.jsx'));
+
+    // Roles API client
+    const rolesApiTemplate = readTemplate('api/roles.tpl');
+    fs.writeFileSync('src/api/roles.js', replaceTemplate(rolesApiTemplate, {
+      clientId: answers.clientKey
+    }));
+    console.log(chalk.green('✅ Created src/api/roles.js'));
+
+    // Role Manager component
+    const roleManagerTemplate = readTemplate('components/organization/RoleManager.tpl');
+    fs.writeFileSync('src/components/organization/RoleManager.jsx', roleManagerTemplate);
+    console.log(chalk.green('✅ Created src/components/organization/RoleManager.jsx'));
+
+    // Member Role Assignment component
+    const memberRoleTemplate = readTemplate('components/organization/MemberRoleAssignment.tpl');
+    fs.writeFileSync('src/components/organization/MemberRoleAssignment.jsx', memberRoleTemplate);
+    console.log(chalk.green('✅ Created src/components/organization/MemberRoleAssignment.jsx'));
+
+    // Sample RBAC definitions (for reference)
+    const rbacDefsTemplate = readTemplate('rbac/rbac-definitions.json.tpl');
+    fs.writeFileSync('rbac-definitions.sample.json', replaceTemplate(rbacDefsTemplate, {
+      clientId: answers.clientKey
+    }));
+    console.log(chalk.green('✅ Created rbac-definitions.sample.json (for reference)'));
+
+    console.log(chalk.cyan('\n📖 Role Management Features:'));
+    console.log(chalk.white('   • RoleManager - Create/edit/delete custom roles'));
+    console.log(chalk.white('   • MemberRoleAssignment - Assign roles to members'));
+    console.log(chalk.white('   • Permission constants for frontend checks'));
+    console.log(chalk.white(''));
+    console.log(chalk.white('   Add RoleManager to your dashboard/settings:'));
+    console.log(chalk.white('   import RoleManager from "./components/organization/RoleManager";'));
   }
 
   // 9. Create Header and ProtectedLayout components
@@ -762,6 +817,25 @@ program
           'src/components/organization/CreateWorkspaceModal.jsx',
           templateVars
         );
+
+        // ============================================================================
+        // ✅ NEW: Generate RBAC (Role Management) files
+        // ============================================================================
+        console.log(chalk.blue('\n🔐 Generating RBAC (role management) files...'));
+
+        // Create constants directory
+        const constantsDir = 'src/constants';
+        if (!fs.existsSync(constantsDir)) {
+          fs.mkdirSync(constantsDir, { recursive: true });
+        }
+
+        await generateFile('rbac/permissions.tpl', 'src/constants/permissions.js', templateVars);
+        await generateFile('rbac/usePermissions.tpl', 'src/hooks/usePermissions.jsx', templateVars);
+        await generateFile('api/roles.tpl', 'src/api/roles.js', templateVars);
+        await generateFile('components/organization/RoleManager.tpl', 'src/components/organization/RoleManager.jsx', templateVars);
+        await generateFile('components/organization/MemberRoleAssignment.tpl', 'src/components/organization/MemberRoleAssignment.jsx', templateVars);
+
+        console.log(chalk.green('  ✓ Generated RBAC files (RoleManager, permissions, hooks)'));
 
         // NOTE: CSS files removed - MUI is used for styling
 

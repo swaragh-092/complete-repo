@@ -42,6 +42,10 @@ const clientsRouter = require('./clients');
 // Audit domain - audit logging
 const auditRouter = require('./audit');
 
+// Authorization Module - Enterprise Authorization Management
+const authorizationModule = require('../modules/authorization');
+const authorizationManagementRouter = require('../modules/authorization/routes/management.routes');
+
 // ============================================================================
 // Mount Domain Routers
 // IMPORTANT: External URLs remain unchanged
@@ -88,6 +92,15 @@ router.use('/auth', clientsRouter);
 
 // Audit routes
 router.use('/auth/audit', auditRouter);
+
+// Authorization Management API (Enterprise)
+// Exposed under /api/v1/authz for policy and relationship management
+// Protected by RBAC (policy:read, etc.) within the routes themselves
+router.use('/api/v1/authz', authorizationManagementRouter);
+
+// RBAC Org-Scoped Roles API (custom roles per organization)
+const orgRolesRouter = require('./roles');
+router.use('/api/org-roles', orgRolesRouter);
 
 // Trusted devices routes
 router.use('/auth/trusted-devices', require('./trusted-devices.route'));

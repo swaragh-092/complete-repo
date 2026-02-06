@@ -1,7 +1,7 @@
 // middleware/authorization.middleware.js - Unified Authorization Middleware
 
-const AuthorizationService = require('../services/authorization.service');
-const logger = require('../utils/logger');
+const AuthorizationService = require('../engine/access-control');
+const logger = require('../../../utils/logger');
 
 /**
  * Unified authorization middleware
@@ -39,6 +39,9 @@ const authorize = (options = {}) => {
         query: req.query,
       };
 
+      // Extract clientId from token (azp = authorized party in JWT)
+      const clientId = req.user?.client_id || req.user?.azp || req.headers['x-client-id'] || '*';
+
       // Perform authorization check
       const result = await AuthorizationService.checkAccess({
         user: req.user,
@@ -50,6 +53,7 @@ const authorize = (options = {}) => {
           skipRBAC,
           skipABAC,
           skipReBAC,
+          clientId, // Pass clientId for client-scoped permission checks
         },
       });
 

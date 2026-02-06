@@ -1,6 +1,6 @@
 // services/policy-engine.service.js - ABAC Policy Evaluation Engine
 
-const { Policy, ResourceAttribute } = require('../config/database');
+const { Policy, ResourceAttribute } = require('../../../config/database');
 const { Op } = require('sequelize');
 
 class PolicyEngine {
@@ -89,7 +89,7 @@ class PolicyEngine {
 
     // Check action match
     if (policy.actions && policy.actions.length > 0) {
-      const actionMatch = policy.actions.includes(action) || 
+      const actionMatch = policy.actions.includes(action) ||
         policy.actions.some((pattern) => this.matchPattern(action, pattern));
       if (!actionMatch) return false;
     }

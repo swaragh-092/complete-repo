@@ -50,6 +50,16 @@ module.exports = (sequelize) => {
       type: DataTypes.BOOLEAN,
       defaultValue: false,
     },
+    client_id: {
+      type: DataTypes.STRING(100),
+      allowNull: true,
+      comment: 'Client/App scope (NULL = global, visible to all apps)',
+    },
+    org_id: {
+      type: DataTypes.UUID,
+      allowNull: true,
+      comment: 'Organization scope (NULL = system role, UUID = org-specific custom role)',
+    },
     created_at: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW,

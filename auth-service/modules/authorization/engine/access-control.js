@@ -1,8 +1,8 @@
 // services/authorization.service.js - Unified Authorization Service (RBAC + ABAC + ReBAC)
 
-const PolicyEngine = require('./policy-engine.service');
-const RelationshipGraph = require('./relationship-graph.service');
-const { Role, Permission, OrganizationMembership } = require('../config/database');
+const PolicyEngine = require('./policy-engine');
+const RelationshipGraph = require('./relationship-graph');
+const { Role, Permission, OrganizationMembership } = require('../../../config/database');
 const { Op } = require('sequelize');
 
 class AuthorizationService {
@@ -38,7 +38,8 @@ class AuthorizationService {
 
     // 1. RBAC Check (Role-Based Access Control)
     if (!skipRBAC) {
-      results.rbac = await this.checkRBAC({ user, action, resource });
+      const clientId = user.client_id || user.azp || options.clientId || '*';
+      results.rbac = await this.checkRBAC({ user, action, resource, clientId });
       if (requireAll && !results.rbac.allowed) {
         return {
           allowed: false,
@@ -134,16 +135,30 @@ class AuthorizationService {
 
   /**
    * RBAC Check - Role and Permission based
+   * Uses client-prefixed permission format: client:resource:action
    */
-  static async checkRBAC({ user, action, resource }) {
-    // Check if user has required permission
-    const permissionName = `${resource.type || 'resource'}:${action}`;
-    const hasPermission = user.permissions?.includes(permissionName);
+  static async checkRBAC({ user, action, resource, clientId }) {
+    const resourceType = resource.type || 'resource';
 
-    if (hasPermission) {
+    // Build permission names to check (client-specific and global wildcard)
+    const clientPrefixedPermission = `${clientId || '*'}:${resourceType}:${action}`;
+    const globalPermission = `*:${resourceType}:${action}`;
+
+    // Check if user has required permission (client-specific or global)
+    const hasClientPermission = user.permissions?.includes(clientPrefixedPermission);
+    const hasGlobalPermission = user.permissions?.includes(globalPermission);
+
+    if (hasClientPermission) {
       return {
         allowed: true,
-        reason: `User has permission: ${permissionName}`,
+        reason: `User has client-specific permission: ${clientPrefixedPermission}`,
+      };
+    }
+
+    if (hasGlobalPermission) {
+      return {
+        allowed: true,
+        reason: `User has global permission: ${globalPermission}`,
       };
     }
 
@@ -156,18 +171,19 @@ class AuthorizationService {
       };
     }
 
-    // Check organization-specific permissions
+    // Check organization-specific permissions (using client-prefixed format)
     if (resource.orgId) {
       const orgPermission = await this.checkOrgPermission({
         userId: user.id,
         orgId: resource.orgId,
-        permission: permissionName,
+        permission: clientPrefixedPermission,
+        globalPermission: globalPermission,
       });
 
       if (orgPermission) {
         return {
           allowed: true,
-          reason: `User has organization permission: ${permissionName}`,
+          reason: `User has organization permission: ${clientPrefixedPermission}`,
         };
       }
     }
@@ -243,7 +259,14 @@ class AuthorizationService {
    * ReBAC Check - Relationship-based
    */
   static async checkReBAC({ user, action, resource }) {
-    const userId = user.sub || user.keycloak_id;
+    const userId = user.sub || user.keycloak_id || user.id; // Added fallback to user.id
+
+    if (!userId) {
+      return {
+        allowed: false,
+        reason: 'User identifier missing'
+      };
+    }
 
     // Check direct ownership
     const isOwner = await RelationshipGraph.hasRelationship({
@@ -334,8 +357,17 @@ class AuthorizationService {
 
   /**
    * Check organization-specific permission
+   * Supports client-prefixed permission format (client:resource:action)
    */
-  static async checkOrgPermission({ userId, orgId, permission }) {
+  static async checkOrgPermission({ userId, orgId, permission, globalPermission }) {
+    const { Op } = require('sequelize');
+
+    // Build permission names to check (client-specific and global wildcard)
+    const permissionNames = [permission];
+    if (globalPermission && globalPermission !== permission) {
+      permissionNames.push(globalPermission);
+    }
+
     const membership = await OrganizationMembership.findOne({
       where: {
         user_id: userId,
@@ -348,7 +380,9 @@ class AuthorizationService {
           include: [
             {
               model: Permission,
-              where: { name: permission },
+              where: {
+                name: { [Op.in]: permissionNames }
+              },
               required: false,
             },
           ],

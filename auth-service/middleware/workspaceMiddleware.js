@@ -4,6 +4,7 @@ const { WorkspaceMembership, Workspace } = require('../config/database');
 const { AppError } = require('./errorHandler');
 const { ROLES } = require('../config/constants');
 const logger = require('../utils/logger');
+const AuthorizationService = require('../modules/authorization/engine/access-control'); // Import isolated engine
 
 /**
  * Helper function to check if user is a super admin
@@ -27,6 +28,40 @@ const requireWorkspaceAccess = (requiredRole = null) => {
                 return next(new AppError('Workspace ID is required', 400));
             }
 
+            // 1. Enterprise Dynamic Authorization Check (Priority)
+            // This allows checking policies and relationships from the isolated module
+            try {
+                // Map legacy role requirements to actions
+                let action = 'view'; // default
+                if (requiredRole === 'editor') action = 'edit';
+                if (requiredRole === 'admin') action = 'manage';
+
+                const authResult = await AuthorizationService.checkAccess({
+                    user: req.user,
+                    action: `workspace:${action}`,
+                    resource: {
+                        type: 'workspace',
+                        id: workspaceId
+                    },
+                    options: { skipRBAC: true } // Prefer ReBAC/Policies for this specific check
+                });
+
+                if (authResult.allowed) {
+                    logger.info('Workspace access granted via Dynamic Policy', { userId, workspaceId });
+
+                    // We still need to populate req.workspace for the controller
+                    const workspace = await Workspace.findByPk(workspaceId);
+                    if (workspace) {
+                        req.workspace = workspace;
+                        req.workspaceMembership = { role: 'dynamic_grant' }; // specialized role
+                        return next();
+                    }
+                }
+            } catch (dynError) {
+                logger.warn('Dynamic authorization check failed, falling back to legacy', { error: dynError.message });
+            }
+
+            // 2. Legacy Hardcoded Logic (Fallback)
             // Super Admin Bypass - super admins have access to all workspaces
             if (isSuperAdmin(req.user)) {
                 logger.info('Super admin bypass for workspace access', { userId, workspaceId });
@@ -99,6 +134,33 @@ const requireOrgPermission = (requiredRole = 'admin') => {
                 return next(new AppError('Organization ID is required', 400, 'ORG_ID_REQUIRED'));
             }
 
+            // 1. Enterprise Dynamic Org Check
+            try {
+                // Map roles to actions
+                let action = 'view';
+                if (requiredRole === 'admin') action = 'manage';
+                if (requiredRole === 'owner') action = 'own';
+
+                const authResult = await AuthorizationService.checkAccess({
+                    user: req.user,
+                    action: `organization:${action}`,
+                    resource: {
+                        type: 'organization',
+                        id: orgId
+                    }
+                });
+
+                if (authResult.allowed) {
+                    logger.info('Organization access granted via Dynamic Policy', { userId, orgId });
+                    req.targetOrgId = orgId;
+                    req.userOrgRole = 'dynamic_grant';
+                    return next();
+                }
+            } catch (dynError) {
+                logger.warn('Dynamic org check failed, falling back', { error: dynError.message });
+            }
+
+            // 2. Legacy Check
             // Super Admin Bypass - super admins have full org permissions
             if (isSuperAdmin(req.user)) {
                 logger.info('Super admin bypass for org permission', { userId, orgId, requiredRole });

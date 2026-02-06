@@ -1,6 +1,6 @@
 // services/relationship-graph.service.js - ReBAC Relationship Graph Service
 
-const { Relationship, Organization, OrganizationMembership, Role, Sequelize } = require('../config/database');
+const { Relationship, Organization, OrganizationMembership, Role, Sequelize } = require('../../../config/database');
 const { Op } = Sequelize;
 
 class RelationshipGraph {
