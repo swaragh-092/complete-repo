@@ -12,15 +12,15 @@ import { SnackbarProvider } from 'notistack';
 import Login from './pages/Login';
 import Callback from './pages/Callback';
 import Dashboard from './pages/Dashboard';
+import Settings from './pages/Settings';
 import Layout from './components/Layout';
-{{#if REQUIRES_ORGANIZATION}}
+
 import { OrganizationProvider } from './context/OrganizationContext';
 import { WorkspaceProvider } from './context/WorkspaceContext';
 import SelectOrganization from './pages/SelectOrganization';
 import CreateOrganization from './pages/CreateOrganization';
 import InviteMembers from './pages/InviteMembers';
-import Settings from './pages/Settings';
-{{/if}}
+
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -32,8 +32,8 @@ const queryClient = new QueryClient({
 const getTheme = (mode) => createTheme({
   palette: {
     mode,
-    primary: { main: '{{THEME_PRIMARY}}' },
-    secondary: { main: '{{THEME_SECONDARY}}' },
+    primary: { main: '#6366f1' },
+    secondary: { main: '#8b5cf6' },
     background: {
       default: mode === 'dark' ? '#121212' : '#f5f5f5',
       paper: mode === 'dark' ? '#1e1e1e' : '#ffffff',
@@ -78,19 +78,18 @@ function AppRoutes({ toggleColorMode, mode }) {
       <Route path="/login" element={<Login />} />
       <Route path="/callback" element={<Callback />} />
 
-      {{#if REQUIRES_ORGANIZATION}}
+      
       {/* Organization Routes (no sidebar) */}
       <Route path="/select-organization" element={isAuthenticated ? <SelectOrganization /> : <Navigate to="/login" replace />} />
       <Route path="/create-organization" element={isAuthenticated ? <CreateOrganization /> : <Navigate to="/login" replace />} />
-      {{/if}}
+      
 
       {/* Protected Routes with Layout */}
       <Route element={isAuthenticated ? <Layout toggleColorMode={toggleColorMode} mode={mode} /> : <Navigate to="/login" replace />}>
         <Route path="/dashboard" element={<Dashboard />} />
-        {{#if REQUIRES_ORGANIZATION}}
         <Route path="/settings" element={<Settings />} />
         <Route path="/invite-members" element={<InviteMembers />} />
-        {{/if}}
+        
       </Route>
 
       {/* Default Routes */}
@@ -132,15 +131,13 @@ function App() {
         >
           <BrowserRouter>
             <SessionHandler>
-              {{#if REQUIRES_ORGANIZATION}}
+              
               <OrganizationProvider>
                 <WorkspaceProvider>
                   <AppRoutes toggleColorMode={toggleColorMode} mode={mode} />
                 </WorkspaceProvider>
               </OrganizationProvider>
-              {{else}}
-              <AppRoutes toggleColorMode={toggleColorMode} mode={mode} />
-              {{/if}}
+              
             </SessionHandler>
           </BrowserRouter>
         </SnackbarProvider>

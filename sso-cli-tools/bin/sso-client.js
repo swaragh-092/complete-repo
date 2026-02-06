@@ -380,13 +380,17 @@ async function createViteFiles(answers) {
     }));
     console.log(chalk.green('✅ Created rbac-definitions.sample.json (for reference)'));
 
-    console.log(chalk.cyan('\n📖 Role Management Features:'));
-    console.log(chalk.white('   • RoleManager - Create/edit/delete custom roles'));
+    // Settings page (brings together RoleManager, OrganizationManager)
+    const settingsTemplate = readTemplate('pages/Settings.tpl');
+    fs.writeFileSync('src/pages/Settings.jsx', settingsTemplate);
+    console.log(chalk.green('✅ Created src/pages/Settings.jsx'));
+
+    console.log(chalk.cyan('\n📖 Organization Features:'));
+    console.log(chalk.white('   • Settings page with Members & Organization tabs'));
+    console.log(chalk.white('   • OrganizationManager - Manage org settings and members'));
     console.log(chalk.white('   • MemberRoleAssignment - Assign roles to members'));
-    console.log(chalk.white('   • Permission constants for frontend checks'));
     console.log(chalk.white(''));
-    console.log(chalk.white('   Add RoleManager to your dashboard/settings:'));
-    console.log(chalk.white('   import RoleManager from "./components/organization/RoleManager";'));
+    console.log(chalk.white('   Access at: /settings'));
   }
 
   // 9. Create Header and ProtectedLayout components

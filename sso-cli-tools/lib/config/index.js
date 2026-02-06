@@ -158,6 +158,7 @@ export const DEPENDENCIES = {
         '@emotion/react',
         '@emotion/styled',
         'notistack',
+        'date-fns',
     ],
     // Dev dependencies
     dev: [

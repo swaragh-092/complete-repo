@@ -388,7 +388,7 @@ class WorkspaceService {
 
             // Also deactivate all memberships
             await WorkspaceMembership.update(
-                { status: MEMBER_STATUS.INACTIVE },
+                { status: MEMBER_STATUS.SUSPENDED },
                 { where: { workspace_id: workspaceId }, transaction }
             );
 

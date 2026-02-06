@@ -74,6 +74,23 @@ router.get('/',
 );
 
 /**
+ * GET /roles/permissions/available
+ * List all available permissions
+ * NOTE: This route MUST be before /:id to prevent route conflicts
+ */
+router.get('/permissions/available',
+    authorizeRBAC('*:role:read'),
+    asyncHandler(async (req, res) => {
+        const permissions = await Permission.findAll({
+            attributes: ['id', 'name', 'description', 'resource', 'action'],
+            order: [['resource', 'ASC'], ['action', 'ASC']]
+        });
+
+        return ResponseHandler.success(res, { permissions });
+    })
+);
+
+/**
  * GET /roles/:id
  * Get single role details
  */
@@ -325,22 +342,6 @@ router.post('/:id/permissions',
                 permissions: role.Permissions?.map(p => p.name) || []
             }
         });
-    })
-);
-
-/**
- * GET /roles/permissions/available
- * List all available permissions
- */
-router.get('/permissions/available',
-    authorizeRBAC('*:role:read'),
-    asyncHandler(async (req, res) => {
-        const permissions = await Permission.findAll({
-            attributes: ['id', 'name', 'description', 'resource', 'action'],
-            order: [['resource', 'ASC'], ['action', 'ASC']]
-        });
-
-        return ResponseHandler.success(res, { permissions });
     })
 );
 

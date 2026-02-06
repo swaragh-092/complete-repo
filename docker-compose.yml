@@ -32,8 +32,6 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-      
-
 
   # ════════════════════════════════════════════════════════════════════════════
   # DATABASES
@@ -141,6 +139,7 @@ services:
       # URLs
       # URLs
       FRONTEND_URL: ${FRONTEND_URL:-https://admin.local.test}
+      ACCOUNT_UI_URL: ${ACCOUNT_UI_URL:-https://client.local.test}
       AUTH_SERVICE_URL: ${AUTH_SERVICE_URL:-https://auth.local.test}
 
       # Session
@@ -253,8 +252,6 @@ services:
       retries: 3
       start_period: 10s
 
-  
-
   # ════════════════════════════════════════════════════════════════════════════
   # PMS & SUPER ADMINISTRATOR SERVICES
   # ════════════════════════════════════════════════════════════════════════════
@@ -350,7 +347,7 @@ services:
       - auth-network
     ports:
       - 4010:4010
-    
+
     command: [ "server.js" ]
     healthcheck:
       test: [ "CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:4010/health" ]
@@ -358,7 +355,6 @@ services:
       timeout: 10s
       retries: 3
       start_period: 30s
-
 
   pms-local-v1:
     build:
@@ -373,7 +369,6 @@ services:
         - VITE_CALLBACK_URL=https://pms-local-v1.local.test/callback
     networks:
       - auth-network
-
 
 # ══════════════════════════════════════════════════════════════════════════════
 # NETWORKS

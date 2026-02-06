@@ -84,6 +84,7 @@ router.use('/auth/org-onboarding', organizationsRouter.onboarding); // For auth-
 
 // Permissions routes
 router.use('/permissions', permissionsRouter.permissions);
+router.use('/auth/permissions', permissionsRouter.permissions); // For auth-client compatibility
 router.use('/db-roles', permissionsRouter.dbRoles);
 router.use('/auth/db-roles', permissionsRouter.dbRoles); // For auth-client compatibility
 
@@ -101,6 +102,7 @@ router.use('/api/v1/authz', authorizationManagementRouter);
 // RBAC Org-Scoped Roles API (custom roles per organization)
 const orgRolesRouter = require('./roles');
 router.use('/api/org-roles', orgRolesRouter);
+router.use('/auth/api/org-roles', orgRolesRouter); // For auth-client compatibility
 
 // Trusted devices routes
 router.use('/auth/trusted-devices', require('./trusted-devices.route'));
