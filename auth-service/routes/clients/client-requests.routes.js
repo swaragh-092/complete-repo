@@ -2,7 +2,7 @@
 const express = require('express');
 const { Client, UserMetadata, ClientRequest, sequelize } = require('../../config/database');
 const { notifyAdmins, notifyDeveloper } = require('../../services/notifications');
-const EmailService = require('../../services/email.service');
+const emailModule = require('../../modules/email');
 const { authMiddleware } = require('../../middleware/authMiddleware')
 const asyncHandler = require('../../middleware/asyncHandler');
 const { AppError } = require('../../middleware/errorHandler');
@@ -11,7 +11,7 @@ const crypto = require('crypto');
 const logger = require('../../utils/logger');
 const { APP_URL, getKeycloakService } = require('../../config');
 
-const emailService = new EmailService();
+
 
 // getKeycloakService is imported from config/index.js - uses cached instances
 
@@ -96,10 +96,9 @@ router.post('/client-requests', asyncHandler(async (req, res) => {
       }
     });
 
-    await emailService.sendEmail({
+    await emailModule.send({
+      type: emailModule.EMAIL_TYPES.CLIENT_REQUEST,
       to: clientRequest.developer_email,
-      subject: 'New Client Registration Request Submitted',
-      template: 'client-request',
       data: {
         adminName: 'Admin',
         clientName: clientRequest.name,
@@ -261,10 +260,9 @@ router.post("/admin/client-requests/:id/approve",
           logger.error(`Failed to add 'sub' mapper for ${request.client_key}: ${mapperErr.message}`);
         }
 
-        await emailService.sendEmail({
+        await emailModule.send({
+          type: emailModule.EMAIL_TYPES.CLIENT_APPROVED,
           to: request.developer_email,
-          subject: "Your Client Registration Request has been Approved",
-          template: "client-approved",
           data: {
             adminName: adminUser.name || "Admin",
             clientName: request.name,
@@ -272,7 +270,7 @@ router.post("/admin/client-requests/:id/approve",
             developerEmail: request.developer_email,
             redirectUrl: request.redirect_url,
           }
-        })
+        });
 
       } catch (kcErr) {
         logger.error(`Keycloak client creation failed: ${kcErr.message}`);
@@ -325,10 +323,9 @@ router.post("/admin/client-requests/:id/approve",
 
       await transaction.commit();
 
-      await emailService.sendEmail({
+      await emailModule.send({
+        type: emailModule.EMAIL_TYPES.CLIENT_APPROVED,
         to: request.developer_email,
-        subject: "Your Client Registration Request has been Approved",
-        template: "client-approved",
         data: {
           adminName: adminUser.name || "Admin",
           clientName: request.name,
@@ -543,10 +540,9 @@ router.post('/admin/client-requests/:id/reject', asyncHandler(async (req, res) =
       approvedBy: adminUser.id
     });
 
-    await emailService.sendEmail({
+    await emailModule.send({
+      type: emailModule.EMAIL_TYPES.CLIENT_REJECTED,
       to: request.developer_email,
-      subject: 'Your Client Registration Request has been Rejected',
-      template: 'client-rejected',
       data: {
         adminName: adminUser.name || 'Admin',
         clientName: request.name,
@@ -556,7 +552,7 @@ router.post('/admin/client-requests/:id/reject', asyncHandler(async (req, res) =
         description: request.description,
         rejectionReason: reason || 'No reason provided'
       }
-    })
+    });
 
     return ResponseHandler.success(res, { message: 'Client request rejected' }, 'Client request rejected successfully');
   } catch (error) {

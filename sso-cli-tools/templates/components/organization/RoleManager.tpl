@@ -139,7 +139,7 @@ export default function RoleManager() {
 
   const openPermissionDialog = (role) => {
     setSelectedRole(role);
-    setSelectedPermissions(role.permissions || []);
+    setSelectedPermissions(role.permissions?.map(p => p.id) || []);
     setPermissionDialogOpen(true);
   };
 
@@ -334,15 +334,15 @@ export default function RoleManager() {
               <FormGroup row>
                 {perms.map((perm) => (
                   <FormControlLabel
-                    key={perm.name}
+                    key={perm.id}
                     control={
                       <Checkbox
-                        checked={selectedPermissions.includes(perm.name)}
+                        checked={selectedPermissions.includes(perm.id)}
                         onChange={(e) => {
                           if (e.target.checked) {
-                            setSelectedPermissions([...selectedPermissions, perm.name]);
+                            setSelectedPermissions([...selectedPermissions, perm.id]);
                           } else {
-                            setSelectedPermissions(selectedPermissions.filter(p => p !== perm.name));
+                            setSelectedPermissions(selectedPermissions.filter(p => p !== perm.id));
                           }
                         }}
                       />

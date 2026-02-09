@@ -67,12 +67,18 @@ export default function InviteMembers() {
       setLoadingRoles(true);
       const response = await auth.api.get('/db-roles');
       const allRoles = response.data?.data || response.data || [];
+      // Filter roles: Allow custom roles AND only whitelisted system roles
+      const ALLOWED_SYSTEM_ROLES = ['admin', 'member', 'viewer'];
       const invitableRoles = allRoles.filter(role => 
-        !['superadmin', 'owner'].includes(role.name?.toLowerCase())
+        !role.is_system || ALLOWED_SYSTEM_ROLES.includes(role.name?.toLowerCase())
       );
       setRoles(invitableRoles);
-      if (invitableRoles.length > 0) {
-        setSelectedRole(invitableRoles[0].id);
+      
+      // Select first available role by default
+      if (invitableRoles.length > 0 && !selectedRole) {
+        // Prefer 'member' if available, otherwise first one
+        const memberRole = invitableRoles.find(r => r.name === 'member');
+        setSelectedRole(memberRole ? memberRole.id : invitableRoles[0].id);
       }
     } catch (err) {
       console.error('Failed to fetch roles:', err);

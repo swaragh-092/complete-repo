@@ -427,6 +427,11 @@ export default function OrganizationManager({ organizations, currentOrg, user, o
             >
               {roles.filter(r => {
                 const roleName = r.name?.toLowerCase();
+                const ALLOWED_SYSTEM_ROLES = ['admin', 'member', 'viewer'];
+                
+                // If it's a system role, must be whitelisted
+                if (r.is_system && !ALLOWED_SYSTEM_ROLES.includes(roleName)) return false;
+                
                 if (!isOwner && roleName === 'owner') return false;
                 if (!isOwner && roleName === 'admin') return false;
                 return true;
@@ -487,9 +492,10 @@ function InviteModal({ open, onClose, onInvited, orgId, orgName, roles }) {
   const [success, setSuccess] = useState(null);
   const [copiedLink, setCopiedLink] = useState(false);
 
-  // Filter roles for invite (exclude owner/superadmin)
+  // Filter roles: Allow custom roles AND only whitelisted system roles
+  const ALLOWED_SYSTEM_ROLES = ['admin', 'member', 'viewer'];
   const invitableRoles = roles.filter(role => 
-    !['superadmin', 'owner'].includes(role.name?.toLowerCase())
+    !role.is_system || ALLOWED_SYSTEM_ROLES.includes(role.name?.toLowerCase())
   );
 
   useEffect(() => {

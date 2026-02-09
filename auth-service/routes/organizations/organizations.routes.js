@@ -18,8 +18,7 @@ const {
 
 
 } = require('../../config/database');
-const EmailService = require('../../services/email.service');
-const emailService = new EmailService();
+const emailModule = require('../../modules/email');
 
 const ResponseHandler = require('../../utils/responseHandler');
 const AuditService = require('../../services/audit.service');
@@ -436,10 +435,9 @@ router.post('/', asyncHandler(async (req, res) => {
     // ============================================================================
     setImmediate(async () => {
       try {
-        await emailService.sendEmail({
+        await emailModule.send({
+          type: emailModule.EMAIL_TYPES.ORGANIZATION_CREATED,
           to: user.email,
-          subject: `Welcome to ${name}!`,
-          template: 'organization-created',
           data: {
             userName: user.name || user.email,
             organizationName: name,

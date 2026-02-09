@@ -1,0 +1,30 @@
+'use strict';
+
+/**
+ * Email Types Registry
+ * Defines all supported email types for type-safe usage
+ */
+const EMAIL_TYPES = {
+    CLIENT_REQUEST: 'CLIENT_REQUEST',
+    CLIENT_APPROVED: 'CLIENT_APPROVED',
+    CLIENT_REJECTED: 'CLIENT_REJECTED',
+    ORGANIZATION_INVITATION: 'ORGANIZATION_INVITATION',
+    WORKSPACE_INVITATION: 'WORKSPACE_INVITATION',
+    ORGANIZATION_CREATED: 'ORGANIZATION_CREATED',
+    NEW_DEVICE_LOGIN: 'NEW_DEVICE_LOGIN',
+    HIGH_RISK_LOGIN: 'HIGH_RISK_LOGIN',
+    SECURITY_ALERT: 'SECURITY_ALERT',
+};
+
+/**
+ * Rate Limiting Defaults
+ */
+const RATE_LIMITS = {
+    WINDOW_MS: 15 * 60 * 1000, // 15 minutes
+    MAX_REQUESTS: 100,
+};
+
+module.exports = {
+    EMAIL_TYPES,
+    RATE_LIMITS,
+};

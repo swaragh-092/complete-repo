@@ -24,7 +24,7 @@ const { Op } = require('sequelize');
 const logger = require('../../utils/logger');
 const { loadClients } = require('../../config');
 const AuditService = require('../../services/audit.service');
-const EmailService = require('../../services/email.service');
+const emailModule = require('../../modules/email');
 
 const router = express.Router();
 
@@ -768,11 +768,9 @@ router.post('/invitations', asyncHandler(async (req, res) => {
 
     // 8. Send invitation email (non-blocking - don't fail if email fails)
     try {
-      const emailService = new EmailService();
-      await emailService.sendEmail({
+      await emailModule.send({
+        type: emailModule.EMAIL_TYPES.ORGANIZATION_INVITATION,
         to: invited_email,
-        subject: `🎉 You're invited to join ${organization.name}`,
-        template: 'organization-invitation',
         data: {
           organizationName: organization.name,
           inviterEmail: userEmail,

@@ -463,8 +463,7 @@ class WorkspaceService {
      */
     async sendInvitation({ requesterId, workspaceId, email, role, message }) {
         const { WorkspaceInvitation, Organization } = require('../config/database');
-        const EmailService = require('./email.service');
-        const emailService = new EmailService();
+        const emailModule = require('../modules/email');
 
         const transaction = await sequelize.transaction();
         try {
@@ -516,10 +515,9 @@ class WorkspaceService {
 
             setImmediate(async () => {
                 try {
-                    await emailService.sendEmail({
+                    await emailModule.send({
+                        type: emailModule.EMAIL_TYPES.WORKSPACE_INVITATION,
                         to: email,
-                        subject: `You're invited to join ${workspace.name}`,
-                        template: 'workspace-invitation',
                         data: {
                             workspaceName: workspace.name,
                             organizationName: organization?.name || 'Organization',

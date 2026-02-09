@@ -5,7 +5,7 @@ const router = express.Router();
 const { authMiddleware } = require('../middleware/authMiddleware');
 const TrustedDevicesService = require('../services/trusted-devices.service');
 const DeviceFingerprintService = require('../services/device-fingerprint.service');
-const EmailService = require('../services/email.service');
+const emailModule = require('../modules/email');
 const { AppError } = require('../middleware/errorHandler');
 const ResponseHandler = require('../utils/responseHandler');
 const logger = require('../utils/logger');
@@ -154,13 +154,19 @@ router.post('/register', authMiddleware, asyncHandler(async (req, res, next) => 
     // Send email for high-risk logins
     if (created && trustCheck.riskScore.level === 'HIGH') {
       try {
-        await EmailService.sendHighRiskLoginAlert(
-          req.user.email,
-          req.user.name || 'User',
-          device.device_name,
-          `${locationData.city}, ${locationData.country}`,
-          trustCheck.riskScore
-        );
+        await emailModule.send({
+          type: emailModule.EMAIL_TYPES.HIGH_RISK_LOGIN,
+          to: req.user.email,
+          data: {
+            userName: req.user.name || 'User',
+            deviceName: device.device_name,
+            location: `${locationData.city}, ${locationData.country}`,
+            riskScore: trustCheck.riskScore.score,
+            riskLevel: trustCheck.riskScore.level,
+            loginTime: new Date().toLocaleString(),
+            secureUrl: `${process.env.FRONTEND_URL}/account/security`
+          }
+        });
       } catch (emailError) {
         logger.warn('⚠️ Failed to send high-risk alert:', emailError);
       }
@@ -363,12 +369,15 @@ router.post('/emergency/revoke-all', authMiddleware, asyncHandler(async (req, re
 
     // Send security alert email
     try {
-      await EmailService.sendSecurityAlertEmail(
-        req.user.email,
-        req.user.name || 'User',
-        'All trusted devices have been revoked',
-        'You initiated a security emergency and revoked all trusted devices.'
-      );
+      await emailModule.send({
+        type: emailModule.EMAIL_TYPES.SECURITY_ALERT,
+        to: req.user.email,
+        data: {
+          userName: req.user.name || 'User',
+          alertTitle: 'All trusted devices have been revoked',
+          alertMessage: 'You initiated a security emergency and revoked all trusted devices.',
+        }
+      });
     } catch (emailError) {
       logger.warn('Failed to send emergency alert email:', emailError);
     }

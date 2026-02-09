@@ -63,7 +63,6 @@ export async function createRole({ name, description, permissions = [] }) {
       name,
       description,
       permissions,
-      org_id: orgId,
       is_system: false
     });
     return response.data?.data?.role || response.data?.role || response.data;

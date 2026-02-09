@@ -1,16 +1,14 @@
 // auth-service/services/notifications.js
 const { UserMetadata: User, Notification } = require('../config/database');
-const EmailService = require('./email.service');
+const emailModule = require('../modules/email');
 const logger = require('../utils/logger');
 
-const emailService = new EmailService();
-
-async function sendEmail(options) {
+async function sendEmail(payload) {
   try {
-    return await emailService.send(options);
+    return await emailModule.send(payload);
   } catch (error) {
-    logger.error('Email send failed', { error: error.message, to: options.to });
-    throw error;
+    logger.error('Email send failed', { error: error.message, to: payload.to, type: payload.type });
+    // Don't throw for notifications to avoid breaking main flow
   }
 }
 
@@ -25,9 +23,8 @@ async function notifyAdmins(clientRequest) {
     // Send email notifications
     for (const admin of admins) {
       await sendEmail({
+        type: emailModule.EMAIL_TYPES.CLIENT_REQUEST,
         to: admin.email,
-        subject: `New Client Registration Request: ${clientRequest.name}`,
-        template: 'client-request',
         data: {
           adminName: admin.name,
           clientName: clientRequest.name,
@@ -59,27 +56,24 @@ async function notifyAdmins(clientRequest) {
 async function notifyDeveloper(request, status, client = null) {
   if (!request.developerEmail) return;
 
-  const subject = status === 'approved'
-    ? `✅ Client "${request.name}" Approved!`
-    : `❌ Client "${request.name}" Rejected`;
+  const type = status === 'approved'
+    ? emailModule.EMAIL_TYPES.CLIENT_APPROVED
+    : emailModule.EMAIL_TYPES.CLIENT_REJECTED;
 
   await sendEmail({
+    type,
     to: request.developerEmail,
-    subject,
-    template: status === 'approved' ? 'client-approved' : 'client-rejected',
     data: {
       clientName: request.name,
       clientKey: request.clientKey,
       status,
       reason: request.rejectionReason,
-      ...(client && {
-        clientId: client.id,
-        setupInstructions: `Your client is now active! Update your account-ui registry and start using SSO.`
-      })
+      // For approved template
+      developerEmail: request.developerEmail,
+      redirectUrl: request.redirectUrl
     }
   });
 }
-
 
 module.exports = {
   notifyAdmins,
