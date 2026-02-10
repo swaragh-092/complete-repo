@@ -8,13 +8,12 @@ const express = require("express");
 const cors = require("cors");
 const path = require("path");
 const cookieParser = require("cookie-parser");
+const config = require("./config/config");
 
 // const errorHandler = require("./middleware/errorHandler.middleware");
 
 
 
-// runs the queue processor every 30 seconds
-// require("./queue/queueProcessor");
 
 // runs all cron jobs
 require("./jobs/CronJobs");
@@ -27,10 +26,11 @@ app.use(express.json());
 
 app.use(
   cors({
-    origin: process.env.FRONT_END_DOMAIN, // your React frontend URL
+    origin: config.frontendDomain, // your React frontend URL
     credentials: true, // allow cookies
   })
 );
+
 
 // app.use((req, res, next) => {
 //   setTimeout(() => {
@@ -39,8 +39,8 @@ app.use(
 // });
 
 // routers 
-// app.use(require("./middleware/dataValidation.middleware"));
-// app.use(require("./middleware/dbConnection.middleware")); 
+app.use(require("./middleware/dataValidation.middleware"));
+app.use(require("./middleware/dbConnection.middleware")); 
 
 
 // health check route
@@ -52,7 +52,7 @@ app.get("/health", (req, res) => {
   });
 });
 
-app.use("/"+process.env.DB_PROJECT_BASE_PATH, require("./routes"));
+app.use("/"+config.moduleCode, require("./routes"));
 
 
 // 404 response for invalid routes

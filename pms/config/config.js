@@ -31,5 +31,6 @@ const databaseDetails = {
 module.exports = {
     domain,
     moduleCode: "pms_mod",
-    databaseDetails
+    databaseDetails,
+    frontendDomain: "https://final-fn-pms.local.test:7000"
 };
