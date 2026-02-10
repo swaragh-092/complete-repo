@@ -5,7 +5,7 @@
 
 const Response = require("../services/Response");
 const { namespace } = require("../config/cls");
-const { domain, moduleCode } = require("../config/config");
+const { DOMAIN, MODULE_CODE } = require("../config/config");
 const redis = require("../config/redisConnection");
 
 const dataValidation = async (req, res, next) => {
@@ -35,17 +35,19 @@ const dataValidation = async (req, res, next) => {
 
     // const authData = await authenticate.json();
     const authData = {
-      organization_id: "4ca3ec85-fdb8-4d62-955d-d7d17269a7f2",
+      organization_id: "b029c32f-6f40-4e87-a5fb-19b6ba435501",
       user: {
-        id: "user_12345",
+        id: "7b6709f5-57a5-48df-af22-7714598651d0",
         name: "John Doe",
       },
     };
     req.organization_id = authData.organization_id;
     req.user = authData.user;
 
-    const subdomain = req.headers.host.split(".")[0];
-    req.tenantConfig = await getRequiredData(subdomain, moduleCode, req);
+    // const subdomain = req.headers.host.split(".")[0];
+    const subdomain = 'final-fn-pms';
+    console.log(req.headers.host);
+    req.tenantConfig = await getRequiredData(subdomain, MODULE_CODE, req);
 
     namespace.run(() => {
       namespace.set("organization_id", req.organization_id);
@@ -74,10 +76,18 @@ async function getRequiredData(subdomain, moduleCode, req) {
     return JSON.parse(cached);
   }
 
+  
+  console.log("coming here");
+
+
+
+  console.log(`${DOMAIN.superAdmin}/api/required-data/${req.organization_id}/${subdomain}/${moduleCode}`);
   // Call Super Admin (only on cache miss)
   const response = await fetch(
-    `${domain.superAdmin}/api/required-data/${req.organization_id}/${subdomain}/${moduleCode}`,
+    `${DOMAIN.superAdmin}/api/required-data/${req.organization_id}/${subdomain}/${moduleCode}`,
   );
+
+  console.log(response);
 
   let data;
   
@@ -92,9 +102,10 @@ async function getRequiredData(subdomain, moduleCode, req) {
   }
 
   if (!response.ok) {
+    
     throw {
       status: response.status,
-      message: data?.message || "Super Admin error",
+      message: "Admin: " + data?.message || "Super Admin error",
     };
   }
 

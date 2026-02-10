@@ -85,136 +85,137 @@ export default function Header({ onMenuClick }) {
   };
 
   return (
-    <AppBar 
-      position="fixed" 
-      color="inherit" 
-      elevation={1}
-      sx={{ 
-        zIndex: (theme) => theme.zIndex.drawer + 1,
-        borderBottom: 1,
-        borderColor: 'divider',
-      }}
-    >
-      <Toolbar>
-        {/* Menu Button */}
-        <IconButton
-          edge="start"
-          color="inherit"
-          aria-label="menu"
-          onClick={onMenuClick}
-          sx={{ mr: 2 }}
-        >
-          <MenuIcon />
-        </IconButton>
+    // <AppBar 
+    //   position="fixed" 
+    //   color="inherit" 
+    //   elevation={1}
+    //   sx={{ 
+    //     zIndex: (theme) => theme.zIndex.drawer + 1,
+    //     borderBottom: 1,
+    //     borderColor: 'divider',
+    //   }}
+    // >
+    //   <Toolbar>
+    //     {/* Menu Button */}
+    //     <IconButton
+    //       edge="start"
+    //       color="inherit"
+    //       aria-label="menu"
+    //       onClick={onMenuClick}
+    //       sx={{ mr: 2 }}
+    //     >
+    //       <MenuIcon />
+    //     </IconButton>
 
-        {/* App Title */}
-        <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-          final-fn-pms
-        </Typography>
+    //     {/* App Title */}
+    //     <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+    //       final-fn-pms
+    //     </Typography>
 
         
-        {/* Organization Switcher */}
-        <Chip
-          icon={<DashboardIcon />}
-          label={currentOrganization?.name || 'Select Organization'}
-          onClick={handleOrgMenuOpen}
-          variant="outlined"
-          sx={{ mr: 2 }}
-        />
-        <Menu
-          anchorEl={orgAnchorEl}
-          open={Boolean(orgAnchorEl)}
-          onClose={handleOrgMenuClose}
-          transformOrigin={{ horizontal: 'right', vertical: 'top' }}
-          anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
-        >
-          <Typography variant="caption" sx={{ px: 2, py: 1, display: 'block', color: 'text.secondary' }}>
-            Switch Organization
-          </Typography>
-          <Divider />
-          {organizations.map((org) => (
-            <MenuItem
-              key={org.id || org.org_id}
-              onClick={() => handleOrgSwitch(org.id || org.org_id)}
-              selected={(currentOrganization?.id || currentOrganization?.org_id) === (org.id || org.org_id)}
-            >
-              {org.name || org.org_name}
-            </MenuItem>
-          ))}
-          <Divider />
-          <MenuItem onClick={() => { handleOrgMenuClose(); navigate('/create-organization'); }}>
-            <ListItemIcon>+</ListItemIcon>
-            <ListItemText>Create New Organization</ListItemText>
-          </MenuItem>
-        </Menu>
+    //     {/* Organization Switcher */}
+    //     <Chip
+    //       icon={<DashboardIcon />}
+    //       label={currentOrganization?.name || 'Select Organization'}
+    //       onClick={handleOrgMenuOpen}
+    //       variant="outlined"
+    //       sx={{ mr: 2 }}
+    //     />
+    //     <Menu
+    //       anchorEl={orgAnchorEl}
+    //       open={Boolean(orgAnchorEl)}
+    //       onClose={handleOrgMenuClose}
+    //       transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+    //       anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+    //     >
+    //       <Typography variant="caption" sx={{ px: 2, py: 1, display: 'block', color: 'text.secondary' }}>
+    //         Switch Organization
+    //       </Typography>
+    //       <Divider />
+    //       {organizations.map((org) => (
+    //         <MenuItem
+    //           key={org.id || org.org_id}
+    //           onClick={() => handleOrgSwitch(org.id || org.org_id)}
+    //           selected={(currentOrganization?.id || currentOrganization?.org_id) === (org.id || org.org_id)}
+    //         >
+    //           {org.name || org.org_name}
+    //         </MenuItem>
+    //       ))}
+    //       <Divider />
+    //       <MenuItem onClick={() => { handleOrgMenuClose(); navigate('/create-organization'); }}>
+    //         <ListItemIcon>+</ListItemIcon>
+    //         <ListItemText>Create New Organization</ListItemText>
+    //       </MenuItem>
+    //     </Menu>
         
 
-        {/* User Menu */}
-        <IconButton onClick={handleUserMenuOpen} sx={{ p: 0 }}>
-          <Avatar sx={{ bgcolor: 'primary.main' }}>
-            {getUserInitial()}
-          </Avatar>
-        </IconButton>
-        <Menu
-          anchorEl={anchorEl}
-          open={Boolean(anchorEl)}
-          onClose={handleUserMenuClose}
-          transformOrigin={{ horizontal: 'right', vertical: 'top' }}
-          anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
-          PaperProps={{
-            sx: {
-              minWidth: 200,
-              mt: 1,
-            }
-          }}
-        >
-          {/* User Info */}
-          <Box sx={{ px: 2, py: 1.5 }}>
-            <Typography variant="subtitle1" fontWeight={600}>
-              {user?.name || user?.preferred_username || 'User'}
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              {user?.email}
-            </Typography>
-          </Box>
-          <Divider />
+    //     {/* User Menu */}
+    //     <IconButton onClick={handleUserMenuOpen} sx={{ p: 0 }}>
+    //       <Avatar sx={{ bgcolor: 'primary.main' }}>
+    //         {getUserInitial()}
+    //       </Avatar>
+    //     </IconButton>
+    //     <Menu
+    //       anchorEl={anchorEl}
+    //       open={Boolean(anchorEl)}
+    //       onClose={handleUserMenuClose}
+    //       transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+    //       anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+    //       PaperProps={{
+    //         sx: {
+    //           minWidth: 200,
+    //           mt: 1,
+    //         }
+    //       }}
+    //     >
+    //       {/* User Info */}
+    //       <Box sx={{ px: 2, py: 1.5 }}>
+    //         <Typography variant="subtitle1" fontWeight={600}>
+    //           {user?.name || user?.preferred_username || 'User'}
+    //         </Typography>
+    //         <Typography variant="body2" color="text.secondary">
+    //           {user?.email}
+    //         </Typography>
+    //       </Box>
+    //       <Divider />
 
-          {/* Profile Link */}
-          <MenuItem 
-            onClick={() => { 
-              handleUserMenuClose(); 
-              window.open(import.meta.env.VITE_ACCOUNT_UI_URL + '/profile', '_blank');
-            }}
-          >
-            <ListItemIcon>
-              <AccountCircle fontSize="small" />
-            </ListItemIcon>
-            <ListItemText>View Profile</ListItemText>
-          </MenuItem>
+    //       {/* Profile Link */}
+    //       <MenuItem 
+    //         onClick={() => { 
+    //           handleUserMenuClose(); 
+    //           window.open(import.meta.env.VITE_ACCOUNT_UI_URL + '/profile', '_blank');
+    //         }}
+    //       >
+    //         <ListItemIcon>
+    //           <AccountCircle fontSize="small" />
+    //         </ListItemIcon>
+    //         <ListItemText>View Profile</ListItemText>
+    //       </MenuItem>
 
-          <MenuItem 
-            onClick={() => { 
-              handleUserMenuClose(); 
-              window.open(import.meta.env.VITE_ACCOUNT_UI_URL + '/settings', '_blank');
-            }}
-          >
-            <ListItemIcon>
-              <Settings fontSize="small" />
-            </ListItemIcon>
-            <ListItemText>Settings</ListItemText>
-          </MenuItem>
+    //       <MenuItem 
+    //         onClick={() => { 
+    //           handleUserMenuClose(); 
+    //           window.open(import.meta.env.VITE_ACCOUNT_UI_URL + '/settings', '_blank');
+    //         }}
+    //       >
+    //         <ListItemIcon>
+    //           <Settings fontSize="small" />
+    //         </ListItemIcon>
+    //         <ListItemText>Settings</ListItemText>
+    //       </MenuItem>
 
-          <Divider />
+    //       <Divider />
 
-          {/* Sign Out */}
-          <MenuItem onClick={handleSignOut} sx={{ color: 'error.main' }}>
-            <ListItemIcon>
-              <Logout fontSize="small" color="error" />
-            </ListItemIcon>
-            <ListItemText>Sign Out</ListItemText>
-          </MenuItem>
-        </Menu>
-      </Toolbar>
-    </AppBar>
+    //       {/* Sign Out */}
+    //       <MenuItem onClick={handleSignOut} sx={{ color: 'error.main' }}>
+    //         <ListItemIcon>
+    //           <Logout fontSize="small" color="error" />
+    //         </ListItemIcon>
+    //         <ListItemText>Sign Out</ListItemText>
+    //       </MenuItem>
+    //     </Menu>
+    //   </Toolbar>
+    // </AppBar>
+    <></>
   );
 }

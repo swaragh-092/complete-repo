@@ -21,64 +21,49 @@ import NewReleasesIcon from '@mui/icons-material/NewReleases';
 import { formatTextForDataTable } from "../../../util/helper";
 import { useSearchParams } from "react-router-dom";
 import DoButton from "../../../components/button/DoButton";
-import { departments as dummyDepartments } from "../../../dymmyData";
+import { useWorkspace } from "../../../context/WorkspaceContext";
 
 export default function IssuesPage() {
-  const theme = useTheme();
-  const colors = colorCodes(theme.palette.mode);
 
-
-  const [searchParams, setSearchParams] = useSearchParams();
-  
-  // -----------------------------------
   // PROJECTS (based on department)
-  // -----------------------------------
   const [projects, setProjects] = useState("idle");
   const [projectId, setProjectId] = useState("");
 
-  // -----------------------------------
-  // DEPARTMENTS LOADING
-  // -----------------------------------
-  const [departments, setDepartments] = useState("loading");
-  const [departmentId, setDepartmentId] = useState("");
-
+  // currently modifing or request sent ids
   const [editingIds, setEditingIds] = useState([]);
   const [editIssueId, setEditIssueId] = useState(false);
   
+  // data table refresh state
   const [dataTableRefresh, setDataTableRefresh] = useState(true);
 
+  const theme = useTheme();
+  const colors = colorCodes(theme.palette.mode);
+
+  // serach paramaters for project 
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const { workspaces, currentWorkspace, selectWorkspace, loading, isAdmin } = useWorkspace();
+  const hasIssueAccess = currentWorkspace.name === 'testing'; // to-do later correct validation
+  
+  // to remove the selected project when project change and workspace change
   useEffect(() => {
-    // Simulate API delay
-    setDepartments("loading");
+    if (!Array.isArray(projects)) return;
 
-    setTimeout(() => {
-      // real departments fetch should be from backend
-      const dummy = dummyDepartments;
-      
-
-      setDepartments(dummy);
-
-      // Auto-select when only one (not needed now)
-      if (dummy.length === 1) {
-        setDepartmentId(dummy[0].id);
-      }
-    }, 500);
-  }, []);
-
-  useEffect(() => {
-    const urlDept = searchParams.get("department");
-    const urlProj = searchParams.get("project");
-
-    if (urlDept && departments !== "loading") {
-      setDepartmentId(urlDept);
+    if (projects.length === 0) {
+      setProjectId("");
+      return;
     }
 
-    // Project should load only after department’s project list is fetched
-    if (urlProj && projects !== "loading" && projects !== "idle") {
-      const exists = projects.find((p) => p.id === urlProj);
-      if (exists) setProjectId(urlProj);
+    // If current project doesn't exist in new list, select first
+    const exists = projects.some((p) => p.id === projectId);
+
+    if (!exists) {
+      setProjectId(projects[0].id);
     }
-  }, [departments, projects]);
+  }, [projects]);
+
+
+  
 
   const handleAcceptIssue = async (issueId) => {
     setEditingIds((prev) => [...prev, issueId]);
@@ -113,32 +98,21 @@ export default function IssuesPage() {
   };
 
 
-  const handleDepartmentChange = (id) => {
-    setDepartmentId(id);
-    setProjectId("");    // reset project
-
-    setSearchParams((prev) => {
-      prev.set("department", id);
-      prev.delete("project");
-      return prev;
-    });
-  };
-
   const handleProjectChange = (id) => {
     setProjectId(id);
     setDataTableRefresh(true);
 
-    setSearchParams((prev) => {
-      prev.set("department", departmentId);
-      prev.set("project", id);
-      return prev;
+    setSearchParams({
+      department: currentWorkspace?.id,
+      project: id,
     });
+
   };
 
 
 
   useEffect(() => {
-    if (!departmentId) {
+    if (!currentWorkspace?.id) {
       setProjects("idle");
       setProjectId("");
       return;
@@ -148,23 +122,18 @@ export default function IssuesPage() {
       setProjects("loading");
 
       const res = await backendRequest({
-        endpoint: BACKEND_ENDPOINT.get_department_projects(departmentId),
+        endpoint: BACKEND_ENDPOINT.get_department_projects(currentWorkspace?.id),
       });
 
       if (res?.success) {
         const list = res.data || [];
         setProjects(list);
-
-        // Auto select if only ONE project
-        if (list.length === 1) {
-          setProjectId(list[0].id);
-        }
       } else {
         setProjects("idle");
         showToast({ message: res.message || "Failed to fetch projects", type: "error" });
       }
     })();
-  }, [departmentId]);
+  }, [currentWorkspace?.id]);
 
   const [openCreate, setOpenCreate] = useState(false);
 
@@ -201,7 +170,7 @@ export default function IssuesPage() {
             {isEditing ? (
               <CircularProgress size={20} />
             ) : (
-              (params.row.status === "open" || params.row.status === "re_open") ? (
+              ((params.row.status === "open" || params.row.status === "re_open")&& !hasIssueAccess) ? (
                 <>
                   <Box title="Accept">
                     <CheckCircleIcon
@@ -227,7 +196,7 @@ export default function IssuesPage() {
                   </Box>
                 </>
               ):
-              params.row.status === "in_progress" ? (
+              (params.row.status === "in_progress" && !hasIssueAccess) ? (
                 <>
                   <Box title="Create Task">
                     <AddCircleIcon
@@ -255,7 +224,7 @@ export default function IssuesPage() {
                   </Box>
                 </>
               ) :
-              (params.row.status === "resolved" || params.row.status === "reject" ) && (
+              ((params.row.status === "resolved" || params.row.status === "reject") && hasIssueAccess ) && (
                 <>
                 {params.row.status === "resolved" && (
                   <Box title="Issue Verified and Fixed">
@@ -292,6 +261,8 @@ export default function IssuesPage() {
     },
   ];
 
+  console.log(projectId);
+
   return (
     <Box p={2}>
       <Heading title={"Issues"} />
@@ -302,33 +273,16 @@ export default function IssuesPage() {
 
       <Box display="flex" alignItems="center" justifyContent={"space-between"} gap={2} >
         <Box display="flex" alignItems="center" gap={2} mb={3}>
-          {/* SELECT DEPARTMENT */}
-          <FormControl size="small" sx={{ minWidth: 220 }}>
-            <InputLabel>Select Department</InputLabel>
-            <Select value={departmentId} label="Select Department" onChange={(e) => handleDepartmentChange(e.target.value)}>
-              {departments === "loading" ? (
-                <MenuItem disabled>Loading...</MenuItem>
-              ) : departments.length === 0 ? (
-                <MenuItem disabled>No departments</MenuItem>
-              ) : (
-                departments.map((d) => (
-                  <MenuItem key={d.id} value={d.id}>
-                    {d.name}
-                  </MenuItem>
-                ))
-              )}
-            </Select>
-          </FormControl>
-
+          
           {/* SELECT PROJECT */}
           <FormControl size="small" sx={{ minWidth: 220 }}>
             <InputLabel>Select Project</InputLabel>
-            <Select value={projectId} label="Select Project" disabled={!departmentId || projects === "idle"} onChange={(e) => handleProjectChange(e.target.value)}>
-              {projects === "idle" ? (
+            <Select value={projectId} label="Select Project" disabled={!currentWorkspace?.id || projects === "idle"} onChange={(e) => handleProjectChange(e.target.value)}>
+              {!currentWorkspace?.id ? (
                 <MenuItem disabled>Select department first</MenuItem>
               ) : projects === "loading" ? (
                 <MenuItem disabled>Loading...</MenuItem>
-              ) : projects.length === 0 ? (
+              ) : !Array.isArray(projects) || !projects.length ? (
                 <MenuItem disabled>No projects in this department</MenuItem>
               ) : (
                 projects.map((p) => (
@@ -339,8 +293,9 @@ export default function IssuesPage() {
               )}
             </Select>
           </FormControl>
-
-          {/* CREATE ISSUE */}
+              {
+                (hasIssueAccess) && 
+                <>{/* CREATE ISSUE */}
           <Button
             variant="contained"
             startIcon={<AddIcon />}
@@ -353,6 +308,9 @@ export default function IssuesPage() {
           >
             Create Issue
           </Button>
+                </>
+              }
+          
         </Box>
         {searchParams.get("issue") && <DoButton onclick={
             () => {
@@ -376,14 +334,14 @@ export default function IssuesPage() {
         <DataTable columns={columns} fetchEndpoint={BACKEND_ENDPOINT.issues(projectId, searchParams.get("issue"))} defaultPageSize={10} refresh={dataTableRefresh} setRefresh={setDataTableRefresh} />
       ) : (
         <Typography textAlign="center" mt={10} color="text.secondary" fontSize={18}>
-          Select a department and project to view issues.
+          Select a Workspace and project to view issues.
         </Typography>
       )}
 
       <CreateIssueDialog
         isOpen={openCreate && projectId}
         onClose={() => setOpenCreate(false)}
-        fromDepartmentId={departmentId}
+        fromDepartmentId={currentWorkspace?.id}
         projectId={projectId}
         onSuccess={() => {
           setDataTableRefresh(true);

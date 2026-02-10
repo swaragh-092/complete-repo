@@ -7,24 +7,56 @@
 // pages/pms/department/DepartmentManage.jsx
 // Modified:
 
-import { redirect, useLoaderData, useRevalidator } from "react-router-dom";
+import { redirect, useLoaderData, useNavigate, useRevalidator } from "react-router-dom";
 import BACKEND_ENDPOINT from "../../../util/urls";
 import Heading from "../../../components/Heading";
 import backendRequest from "../../../util/request";
 
 // import { useLoaderData } from "react-router-dom";
 import { Typography, Stack, Chip, Box } from "@mui/material";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import DoButton from "../../../components/button/DoButton";
 import EditDialog from "../../../components/pms/EditDialog";
 import ChecklistLists from "./checklist/ChecklistLists";
+import { useWorkspace } from "../../../context/WorkspaceContext";
 
 export default function FeatureDetail() {
   const response = useLoaderData();
   const [feature, setFeature] = useState(response?.data);
 
+  const {
+        workspaces,
+        currentWorkspace,
+        selectWorkspace,
+        loading,
+        isAdmin
+      } = useWorkspace();
+
   const [editFeatureDialog, setEditFeatureDialog] = useState(false);
   const revalidator = useRevalidator();
+
+
+  const navigate = useNavigate();
+  const prevWorkspaceId = useRef();
+
+  useEffect(() => {
+    const currentId = currentWorkspace?.id;
+
+    // Only redirect if:
+    // 1. previous id exists
+    // 2. current id exists
+    // 3. and they are different
+    if (
+      prevWorkspaceId.current &&
+      currentId &&
+      prevWorkspaceId.current !== currentId
+    ) {
+      navigate("/features");
+    }
+
+    // Update previous id
+    prevWorkspaceId.current = currentId;
+  }, [currentWorkspace?.id]);
 
   useEffect(() => {
     if (response?.data) {

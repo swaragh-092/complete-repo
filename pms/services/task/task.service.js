@@ -97,6 +97,8 @@ class TaskService {
         assigned_to: assignedMember.id,
       };
 
+      finalData.status = "approved"; // to-do this is for now remove this later by checking correct validations
+
       // TODO: add hierarchy logic → check if `creator` has permission to assign or create for others
       // (e.g., compare `creator.role_level` vs `assignee.role_level` if your system tracks hierarchy)
 

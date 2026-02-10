@@ -16,8 +16,10 @@ import Validator from "../../../util/validation";
 import { errorMessageFormat, formatValidationErrors } from "../../../util/helper";
 import SelectField from "../../../components/formFields/SelectField";
 import DoButton from "../../../components/button/DoButton";
+import { useWorkspace } from "../../../context/WorkspaceContext";
 
 export default function CreateIssueDialog({ isOpen, onClose, fromDepartmentId, projectId, onSuccess = () => {} }) {
+  const { workspaces, currentWorkspace, selectWorkspace, loading, isAdmin } = useWorkspace();
   // ----------------------------------------
   // FORM STATE
   // ----------------------------------------
@@ -54,14 +56,23 @@ export default function CreateIssueDialog({ isOpen, onClose, fromDepartmentId, p
   // ----------------------------------------
   // Load departments (dummy now)
   // ----------------------------------------
+
   useEffect(() => {
-    const dummy = [
-      { value: "c4e87741-c8d1-40bb-a01a-1b093d91d9b1", label: "Development" },
-      { value: "1b201948-b208-44e9-aef4-750200989c78", label: "Design" },
-      { value: "1b201948-b208-44e9-aef4-750200989c78", label: "QA" },
-    ];
-    setDepartments(dummy);
-  }, []);
+    if (!workspaces || !currentWorkspace?.id) {
+      setDepartments([]);
+      return;
+    }
+
+    // to-do later here fetch all the departments
+    const departments = workspaces
+      .filter((workspace) => workspace.id !== currentWorkspace.id)
+      .map((workspace) => ({
+        value: workspace.id,
+        label: workspace.name,
+      }));
+
+    setDepartments(departments);
+  }, [workspaces, currentWorkspace?.id]);
 
   // ----------------------------------------
   // Handle Input Change with Validation

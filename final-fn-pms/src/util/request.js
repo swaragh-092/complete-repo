@@ -5,9 +5,12 @@
 // util/request.js
 // Modified:
 
+
+
 import { paths } from "./urls";
 
-const backendRequest = async ({ endpoint, bodyData = null, querySets = "", navigate }) => {
+const backendRequest = async ({ endpoint, bodyData = null, querySets = "", navigate, organizationId, }) => {
+  
   try {
     if (!endpoint?.path || !endpoint?.method) {
       throw new Error("Invalid endpoint configuration");
@@ -15,7 +18,7 @@ const backendRequest = async ({ endpoint, bodyData = null, querySets = "", navig
 
     const jsonResponse = await fetch(endpoint.path + querySets, {
       method: endpoint.method,
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...(organizationId && { "x-organization-id": organizationId }), },
       credentials: "include",
       ...(bodyData && endpoint.method !=="GET" && {
         body: JSON.stringify(bodyData),

@@ -148,12 +148,12 @@ class NotificationService {
       where[Op.and] = [
         { scope: "individual", read_at: null },
         Sequelize.literal(`(
-        scope != 'individual' AND NOT EXISTS (
+        scope != "individual" AND NOT EXISTS (
           SELECT 1
-          FROM \`pms_notification_reads\` AS \`nr\`
-          WHERE \`nr\`.\`notification_id\` = \`Notification\`.\`id\`
-            AND \`nr\`.\`user_id\` = '${userId}'
-            AND \`nr\`.\`read_at\` IS NOT NULL
+          FROM "pms_notification_reads" AS "nr"
+          WHERE "nr"."notification_id" = "Notification"."id"
+            AND "nr"."user_id" = "${userId}"
+            AND "nr"."read_at" IS NOT NULL
         )
       )`),
       ];
@@ -174,14 +174,14 @@ class NotificationService {
           [
             Sequelize.literal(`
             CASE
-              WHEN \`Notification\`.\`scope\` = 'individual'
-                THEN (CASE WHEN \`Notification\`.\`read_at\` IS NOT NULL THEN TRUE ELSE FALSE END)
+              WHEN "Notification"."scope" = 'individual'
+                THEN (CASE WHEN "Notification"."read_at" IS NOT NULL THEN TRUE ELSE FALSE END)
               ELSE (CASE WHEN EXISTS (
                 SELECT 1
-                FROM \`pms_notification_reads\` AS \`nr\`
-                WHERE \`nr\`.\`notification_id\` = \`Notification\`.\`id\`
-                  AND \`nr\`.\`user_id\` = '${userId}'
-                  AND \`nr\`.\`read_at\` IS NOT NULL
+                FROM "pms_notification_reads" AS "nr"
+                WHERE "nr"."notification_id" = "Notification"."id"
+                  AND "nr"."user_id" = '${userId}'
+                  AND "nr"."read_at" IS NOT NULL
               ) THEN TRUE ELSE FALSE END)
             END
           `),

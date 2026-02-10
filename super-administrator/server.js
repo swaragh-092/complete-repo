@@ -3,7 +3,7 @@ const app = require("./app");
 const applyCustomIndexs = require("./models/customIndexes"); 
 
 // process.env.PORT ||
-const PORT =  4010;
+const PORT =  process.env.PORT || 8089;
 
 db.sequelize
   // .sync({ force: true })

@@ -51,11 +51,11 @@ const SnapshotCard = ({ label, count, trend, color, onClick }) => {
         </Typography>
 
         <Stack direction="row" spacing={0.5} alignItems="center">
-          {isPositive ? <TrendingUpIcon fontSize="small" sx={{ color }} /> : <TrendingDownIcon fontSize="small" sx={{ color }} />}
+          {/* {isPositive ? <TrendingUpIcon fontSize="small" sx={{ color }} /> : <TrendingDownIcon fontSize="small" sx={{ color }} />} */}
 
-          <Typography variant="caption" sx={{ color }}>
+          {/* <Typography variant="caption" sx={{ color }}>
             {Math.abs(trend)} vs last period
-          </Typography>
+          </Typography> */}
         </Stack>
       </Stack>
     </Card>

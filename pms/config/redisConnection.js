@@ -5,17 +5,16 @@
 
 const Redis = require("ioredis");
 
-const redisConfig = {
-  host: process.env.REDIS_HOST || "localhost",
-  port: process.env.REDIS_PORT || 6379,
-  password: process.env.REDIS_PASSWORD || undefined,
-}
-console.log(redisConfig);
+
+const { REDIS_CONNECTION } = require('./config');
+
+console.log(REDIS_CONNECTION);
 
 const redis = new Redis({
-  ...redisConfig,
+  ...REDIS_CONNECTION,
   retryStrategy(times) {
-    return Math.min(times * 50, 2000);
+    if (times > 10) return null; // stop retrying
+    return times * 100;
   }
 });
 

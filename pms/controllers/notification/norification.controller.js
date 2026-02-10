@@ -15,7 +15,7 @@ class NotificationController {
       const result = await NotificationService.getUserNotifications(req, req.user.id, req.query);
       return ResponseService.apiResponse({ res,...result, ...thisAction });
     } catch (err) {
-      
+      console.log(err);
       return sendErrorResponse(thisAction, err, res);
     }
   }

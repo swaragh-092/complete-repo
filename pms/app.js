@@ -32,17 +32,6 @@ app.use(
 );
 
 
-// app.use((req, res, next) => {
-//   setTimeout(() => {
-//     next()
-//   }, 1000);
-// });
-
-// routers 
-app.use(require("./middleware/dataValidation.middleware"));
-app.use(require("./middleware/dbConnection.middleware")); 
-
-
 // health check route
 app.get("/health", (req, res) => {
   res.status(200).json({
@@ -52,8 +41,16 @@ app.get("/health", (req, res) => {
   });
 });
 
-app.use("/"+config.moduleCode, require("./routes"));
 
+// routers 
+app.use(require("./middleware/dataValidation.middleware"));
+app.use(require("./middleware/dbConnection.middleware")); 
+
+
+
+
+
+app.use("/"+ require('./config/config').MODULE_CODE, require("./routes"));
 
 // 404 response for invalid routes
 app.use((req, res,) => {

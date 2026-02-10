@@ -71,10 +71,12 @@ class DailyLogService {
       project_id: task.project.id,
       task_id,
       date: new Date(),
-      log_type: "StandUp",
+      log_type: "standup",
       expected_duration: durationToMinutes(expected_duration),
       notes: notes || null,
     };
+
+   
 
     const standup = await auditLogCreateHelperFunction({
       model: DailyLog,
@@ -190,8 +192,8 @@ class DailyLogService {
       include: [
         {
           association: "members",
-          where: { user_id: req.user.id },
-          required: true,
+          // where: { user_id: req.user.id },
+          // required: true, // to-do = where here it should get only his daily log if there is no permission
         },
       ],
     });

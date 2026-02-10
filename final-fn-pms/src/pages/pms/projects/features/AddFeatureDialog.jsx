@@ -15,11 +15,15 @@ import {
 import { showToast } from "../../../../util/feedback/ToastService";
 import backendRequest from "../../../../util/request";
 import BACKEND_ENDPOINT from "../../../../util/urls";
-import { departments as allDepartments } from "../../../../dymmyData";
+import { useWorkspace } from "../../../../context/WorkspaceContext";
 
 export default function AddFeatureDialog({ open, onClose, projectId }) {
-  const [departments, setDepartments] = useState([]);
+
+  const { workspaces, currentWorkspace, selectWorkspace, loading, isAdmin } = useWorkspace();
+
+  // const [departments, setDepartments] = useState([]);
   const [features, setFeatures] = useState([]);
+  
   const [selectedDepartment, setSelectedDepartment] = useState("");
   const [selectedFeature, setSelectedFeature] = useState(null);
   const [featureSearch, setFeatureSearch] = useState("");
@@ -28,10 +32,11 @@ export default function AddFeatureDialog({ open, onClose, projectId }) {
   
   const searchTimer = useRef(null); 
 
+  const departments = workspaces;
+
   // Reset dialog state on open
   useEffect(() => {
     if (open) {
-      setDepartments(allDepartments);
       setSelectedDepartment("");
       setSelectedFeature(null);
       setFeatures([]);

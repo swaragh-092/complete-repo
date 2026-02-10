@@ -84,7 +84,7 @@ export default function Settings() {
   };
 
   return (
-    <Box>
+    <Box p={2}>
       <Typography variant="h4" sx={{ mb: 3 }}>
         <SettingsIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
         Settings

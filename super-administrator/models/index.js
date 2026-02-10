@@ -10,7 +10,7 @@ const commonFields = require('./util/commonFields');
 const historyCommonFields = require("./util/historyCommonFields");
 require("dotenv").config();
 
-const TABLE_PRIFIX = process.env.DB_PREFIX + "_";
+const TABLE_PRIFIX = (process.env.DB_PREFIX || "administrator") + "_";
 
 const db = {};
 

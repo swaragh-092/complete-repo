@@ -8,7 +8,7 @@ const { withContext, giveValicationErrorFormal, paginateHelperFunction, auditLog
 const { queryMultipleWithAuditLog } = require("../auditLog.service");
 const { createNotification } = require("../notification/notification.service");
 const paginate = require("../../util/pagination");
-const { Op } = require("sequelize");
+const { Op, Sequelize } = require("sequelize");
 
 class FeatureService {
   /**
@@ -108,7 +108,7 @@ class FeatureService {
    * @returns {Promise<Array>} - List of features
    */
   async getAllFeaturesOfDepartment(req, {department_id, query= {}, project_id = null } ) {
-    const { Feature } = req.db;
+    const { Feature, ProjectFeature } = req.db;
     try {
 
       const whereFilters = { department_id };
@@ -153,7 +153,7 @@ class FeatureService {
 
   async getAllFeaturesOfProject(req, {project_id, query= {} } ) {
 
-    const { Feature, Project } = req.db;
+    const { Feature, Project, ProjectFeature } = req.db;
     try {
       const {
         page,

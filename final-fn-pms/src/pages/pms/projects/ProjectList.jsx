@@ -49,18 +49,21 @@ const filterName = "health";
 export default function ProjectList() {
   const [refresh, setRefresher] = useState(true);
   const [createProjectDialog, setCreateProjectDialog] = useState(false);
-  
   const [searchParams, setSearchParams] = useSearchParams();
+  const [urlHealth, setUrlHeath] = useState(searchParams.get(filterName));
+  
 
-  const urlHealth = searchParams.get(filterName);
+  
 
   const handleRemoveFilter = () => {
     setSearchParams((prev) => {
       prev.set(filterName, "");
       return prev;
     });
+    setUrlHeath("");
     setRefresher(true);
   }
+
 
   return (
     <>

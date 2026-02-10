@@ -13,7 +13,7 @@ const config = {
         username: process.env.DB_USER || "postgres" ,
         password: process.env.DB_PASSWORD || "1234",
         host: process.env.DB_HOST || "localhost",
-        port: process.env.DB_PORT || 5432,
+        port: process.env.DB_PORT || 5412,
         dialect: process.env.DB_TYPE || "postgres",
         timezone: process.env.DB_ZONE || "+05:30",
         logging: process.env.ENV?.toLowerCase() === "development", // Disabled logging for production for performance and security

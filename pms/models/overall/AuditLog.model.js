@@ -5,7 +5,7 @@
 // Modified: 
 
 
-module.exports = (sequelize, DataTypes, tablePrefix, commonFields, REQUIRE_HISTORY_TABLE) => {
+module.exports = (sequelize, DataTypes, tablePrefix, commonFields) => {
   
     const AuditLog = sequelize.define(
       "AuditLog",
@@ -22,7 +22,7 @@ module.exports = (sequelize, DataTypes, tablePrefix, commonFields, REQUIRE_HISTO
         },
         
         table_name: {
-          type: DataTypes.ENUM(REQUIRE_HISTORY_TABLE),
+          type: DataTypes.STRING,
           allowNull: false,
         },
         snapshot: {

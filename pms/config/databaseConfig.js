@@ -9,13 +9,13 @@ const initModels = require("../models/initModels");
 
 const connections = {};
 
-const {databaseDetails} = require('./config');
+const {DATABASE_DETAILS} = require('./config');
 
 async function getTenantSequelize(connectionId) {
   if (connections[connectionId]) {
     return connections[connectionId];
   }
-  const connection = databaseDetails[connectionId];
+  const connection = DATABASE_DETAILS[connectionId];
 
   console.log("Database connection details:", connection);
 
@@ -38,9 +38,14 @@ async function getTenantSequelize(connectionId) {
 
   await sequelize.authenticate();
 
-  const modules = initModels(sequelize)
+  const modules = initModels(sequelize);
 
   connections[connectionId] = {sequelize, modules};
+
+  // console.log("Database connected successfully.");
+  // await sequelize.sync({ alter: true }); // or { force: true }
+  // console.log("All models were synchronized.");
+
   return sequelize;
 }
 

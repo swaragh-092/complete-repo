@@ -119,7 +119,7 @@ export default function ProjectMembersList({ projectId, setMemberIdCreateTask, s
           <AddMembersDialog isOpen={open} setOpen={setOpen} setRefresher={setRefresher} projectId={projectId} />
 
           {/* Edit Role Dialog */}
-          <EditMemberRoleDialog editDialog={editDialog} setEditDialog={setEditDialog} setRefresher={setRefresher}   />
+          <EditMemberRoleDialog editDialog={editDialog}  setEditDialog={setEditDialog} setRefresher={setRefresher}   />
 
                   
         </>

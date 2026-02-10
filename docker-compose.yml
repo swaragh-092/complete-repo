@@ -28,7 +28,7 @@ services:
         condition: service_healthy
       postgres-auth:
         condition: service_healthy
-      postgres-pms:
+      db-pms:
         condition: service_healthy
       redis:
         condition: service_healthy
@@ -65,14 +65,38 @@ services:
       start_period: 10s
 
   # ─────────────────────────────────────────────────────────────────────────────
-  # PostgreSQL for PMS and Super Administrator
+  # PostgreSQL for pms
   # ─────────────────────────────────────────────────────────────────────────────
-  postgres-pms:
+  db-pms:
     image: postgres:16
-    container_name: postgres-pms
+    container_name: db-pms
     restart: unless-stopped
-    # ports:
-    #   - "5432:5432"
+    ports:
+      - "5411:5432"
+    environment:
+      POSTGRES_USER: ${PMS_DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${PMS_DB_PASSWORD:-1234}
+    volumes:
+      - postgres-pms-data:/var/lib/postgresql/data
+    networks:
+      - auth-network
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${PMS_DB_USER:-postgres}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # PostgreSQL for super-adminostrator
+  # ─────────────────────────────────────────────────────────────────────────────
+  db-super-admin:
+    image: postgres:16
+    container_name: db-super-admin
+    restart: unless-stopped
+    ports:
+      - "5412:5432"
     environment:
       POSTGRES_USER: ${PMS_DB_USER:-postgres}
       POSTGRES_PASSWORD: ${PMS_DB_PASSWORD:-1234}
@@ -92,6 +116,7 @@ services:
   # ─────────────────────────────────────────────────────────────────────────────
   redis:
     image: redis:7
+    container_name: redis
     restart: unless-stopped
     ports:
       - "6379:6379"
@@ -202,56 +227,37 @@ services:
   # ─────────────────────────────────────────────────────────────────────────────
   # Email Service (Microservice)
   # ─────────────────────────────────────────────────────────────────────────────
-  email-service:
-    build:
-      context: ./email-service
-    container_name: email-service
-    restart: unless-stopped
-    environment:
-      NODE_ENV: ${NODE_ENV:-production}
-      PORT: 4011
+  # email-service:
+  #   build:
+  #     context: ./email-service
+  #   container_name: email-service
+  #   restart: unless-stopped
+  #   environment:
+  #     NODE_ENV: ${NODE_ENV:-production}
+  #     PORT: 4011
 
-      # SMTP
-      SMTP_HOST: ${SMTP_HOST:-}
-      SMTP_PORT: ${SMTP_PORT:-587}
-      SMTP_USER: ${SMTP_USER:-}
-      SMTP_PASS: ${SMTP_PASS:-}
-      FROM_EMAIL: ${FROM_EMAIL:-noreply@example.com}
+  #     # SMTP
+  #     SMTP_HOST: ${SMTP_HOST:-}
+  #     SMTP_PORT: ${SMTP_PORT:-587}
+  #     SMTP_USER: ${SMTP_USER:-}
+  #     SMTP_PASS: ${SMTP_PASS:-}
+  #     FROM_EMAIL: ${FROM_EMAIL:-noreply@example.com}
 
-      # Application
-      APP_NAME: ${APP_NAME:-My Application}
+  #     # Application
+  #     APP_NAME: ${APP_NAME:-My Application}
 
       # Security
       SERVICE_SECRET: ${SERVICE_SECRET:?SERVICE_SECRET is required}
-
-      # Database (reuses postgres-pms)
-      DB_HOST: postgres-pms
-      DB_PORT: 5432
-      DB_NAME: email_service
-      DB_USER: ${PMS_DB_USER:-postgres}
-      DB_PASSWORD: ${PMS_DB_PASSWORD:-1234}
-
-      # Redis (for BullMQ queue)
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
-
-      # Queue
-      QUEUE_MAX_ATTEMPTS: 3
     ports:
       - "${EMAIL_SERVICE_PORT:-4011}:4011"
-    depends_on:
-      postgres-pms:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
     networks:
       - auth-network
     healthcheck:
-      test: [ "CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:4011/health" ]
+      test: [ "CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:4011/health" ]
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 15s
+      start_period: 10s
 
   # ════════════════════════════════════════════════════════════════════════════
   # FRONTEND APPLICATIONS
@@ -334,17 +340,18 @@ services:
     ports:
       - 3010:3010
     depends_on:
-      postgres-pms:
+      db-pms:
         condition: service_healthy
       redis:
         condition: service_healthy
     environment:
       NODE_ENV: ${NODE_ENV:-production}
-      DB_HOST: postgres-pms
+      DB_PREFIX: pms
+      DB_HOST: db-pms
       DB_PORT: 5432
       DB_USER: ${PMS_DB_USER:-postgres}
       DB_PASSWORD: ${PMS_DB_PASSWORD:-1234}
-      DB_NAME: pms
+      DB_NAME: one
       REDIS_HOST: redis
       REDIS_PORT: 6379
     networks:
@@ -368,16 +375,16 @@ services:
     container_name: super-administrator
     restart: unless-stopped
     depends_on:
-      postgres-pms:
+      db-super-admin:
         condition: service_healthy
       redis:
         condition: service_healthy
     environment:
       NODE_ENV: ${NODE_ENV:-production}
       ENV: ${ENV}
-      PORT: ${PORT}
+      PORT: 4010
 
-      DB_HOST: postgres-pms
+      DB_HOST: db-super-admin
       DB_PORT: 5432
       DB_USER: ${PMS_DB_USER}
       DB_PASSWORD: ${PMS_DB_PASSWORD}

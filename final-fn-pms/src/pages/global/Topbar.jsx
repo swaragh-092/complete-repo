@@ -190,7 +190,6 @@ import { useOrganization } from "../../context/OrganizationContext";
 import WorkspaceSwitcher from "../../components/WorkspaceSwitcher";
 import CreateOrganizationModal from "../../components/organization/CreateOrganizationModal";
 import { auth } from "@spidy092/auth-client";
-// import { auth } from "@spidy092/auth-client"; // enable if needed
 
 const Topbar = () => {
   const theme = useTheme();
@@ -200,12 +199,16 @@ const Topbar = () => {
 
   const { currentOrganization, organizations, switchOrganization, loading: orgLoading } = useOrganization();
 
+  console.log('currentOrganization', currentOrganization);
+
 
   const unreadCount = useSelector((state) => state.notification.count);
 
   const [orgMenuAnchor, setOrgMenuAnchor] = useState(null);
   const [userMenuAnchor, setUserMenuAnchor] = useState(null);
    const { user = {} } = useSelector((state) => state.auth || {});
+
+   console.log(user);
   const [createOrgModalOpen, setCreateOrgModalOpen] = useState(false);
 
 

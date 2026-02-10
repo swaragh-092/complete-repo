@@ -11,10 +11,13 @@ import { Box, Button, CircularProgress, Dialog, DialogContent, DialogTitle, Divi
 import DoButton from "../../../../components/button/DoButton";
 import backendRequest from "../../../../util/request";
 import { List } from "react-window";
+// import { FixedSizeList as List } from "react-window";
+
 
 import CloseIcon from "@mui/icons-material/Close";
 import BACKEND_ENDPOINT from "../../../../util/urls";
 import { departments } from "../../../../dymmyData";
+import { useWorkspace } from "../../../../context/WorkspaceContext";
 
 
 // virtualization constants
@@ -25,10 +28,12 @@ const LIST_WIDTH = "100%";
 
 export default function AddMembersDialog ({isOpen, setOpen, projectId, setRefresher}) {
 
+    const { workspaces, currentWorkspace, selectWorkspace, loading, isAdmin } = useWorkspace();
+
     // controlled states
-    const [departments, setDepartments] = useState([]);
-    const [departmentId, setDepartmentId] = useState("");
-    const [deptQuery, setDeptQuery] = useState("");
+    // const [departments, setDepartments] = useState([]);
+    // const [departmentId, setDepartmentId] = useState("");
+    // const [deptQuery, setDeptQuery] = useState("");
 
     const [users, setUsers] = useState([]); // entire list for selected department
     const [userQuery, setUserQuery] = useState("");
@@ -40,44 +45,37 @@ export default function AddMembersDialog ({isOpen, setOpen, projectId, setRefres
     const [isSubmitting, setSubmitting] = useState(false);
 
     // debounce refs
-    const deptDebounceRef = useRef(null);
+    // const deptDebounceRef = useRef(null);
     const userDebounceRef = useRef(null);
 
     // open dialog: load departments (dummy or backend)
-    const fetchDepartments = async () => {
-        // Dummy:
-        const d = makeDummyDepartments();
-        setDepartments(d);
+    // const fetchDepartments = async () => {
+    //     // Dummy:
+    //     const d = makeDummyDepartments();
+    //     setDepartments(d);
 
-        // If using backend:
-        // try {
-        //   const res = await backendRequest({ endpoint: BACKEND_ENDPOINT.organization_departments(organizationId) });
-        //   setDepartments(res.data || []);
-        // } catch (err) { showToast({message:'Failed to load departments', type:'error'}) }
-    };
+    //     // If using backend:
+    //     // try {
+    //     //   const res = await backendRequest({ endpoint: BACKEND_ENDPOINT.organization_departments(organizationId) });
+    //     //   setDepartments(res.data || []);
+    //     // } catch (err) { showToast({message:'Failed to load departments', type:'error'}) }
+    // };
 
     // fetch users for a department (dummy)
-    const fetchUsers = async (deptId) => {
-        if (!deptId) {
+    const fetchUsers = async () => {
+        if (!currentWorkspace?.id) {
         setUsers([]);
         return;
         }
 
         // A real backend would support pagination & server-side search.
         // Dummy: generate many users once and set.
-        const list = makeDummyUsersFor(deptId);
+        const list = makeDummyUsersFor();
         setUsers(list);
         setFilteredUsers(list); // initially same
     };
 
-    useEffect( () => {
-        const fetch = async() => {
-            await fetchDepartments();
-        }
-
-        if (isOpen) fetch()
-        
-    }, [isOpen]);
+    
 
     // When department changes, clear previous selections and load users
     useEffect(() => {
@@ -85,40 +83,39 @@ export default function AddMembersDialog ({isOpen, setOpen, projectId, setRefres
         setSelectedUsers([]);
         setUserRoles({});
         setUserQuery("");
-        if (!departmentId) {
+        if (!currentWorkspace?.id) {
             setUsers([]);
             setFilteredUsers([]);
             return;
         }
-        fetchUsers(departmentId);
-    }, [departmentId]);
+        fetchUsers(currentWorkspace?.id);
+    }, [currentWorkspace?.id]);
 
     const handleClose = () => {
         setOpen(false);
         // reset everything
-        setDepartmentId("");
+        // setDepartmentId("");
         setUsers([]);
         setFilteredUsers([]);
         setUserQuery("");
-        setDeptQuery("");
         setSelectedUsers([]);
         setUserRoles({});
     };
 
-    // Debounced department search (client-side filtering)
-    useEffect(() => {
-        if (deptDebounceRef.current) clearTimeout(deptDebounceRef.current);
-        deptDebounceRef.current = setTimeout(() => {
-            // client-side filter departments
-            // For backend: call API to search departments
-            setDepartments((prev) => {
-              const all = makeDummyDepartments(); // ensure full list for dummy
-              if (!deptQuery) return all;
-              return all.filter((d) => d.name.toLowerCase().includes(deptQuery.toLowerCase()));
-            });
-        }, 200);
-        return () => clearTimeout(deptDebounceRef.current);
-    }, [deptQuery]);
+    // // Debounced department search (client-side filtering)
+    // useEffect(() => {
+    //     if (deptDebounceRef.current) clearTimeout(deptDebounceRef.current);
+    //     deptDebounceRef.current = setTimeout(() => {
+    //         // client-side filter departments
+    //         // For backend: call API to search departments
+    //         setDepartments((prev) => {
+    //           const all = makeDummyDepartments(); // ensure full list for dummy
+    //           if (!deptQuery) return all;
+    //           return all.filter((d) => d.name.toLowerCase().includes(deptQuery.toLowerCase()));
+    //         });
+    //     }, 200);
+    //     return () => clearTimeout(deptDebounceRef.current);
+    // }, [deptQuery]);
 
     // Debounced user search (client-side)
     useEffect(() => {
@@ -175,7 +172,7 @@ export default function AddMembersDialog ({isOpen, setOpen, projectId, setRefres
             showToast({ message: "Invalid project", type: "error" });
             return;
         }
-        if (!departmentId) {
+        if (!currentWorkspace?.id) {
             showToast({ message: "Please pick a department", type: "warning" });
             return;
         }
@@ -191,7 +188,7 @@ export default function AddMembersDialog ({isOpen, setOpen, projectId, setRefres
             })),
         };
 
-        const result = await updateToBackend(payload, projectId, departmentId);
+        const result = await updateToBackend(payload, projectId, currentWorkspace?.id);
 
         
 
@@ -260,6 +257,23 @@ export default function AddMembersDialog ({isOpen, setOpen, projectId, setRefres
     // memoized item count for virtualization
     const itemCount = useMemo(() => filteredUsers.length, [filteredUsers]);
 
+    // simulate thousands of users for a dept
+    const makeDummyUsersFor = () => {
+        const department = currentWorkspace;
+        const list = [];
+        for (let i = 1; i <= 5; i++) {
+            const id = `7b6709f5-57a5-48df-af22-771459865${i}d0`;
+            list.push({
+                id,
+                name: `${department.name.toUpperCase()} User ${i}`,
+                email: `user${i}@${department.name.toLowerCase()}.example.com`,
+                department_id: department.id,
+            });
+        }
+        console.log(list);
+        return list;
+    };
+
     return (
         <Dialog open={isOpen} onClose={handleClose} fullWidth maxWidth="md">
         <DialogTitle>
@@ -278,7 +292,7 @@ export default function AddMembersDialog ({isOpen, setOpen, projectId, setRefres
           {/* LEFT: controls & user list */}
           <Box sx={{ flex: 1, minWidth: 420 }}>
             {/* Dept search */}
-            <Typography variant="subtitle2" sx={{ mb: 1 }}>
+            {/* <Typography variant="subtitle2" sx={{ mb: 1 }}>
               Department
             </Typography>
             <TextField
@@ -288,10 +302,10 @@ export default function AddMembersDialog ({isOpen, setOpen, projectId, setRefres
               value={deptQuery}
               onChange={(e) => setDeptQuery(e.target.value)}
               sx={{ mb: 1 }}
-            />
+            /> */}
 
             {/* Dept list (clickable) */}
-            <Box
+            {/* <Box
               sx={{
                 border: "1px solid #ddd",
                 borderRadius: 1,
@@ -342,11 +356,11 @@ export default function AddMembersDialog ({isOpen, setOpen, projectId, setRefres
                     );
                   })
               )}
-            </Box>
+            </Box> */}
 
             {/* users area */}
             <Typography variant="subtitle2" sx={{ mb: 1 }}>
-              Users {departmentId ? `— ${departments.find((dd) => dd.id === departmentId)?.name || ""}` : ""}
+              Users {currentWorkspace?.id ? currentWorkspace?.name : ""}
             </Typography>
 
             <Box sx={{ mb: 1, display: "flex", gap: 1 }}>
@@ -373,19 +387,80 @@ export default function AddMembersDialog ({isOpen, setOpen, projectId, setRefres
               {itemCount === 0 ? (
                 <Box p={2}>
                   <Typography variant="body2" color="text.secondary">
-                    {departmentId ? "No users found" : "Select a department to view users"}
+                    {currentWorkspace?.id ? "No users found" : "Select a department to view users"}
                   </Typography>
                 </Box>
               ) : (
-                <List
-                  height={LIST_HEIGHT}
-                  width={LIST_WIDTH}
-                  itemCount={itemCount}
-                  itemSize={ITEM_HEIGHT}
-                  overscanCount={6}
-                >
-                  {Row}
-                </List>
+              //  <List
+              //     height={400}
+              //     width={600}
+              //     itemCount={itemCount}
+              //     itemSize={72}
+              //   >
+              //     {Row}
+              //   </List>
+              <Box
+  sx={{
+    border: "1px solid #eee",
+    borderRadius: 1,
+    maxHeight: 400,
+    overflowY: "auto",
+  }}
+>
+  {itemCount === 0 ? (
+    <Box p={2}>
+      <Typography variant="body2" color="text.secondary">
+        {currentWorkspace?.id
+          ? "No users found"
+          : "Select a department to view users"}
+      </Typography>
+    </Box>
+  ) : (
+    filteredUsers.map((u) => {
+      const isSelected = selectedUsers.some((s) => s.id === u.id);
+
+      return (
+        <Box
+          key={u.id}
+          display="flex"
+          alignItems="center"
+          justifyContent="space-between"
+          px={1.5}
+          py={1}
+          sx={{ borderBottom: "1px solid #f0f0f0" }}
+        >
+          <Box>
+            <Typography fontWeight={600}>{u.name}</Typography>
+            <Typography variant="body2" color="text.secondary">
+              {u.email}
+            </Typography>
+          </Box>
+
+          <Box display="flex" alignItems="center" gap={1}>
+            <FormControl size="small" sx={{ minWidth: 120 }}>
+              <Select
+                value={userRoles[u.id] || "member"}
+                onChange={(e) => setRoleForUser(u.id, e.target.value)}
+              >
+                <MenuItem value="lead">Lead</MenuItem>
+                <MenuItem value="member">Member</MenuItem>
+                <MenuItem value="viewer">Viewer</MenuItem>
+              </Select>
+            </FormControl>
+
+            <Button
+              variant={isSelected ? "contained" : "outlined"}
+              size="small"
+              onClick={() => toggleSelectUser(u)}
+            >
+              {isSelected ? "Remove" : "Add"}
+            </Button>
+          </Box>
+        </Box>
+      );
+    })
+  )}
+</Box>
               )}
             </Box>
           </Box>
@@ -468,24 +543,8 @@ export default function AddMembersDialog ({isOpen, setOpen, projectId, setRefres
 
 
 
-// ----- Dummy data generators (replace with real fetch) -----
-const makeDummyDepartments = () => departments;
 
-// simulate thousands of users for a dept
-const makeDummyUsersFor = (departmentId) => {
-    const department = departments.find(d => d.id === departmentId);
-    const list = [];
-    for (let i = 1; i <= 3000; i++) {
-        const id = `user-${i}`;
-        list.push({
-            id,
-            name: `${department.name.toUpperCase()} User ${i}`,
-            email: `user${i}@${department.name.toLowerCase()}.example.com`,
-            department_id: department.id,
-        });
-    }
-    return list;
-};
+
 
 
 const updateToBackend = async (payload, projectId, departmentId) => {

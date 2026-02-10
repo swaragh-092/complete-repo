@@ -27,7 +27,9 @@ function generateOrganizationCode(name, createdAt = new Date()) {
 
 
 const OrganizationService = {
+  
   async create({req, data}) {
+    console.log("woking here");
     const existing = await Organization.findOne({
       where: {
         [Op.or]: [
@@ -36,6 +38,8 @@ const OrganizationService = {
         ]
       }
     });
+
+    console.log("not working here");
 
     if (existing) {
       if (existing.email === data.email && existing.phone === data.phone) {
@@ -48,6 +52,7 @@ const OrganizationService = {
         return { success: false, status: 400, message: 'Phone number already exists' };
       }
     }
+    
     data.code = generateOrganizationCode(data.name);
 
     const orgQuery = async (t) => {
