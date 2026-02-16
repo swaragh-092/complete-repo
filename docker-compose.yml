@@ -248,16 +248,16 @@ services:
 
       # Security
       SERVICE_SECRET: ${SERVICE_SECRET:?SERVICE_SECRET is required}
-      ports:
-        - "${EMAIL_SERVICE_PORT:-4011}:4011"
-      networks:
-        - auth-network
-      healthcheck:
-        test: [ "CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:4011/health" ]
-        interval: 30s
-        timeout: 10s
-        retries: 3
-        start_period: 10s
+    ports:
+      - "${EMAIL_SERVICE_PORT:-4011}:4011"
+    networks:
+      - auth-network
+    healthcheck:
+      test: [ "CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:4011/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
 
   # ════════════════════════════════════════════════════════════════════════════
   # FRONTEND APPLICATIONS
@@ -405,10 +405,6 @@ services:
       REFRESH_TOKEN_EXPIRE_TIME: ${REFRESH_TOKEN_EXPIRE_TIME}
       RESET_PASSWORD_TOKEN_EXPIRE_TIME: ${RESET_PASSWORD_TOKEN_EXPIRE_TIME}
 
-      MAIL_ADDRESS: ${MAIL_ADDRESS}
-      MAIL_PASSWORD: ${MAIL_PASSWORD}
-      MAIL_SERVICE: ${MAIL_SERVICE}
-      MAIL_INTERVAL: ${MAIL_INTERVAL}
 
       GLOBAL: http://localhost:8080/
       APP: http://localhost:8080/
