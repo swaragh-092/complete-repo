@@ -9,6 +9,7 @@ import { queryClient } from './config/reactQueryConfig';
 import './config/authConfig';
 import ProtectedRoute from './components/ProtectedRoute';
 import LoadingSpinner from './components/LoadingSpinner';
+import SessionDebug from './components/SessionDebug'; // ⚠️ Debug panel - remove for production
 
 const Login = lazy(() => import('./pages/Login'));
 const Callback = lazy(() => import('./pages/Callback'));
@@ -61,6 +62,7 @@ export default function App() {
                 </Suspense>
               </BrowserRouter>
             </ErrorBoundary>
+              <SessionDebug /> {/* ⚠️ Debug panel - remove for production */}
           </AuthProvider>
         </ToastProvider>
       </ThemeModeProvider>

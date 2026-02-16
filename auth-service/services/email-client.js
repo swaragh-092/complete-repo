@@ -4,14 +4,6 @@
  * Email Service Client
  * 
  * Use this module to send emails via the Email Service microservice.
- * 
- * Usage:
- *   const emailClient = require('./email-client');
- *   await emailClient.send({
- *     type: 'SECURITY_ALERT',
- *     to: 'user@example.com',
- *     data: { userName: 'Alice', alertTitle: 'Test', alertMessage: 'Hello!' }
- *   });
  */
 
 const EMAIL_SERVICE_URL = process.env.EMAIL_SERVICE_URL || 'http://email-service:4011';
@@ -26,33 +18,39 @@ const SERVICE_SECRET = process.env.SERVICE_SECRET;
  * @returns {Promise<object>} - Response from email service
  */
 async function send({ type, to, data }) {
+    // If no secret, we might be in dev mode without email service running, or misconfigured.
+    // But for now, let's assume strict requirement.
     if (!SERVICE_SECRET) {
-        throw new Error('SERVICE_SECRET environment variable is not set');
+        console.warn('⚠️  SERVICE_SECRET is missing. Email might fail.');
     }
 
-    const response = await fetch(`${EMAIL_SERVICE_URL}/api/v1/email/send`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'x-service-secret': SERVICE_SECRET,
-        },
-        body: JSON.stringify({ type, to, data }),
-    });
+    try {
+        const response = await fetch(`${EMAIL_SERVICE_URL}/api/v1/email/send`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'x-service-secret': SERVICE_SECRET,
+            },
+            body: JSON.stringify({ type, to, data }),
+        });
 
-    const result = await response.json();
+        const result = await response.json();
 
-    if (!response.ok) {
-        const error = new Error(result.message || 'Failed to send email');
-        error.statusCode = response.status;
-        error.code = result.error?.code || 'EMAIL_ERROR';
-        throw error;
+        if (!response.ok) {
+            console.error('❌ Email Service Error:', result);
+            return { success: false, error: result };
+        }
+
+        return { success: true, data: result };
+    } catch (error) {
+        console.error('❌ Failed to connect to Email Service:', error.message);
+        return { success: false, error: error.message };
     }
-
-    return result;
 }
 
 /**
  * Available email types
+ * Keep in sync with email-service
  */
 const EMAIL_TYPES = {
     CLIENT_REQUEST: 'CLIENT_REQUEST',

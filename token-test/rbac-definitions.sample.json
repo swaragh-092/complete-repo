@@ -1,0 +1,66 @@
+{
+  "version": "2.0.0",
+  "description": "RBAC definitions for token-test",
+  
+  "permissions": [
+    { "name": "*:org:read", "description": "View organization details", "resource": "org", "action": "read", "is_system": true },
+    { "name": "*:org:update", "description": "Update organization settings", "resource": "org", "action": "update", "is_system": true },
+    { "name": "*:org:delete", "description": "Delete organization", "resource": "org", "action": "delete", "is_system": true },
+    
+    { "name": "*:member:read", "description": "View organization members", "resource": "member", "action": "read", "is_system": true },
+    { "name": "*:member:invite", "description": "Invite members to organization", "resource": "member", "action": "invite", "is_system": true },
+    { "name": "*:member:remove", "description": "Remove members from organization", "resource": "member", "action": "remove", "is_system": true },
+    { "name": "*:member:update_role", "description": "Change member role", "resource": "member", "action": "update_role", "is_system": true },
+    
+    { "name": "*:workspace:create", "description": "Create workspaces", "resource": "workspace", "action": "create", "is_system": true },
+    { "name": "*:workspace:read", "description": "View workspaces", "resource": "workspace", "action": "read", "is_system": true },
+    { "name": "*:workspace:update", "description": "Update workspace settings", "resource": "workspace", "action": "update", "is_system": true },
+    { "name": "*:workspace:delete", "description": "Delete workspaces", "resource": "workspace", "action": "delete", "is_system": true },
+    { "name": "*:workspace:member:add", "description": "Add members to workspace", "resource": "workspace", "action": "member:add", "is_system": true },
+    { "name": "*:workspace:member:remove", "description": "Remove members from workspace", "resource": "workspace", "action": "member:remove", "is_system": true },
+    
+    { "name": "*:role:create", "description": "Create custom roles", "resource": "role", "action": "create", "is_system": true },
+    { "name": "*:role:read", "description": "View roles", "resource": "role", "action": "read", "is_system": true },
+    { "name": "*:role:update", "description": "Update roles", "resource": "role", "action": "update", "is_system": true },
+    { "name": "*:role:delete", "description": "Delete custom roles", "resource": "role", "action": "delete", "is_system": true },
+    
+    { "name": "*:audit:read", "description": "View audit logs", "resource": "audit", "action": "read", "is_system": true }
+  ],
+  
+  "system_roles": {
+    "owner": {
+      "description": "Organization owner with full access",
+      "is_system": true,
+      "permissions": ["*:*:*"]
+    },
+    "admin": {
+      "description": "Organization administrator",
+      "is_system": true,
+      "permissions": [
+        "*:org:read", "*:org:update",
+        "*:member:read", "*:member:invite", "*:member:remove", "*:member:update_role",
+        "*:workspace:create", "*:workspace:read", "*:workspace:update", "*:workspace:delete",
+        "*:workspace:member:add", "*:workspace:member:remove",
+        "*:role:read",
+        "*:audit:read"
+      ]
+    },
+    "member": {
+      "description": "Organization member with basic access",
+      "is_system": true,
+      "permissions": [
+        "*:org:read",
+        "*:member:read",
+        "*:workspace:read"
+      ]
+    },
+    "viewer": {
+      "description": "Read-only access",
+      "is_system": true,
+      "permissions": [
+        "*:org:read",
+        "*:workspace:read"
+      ]
+    }
+  }
+}

@@ -28,7 +28,27 @@ const logger = require('../utils/logger');
 const UAParser = require('ua-parser-js');
 const crypto = require('crypto');
 
+// Valid values for the enum_audit_logs_environment DB enum
+const VALID_ENVIRONMENTS = ['PRODUCTION', 'STAGING', 'DEVELOPMENT', 'TEST'];
+const ENVIRONMENT_ALIASES = {
+  'PROD': 'PRODUCTION',
+  'DEV': 'DEVELOPMENT',
+  'LOCAL': 'DEVELOPMENT',
+  'LOCALHOST': 'DEVELOPMENT',
+};
+
 class AuditService {
+  /**
+   * Sanitize environment value to match DB enum
+   * Maps unknown values to DEVELOPMENT as safe fallback
+   */
+  static sanitizeEnvironment(env) {
+    const upper = (env || 'development').toUpperCase();
+    if (VALID_ENVIRONMENTS.includes(upper)) return upper;
+    if (ENVIRONMENT_ALIASES[upper]) return ENVIRONMENT_ALIASES[upper];
+    return 'DEVELOPMENT'; // Safe fallback
+  }
+
   /**
    * Sanitize sensitive data from objects
    * Removes passwords, tokens, secrets, and other sensitive fields
@@ -317,7 +337,7 @@ class AuditService {
         device_id: deviceId,
         os: os || deviceInfo.os,
         browser: browser || deviceInfo.browser,
-        environment: environment || auditConfig.service.environment.toUpperCase(),
+        environment: AuditService.sanitizeEnvironment(environment || auditConfig.service.environment),
         service_name: serviceName || auditConfig.service.name,
 
         // Security & Compliance

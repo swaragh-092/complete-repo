@@ -1,6 +1,6 @@
 // auth-service/services/notifications.js
 const { UserMetadata: User, Notification } = require('../config/database');
-const emailModule = require('../modules/email');
+const emailModule = require('./email-client');
 const logger = require('../utils/logger');
 
 async function sendEmail(payload) {

@@ -90,23 +90,19 @@ function Login() {
 
   if (loading) return <LoadingSpinner message="Redirecting to login..." />;
 
-  // Default Login View
+  // ✅ Auto-redirect to Keycloak if not expired
+  // This ensures "Centralized Login" is the only login page user sees
+  useEffect(() => {
+    if (!sessionExpired) {
+      setLoading(true);
+      auth.login('admin-ui', CALLBACK_URL);
+    }
+  }, [sessionExpired]);
+
+  // Default View (should rarely be seen due to auto-redirect)
   return (
     <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', backgroundColor: '#f5f5f5' }}>
-      <Card sx={{ width: 400 }}>
-        <CardContent>
-          <Typography variant="h5" align="center" gutterBottom>
-            Admin Login
-          </Typography>
-          <Button 
-            variant="contained" 
-            fullWidth 
-            onClick={() => auth.login('admin-ui', CALLBACK_URL)}
-          >
-            Login with Keycloak
-          </Button>
-        </CardContent>
-      </Card>
+      <LoadingSpinner message="Redirecting to centralized login..." />
     </div>
   );
 }

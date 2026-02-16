@@ -2,7 +2,7 @@
 const express = require('express');
 const { Client, UserMetadata, ClientRequest, sequelize } = require('../../config/database');
 const { notifyAdmins, notifyDeveloper } = require('../../services/notifications');
-const emailModule = require('../../modules/email');
+const emailModule = require('../../services/email-client');
 const { authMiddleware } = require('../../middleware/authMiddleware')
 const asyncHandler = require('../../middleware/asyncHandler');
 const { AppError } = require('../../middleware/errorHandler');

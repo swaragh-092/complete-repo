@@ -8,20 +8,22 @@ const config = {
   redirectUri: import.meta.env.VITE_REDIRECT_URI,
   isRouter: true,
 
+  // Keycloak is the single authority for session/token lifetimes.
+  // auth-client reads the JWT's exp claim and auto-schedules refreshes (60s buffer).
+  // Session validation pings Keycloak every 15 min to catch admin-deleted sessions.
+  // No frontend idle timeout — Keycloak's SSO Session Idle handles this via refresh failure.
+
+  // Dev only — in production, set false and rely on httpOnly cookies.
+  persistRefreshToken: true,
+
   // ========== SESSION SECURITY CONFIGURATION ==========
-  tokenRefreshBuffer: 120, // Refresh 2 minutes before expiry (increased from 60)
-  sessionValidationInterval: 5 * 60 * 1000, // Validate every 5 minutes (was 2 minutes)
-  idleTimeoutMs: 30 * 60 * 1000, // 30 minutes idle timeout
+  tokenRefreshBuffer: 60, // Refresh 60s before expiry
+  sessionValidationInterval: 15 * 60 * 1000, // Validate every 15 minutes
   enableSessionValidation: true,
   enableProactiveRefresh: true,
-  validateOnVisibility: false, // Disabled - was causing session_deleted_while_hidden errors
-  enableIdleTimeout: true,
-  skipValidationWhenHidden: true, // Skip validation when tab is hidden
+  validateOnVisibility: true,
 };
 
-// TODO [SECURITY-DEFERRED]: Remove console.log in production.
-// Exposes auth configuration. See SECURITY_DEFERRED.md item #4.
-console.log('🔑 Auth config:', config);
 auth.setConfig(config);
 
 // ========== CROSS-TAB LOGOUT SYNC ==========
@@ -51,13 +53,10 @@ function initCrossTabSync() {
       window.location.href = loginUrl.toString();
     }
   };
-
-  console.log('📡 Cross-tab sync initialized');
 }
 
 function broadcastLogout(reason) {
   if (authChannel) {
-    console.log('📢 Broadcasting logout:', reason);
     authChannel.postMessage({ type: 'LOGOUT', reason });
   }
 }
@@ -73,35 +72,44 @@ initCrossTabSync();
 
 // ========== SESSION SECURITY ==========
 let sessionSecurityCleanup = null;
-let idleTimer = null;
-let lastActivityTime = Date.now();
-
-function resetIdleTimer() {
-  lastActivityTime = Date.now();
-}
 
 function stopSessionSecurity() {
   if (sessionSecurityCleanup) {
     sessionSecurityCleanup.stopAll();
     sessionSecurityCleanup = null;
   }
-  if (idleTimer) {
-    clearInterval(idleTimer);
-    idleTimer = null;
-  }
-  if (typeof document !== 'undefined') {
-    document.removeEventListener('mousemove', resetIdleTimer);
-    document.removeEventListener('keydown', resetIdleTimer);
-    document.removeEventListener('click', resetIdleTimer);
-    document.removeEventListener('scroll', resetIdleTimer);
-  }
 }
 
-function handleSessionExpired(reason) {
-  console.log('🚨 Session expired:', reason);
+// Guard against concurrent refresh attempts
+let isRefreshing = false;
+
+async function handleSessionExpired(reason) {
+  // ── Resilient handler: try to refresh before giving up ──
+  // Browsers throttle background-tab timers, so proactive refresh
+  // may not fire while the tab is hidden.  The access token expires,
+  // but the refresh token & Keycloak session are still alive.
+  // A single refresh attempt can silently restore everything.
+
+  if (isRefreshing) return; // Prevent duplicate attempts
+  isRefreshing = true;
+
+  console.log('⚠️ Session security triggered:', reason, '— attempting silent refresh…');
+
+  try {
+    await auth.refreshToken();
+    console.log('✅ Token refreshed — session still active (false alarm)');
+    isRefreshing = false;
+    return; // Session is fine, do NOT redirect
+  } catch (err) {
+    console.log('❌ Refresh failed — session truly expired:', err.message);
+  }
+
+  isRefreshing = false;
+
+  // Refresh failed → session is genuinely dead
   auth.clearToken();
   auth.clearRefreshToken();
-  broadcastLogout(reason); // ✅ Notify other tabs
+  broadcastLogout(reason);
 
   const loginUrl = new URL('/login', window.location.origin);
   loginUrl.searchParams.set('expired', 'true');
@@ -110,34 +118,13 @@ function handleSessionExpired(reason) {
 }
 
 function startSessionSecurity() {
-  console.log('🔐 Starting session security');
   stopSessionSecurity();
-  lastActivityTime = Date.now();
 
-  // Start auth-client's built-in session security (paths work because authBaseUrl has /auth)
+  // auth-client handles:
+  // 1. Proactive refresh — reads JWT exp, refreshes 60s before expiry
+  // 2. Session monitor — pings Keycloak every 15 min to verify session exists
+  // Both are Keycloak-reactive, not frontend-invented timeouts.
   sessionSecurityCleanup = auth.startSessionSecurity(handleSessionExpired);
-
-  // Add idle timeout
-  if (config.enableIdleTimeout && typeof document !== 'undefined') {
-    console.log(`⏰ Idle timeout: ${config.idleTimeoutMs / 60000}min`);
-
-    document.addEventListener('mousemove', resetIdleTimer);
-    document.addEventListener('keydown', resetIdleTimer);
-    document.addEventListener('click', resetIdleTimer);
-    document.addEventListener('scroll', resetIdleTimer);
-
-    idleTimer = setInterval(() => {
-      const idleTime = Date.now() - lastActivityTime;
-      if (idleTime > config.idleTimeoutMs) {
-        console.log('⏰ Idle timeout reached');
-        stopSessionSecurity();
-        auth.clearToken();
-        auth.clearRefreshToken();
-        broadcastLogout('idle_timeout');
-        handleSessionExpired('idle_timeout');
-      }
-    }, 60000);
-  }
 }
 
 // Start session security if authenticated
@@ -145,13 +132,11 @@ if (auth.isAuthenticated()) {
   startSessionSecurity();
 }
 
-// Token listener
+// Token listener — start/stop security on login/logout
 auth.addTokenListener((newToken, oldToken) => {
   if (newToken && !oldToken) {
-    console.log('🔐 Token acquired');
     startSessionSecurity();
   } else if (!newToken && oldToken) {
-    console.log('🔐 Token cleared');
     stopSessionSecurity();
   }
 });
@@ -160,13 +145,6 @@ auth.addTokenListener((newToken, oldToken) => {
 window.addEventListener('beforeunload', () => {
   stopSessionSecurity();
   closeCrossTabSync();
-});
-
-console.log('🔧 Account UI configured with cross-tab sync:', {
-  clientKey: config.clientKey,
-  authBaseUrl: config.authBaseUrl,
-  sessionValidation: config.sessionValidationInterval / 1000 + 's',
-  idleTimeout: config.idleTimeoutMs / 60000 + 'min',
 });
 
 export default config;

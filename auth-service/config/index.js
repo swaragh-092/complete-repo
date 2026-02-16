@@ -62,8 +62,13 @@ const DEFAULT_DEV_ORIGINS = [
   'http://localhost:5173',
   'http://localhost:5174',
   'http://localhost:5175',
+  // Ported dev server origins
   'http://admin.local.test:5173',
-  'https://account.local.test:5174'
+  'https://account.local.test:5174',
+  // Portless gateway origins (nginx on 443)
+  'https://admin.local.test',
+  'https://account.local.test',
+  'https://auth.local.test',
 ];
 
 // Lazy-loaded Keycloak Service instances

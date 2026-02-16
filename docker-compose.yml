@@ -32,6 +32,10 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+      pms:
+        condition: service_healthy
+      super-administrator:
+        condition: service_healthy
 
   # ════════════════════════════════════════════════════════════════════════════
   # DATABASES
@@ -82,7 +86,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-      start_period: 10s
+      start_period: 30s
 
   # ─────────────────────────────────────────────────────────────────────────────
   # Redis (Required for PMS and Super Administrator)
@@ -119,6 +123,8 @@ services:
     environment:
       NODE_ENV: ${NODE_ENV:-production}
       PORT: 4000
+      # Allow self-signed certs for internal HTTPS calls to Keycloak
+      NODE_TLS_REJECT_UNAUTHORIZED: "0"
 
       # Database
       DB_HOST: postgres-auth
@@ -167,6 +173,10 @@ services:
       SMTP_PASS: ${SMTP_PASS:-}
       FROM_EMAIL: ${FROM_EMAIL:-noreply@example.com}
 
+      # Email Service (Microservice)
+      EMAIL_SERVICE_URL: http://email-service:4011
+      SERVICE_SECRET: ${SERVICE_SECRET:?SERVICE_SECRET is required}
+
       # Security
       FP_SALT: ${FP_SALT:-}
       DEVICE_TRUST_DURATION_DAYS: ${DEVICE_TRUST_DURATION_DAYS:-30}
@@ -178,6 +188,8 @@ services:
       - auth-service-logs:/app/logs
     depends_on:
       postgres-auth:
+        condition: service_healthy
+      email-service:
         condition: service_healthy
     networks:
       - auth-network
@@ -212,16 +224,35 @@ services:
 
       # Security
       SERVICE_SECRET: ${SERVICE_SECRET:?SERVICE_SECRET is required}
+
+      # Database (reuses postgres-pms)
+      DB_HOST: postgres-pms
+      DB_PORT: 5432
+      DB_NAME: email_service
+      DB_USER: ${PMS_DB_USER:-postgres}
+      DB_PASSWORD: ${PMS_DB_PASSWORD:-1234}
+
+      # Redis (for BullMQ queue)
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+
+      # Queue
+      QUEUE_MAX_ATTEMPTS: 3
     ports:
       - "${EMAIL_SERVICE_PORT:-4011}:4011"
+    depends_on:
+      postgres-pms:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     networks:
       - auth-network
     healthcheck:
-      test: [ "CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:4011/health" ]
+      test: [ "CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:4011/health" ]
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 10s
+      start_period: 15s
 
   # ════════════════════════════════════════════════════════════════════════════
   # FRONTEND APPLICATIONS
@@ -390,20 +421,6 @@ services:
       timeout: 10s
       retries: 3
       start_period: 30s
-
-  pms-local-v1:
-    build:
-      context: ./pms-local-v1
-      dockerfile: infrastructure/Dockerfile
-      args:
-        - VITE_CLIENT_KEY=pms-local-v1
-        - VITE_AUTH_BASE_URL=https://auth.local.test
-        - VITE_API_URL=https://auth.local.test/api/admin
-        - VITE_AUTH_URL=https://auth.local.test/auth
-        - VITE_ACCOUNT_UI_URL=https://account.local.test
-        - VITE_CALLBACK_URL=https://pms-local-v1.local.test/callback
-    networks:
-      - auth-network
 
 # ══════════════════════════════════════════════════════════════════════════════
 # NETWORKS

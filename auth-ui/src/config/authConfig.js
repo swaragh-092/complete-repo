@@ -8,13 +8,14 @@ const config = {
   redirectUri: import.meta.env.VITE_CALLBACK_URL || `${window.location.origin}/callback`,
 
   // ========== SESSION SECURITY CONFIGURATION ==========
-  tokenRefreshBuffer: 60,
-  sessionValidationInterval: 2 * 60 * 1000,
-  idleTimeoutMs: 30 * 60 * 1000,
+  // We rely on Keycloak as the source of truth for session lifetimes.
+  // The frontend simply reacts to token expiry/revocation.
+  tokenRefreshBuffer: 60, // Refresh 60s before expiry
+  sessionValidationInterval: 15 * 60 * 1000, // Validate every 15m
   enableSessionValidation: true,
   enableProactiveRefresh: true,
   validateOnVisibility: true,
-  enableIdleTimeout: true,
+  persistRefreshToken: true, // ✅ Store refresh token in localStorage (needed for local HTTPS dev)
 };
 
 auth.setConfig(config);
@@ -40,7 +41,7 @@ function initCrossTabSync() {
       // Clear tokens without broadcasting (to prevent loops)
       auth.clearToken();
       auth.clearRefreshToken();
-      stopCustomSessionSecurity();
+      stopSessionSecurity();
       // Redirect to login
       const loginUrl = new URL('/login', window.location.origin);
       loginUrl.searchParams.set('expired', 'true');
@@ -48,8 +49,6 @@ function initCrossTabSync() {
       window.location.href = loginUrl.toString();
     }
   };
-
-
 }
 
 function broadcastLogout(reason) {
@@ -68,212 +67,46 @@ function closeCrossTabSync() {
 // Initialize cross-tab sync
 initCrossTabSync();
 
-// ========== CUSTOM SESSION VALIDATION ==========
-async function validateSession() {
-  try {
-    const response = await auth.api.get('/auth/account/validate-session');
-    return response.data.valid !== false;
-  } catch (err) {
-    if (err.response?.status === 401) {
-      return false;
-    }
-    console.warn('⚠️ Session validation error:', err.message);
-    return true;
-  }
-}
-
-// ========== CUSTOM TOKEN REFRESH ==========
-let refreshInProgress = false;
-let refreshPromise = null;
-
-async function customRefreshToken() {
-  if (refreshInProgress && refreshPromise) {
-    return refreshPromise;
-  }
-
-  refreshInProgress = true;
-  refreshPromise = (async () => {
-    try {
-      const storedRefreshToken = auth.getRefreshToken();
-      const requestOptions = {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' }
-      };
-
-      if (storedRefreshToken) {
-        requestOptions.headers['X-Refresh-Token'] = storedRefreshToken;
-        requestOptions.body = JSON.stringify({ refreshToken: storedRefreshToken });
-      }
-
-      const response = await fetch(`${config.authBaseUrl}/auth/refresh/${config.clientKey}`, requestOptions);
-
-      if (!response.ok) {
-        throw new Error(`Refresh failed: ${response.status}`);
-      }
-
-      const data = await response.json();
-      const { access_token, refresh_token: new_refresh_token } = data;
-
-      if (!access_token) {
-        throw new Error('No access token in refresh response');
-      }
-
-      auth.setToken(access_token);
-      if (new_refresh_token) {
-        auth.setRefreshToken(new_refresh_token);
-      }
-
-
-      return access_token;
-    } catch (err) {
-      console.error('❌ Token refresh error:', err);
-      throw err;
-    } finally {
-      refreshInProgress = false;
-      refreshPromise = null;
-    }
-  })();
-
-  return refreshPromise;
-}
-
-// ========== SESSION SECURITY ==========
-let proactiveRefreshTimer = null;
-let sessionValidationTimer = null;
-let visibilityHandler = null;
-let idleTimer = null;
-let lastActivityTime = Date.now();
-
-function resetIdleTimer() {
-  lastActivityTime = Date.now();
-}
-
-function stopCustomSessionSecurity() {
-  if (proactiveRefreshTimer) {
-    clearTimeout(proactiveRefreshTimer);
-    proactiveRefreshTimer = null;
-  }
-  if (sessionValidationTimer) {
-    clearInterval(sessionValidationTimer);
-    sessionValidationTimer = null;
-  }
-  if (idleTimer) {
-    clearInterval(idleTimer);
-    idleTimer = null;
-  }
-  if (visibilityHandler && typeof document !== 'undefined') {
-    document.removeEventListener('visibilitychange', visibilityHandler);
-    visibilityHandler = null;
-  }
-  if (typeof document !== 'undefined') {
-    document.removeEventListener('mousemove', resetIdleTimer);
-    document.removeEventListener('keydown', resetIdleTimer);
-    document.removeEventListener('click', resetIdleTimer);
-    document.removeEventListener('scroll', resetIdleTimer);
-  }
-}
-
-function startCustomSessionSecurity(onSessionInvalid) {
-  stopCustomSessionSecurity();
-  lastActivityTime = Date.now();
-
-  // Proactive refresh
-  function scheduleRefresh() {
-    const token = auth.getToken();
-    if (!token) return;
-
-    const timeUntilExpiry = auth.getTimeUntilExpiry(token);
-    if (timeUntilExpiry <= 0) {
-      customRefreshToken().catch(() => onSessionInvalid('token_expired'));
-      return;
-    }
-
-    const refreshIn = Math.max(0, (timeUntilExpiry - config.tokenRefreshBuffer)) * 1000;
-
-    proactiveRefreshTimer = setTimeout(async () => {
-      try {
-        await customRefreshToken();
-        scheduleRefresh();
-      } catch {
-        proactiveRefreshTimer = setTimeout(scheduleRefresh, 30000);
-      }
-    }, refreshIn);
-  }
-
-  if (config.enableProactiveRefresh) {
-    scheduleRefresh();
-  }
-
-  // Session validation
-  if (config.enableSessionValidation) {
-    sessionValidationTimer = setInterval(async () => {
-      const token = auth.getToken();
-      if (!token) {
-        stopCustomSessionSecurity();
-        return;
-      }
-
-      const isValid = await validateSession();
-      if (!isValid) {
-        stopCustomSessionSecurity();
-        auth.clearToken();
-        auth.clearRefreshToken();
-        broadcastLogout('session_deleted'); // Notify other tabs
-        onSessionInvalid('session_deleted');
-      }
-    }, config.sessionValidationInterval);
-  }
-
-  // Visibility validation
-  if (config.validateOnVisibility && typeof document !== 'undefined') {
-    visibilityHandler = async () => {
-      if (document.visibilityState === 'visible') {
-        const token = auth.getToken();
-        if (!token) return;
-
-        const isValid = await validateSession();
-        if (!isValid) {
-          stopCustomSessionSecurity();
-          auth.clearToken();
-          auth.clearRefreshToken();
-          broadcastLogout('session_expired');
-          onSessionInvalid('session_expired_while_hidden');
-        }
-      }
-    };
-    document.addEventListener('visibilitychange', visibilityHandler);
-  }
-
-  // Idle timeout
-  if (config.enableIdleTimeout && typeof document !== 'undefined') {
-    document.addEventListener('mousemove', resetIdleTimer);
-    document.addEventListener('keydown', resetIdleTimer);
-    document.addEventListener('click', resetIdleTimer);
-    document.addEventListener('scroll', resetIdleTimer);
-
-    idleTimer = setInterval(() => {
-      const idleTime = Date.now() - lastActivityTime;
-      if (idleTime > config.idleTimeoutMs) {
-        stopCustomSessionSecurity();
-        auth.clearToken();
-        auth.clearRefreshToken();
-        broadcastLogout('idle_timeout');
-        onSessionInvalid('idle_timeout');
-      }
-    }, 60000);
-  }
-
-  return { stopAll: stopCustomSessionSecurity };
-}
-
 // ========== SESSION MANAGEMENT ==========
 let sessionSecurityCleanup = null;
 
-function handleSessionExpired(reason) {
+function stopSessionSecurity() {
+  if (sessionSecurityCleanup) {
+    sessionSecurityCleanup.stopAll();
+    sessionSecurityCleanup = null;
+  }
+}
+
+// Guard against concurrent refresh attempts
+let isRefreshing = false;
+
+async function handleSessionExpired(reason) {
+  // ── Resilient handler: try to refresh before giving up ──
+  // Browsers throttle background-tab timers, so proactive refresh
+  // may not fire while the tab is hidden.  The access token expires,
+  // but the refresh token & Keycloak session are still alive.
+  // A single refresh attempt can silently restore everything.
+
+  if (isRefreshing) return;
+  isRefreshing = true;
+
+  console.log('⚠️ Session security triggered:', reason, '— attempting silent refresh…');
+
+  try {
+    await auth.refreshToken();
+    console.log('✅ Token refreshed — session still active (false alarm)');
+    isRefreshing = false;
+    return; // Session is fine, do NOT redirect
+  } catch (err) {
+    console.log('❌ Refresh failed — session truly expired:', err.message);
+  }
+
+  isRefreshing = false;
+
+  // Refresh failed → session is genuinely dead
   auth.clearToken();
   auth.clearRefreshToken();
-  broadcastLogout(reason); // ✅ Broadcast to other tabs
+  broadcastLogout(reason);
 
   const loginUrl = new URL('/login', window.location.origin);
   loginUrl.searchParams.set('expired', 'true');
@@ -283,29 +116,22 @@ function handleSessionExpired(reason) {
 
 // Start session security if authenticated
 if (auth.isAuthenticated()) {
-  sessionSecurityCleanup = startCustomSessionSecurity(handleSessionExpired);
+  sessionSecurityCleanup = auth.startSessionSecurity(handleSessionExpired);
 }
 
 // Token listener
 auth.addTokenListener((newToken, oldToken) => {
   if (newToken && !oldToken) {
-    sessionSecurityCleanup = startCustomSessionSecurity(handleSessionExpired);
+    sessionSecurityCleanup = auth.startSessionSecurity(handleSessionExpired);
   } else if (!newToken && oldToken) {
-    if (sessionSecurityCleanup) {
-      sessionSecurityCleanup.stopAll();
-      sessionSecurityCleanup = null;
-    }
+    stopSessionSecurity();
   }
 });
 
 // Cleanup on unload
 window.addEventListener('beforeunload', () => {
-  if (sessionSecurityCleanup) {
-    sessionSecurityCleanup.stopAll();
-  }
+  stopSessionSecurity();
   closeCrossTabSync();
 });
-
-
 
 export default config;

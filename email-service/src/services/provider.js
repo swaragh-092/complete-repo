@@ -18,9 +18,9 @@ class EmailProvider {
                 user: config.SMTP_USER,
                 pass: config.SMTP_PASS,
             },
-            pool: true,
-            maxConnections: 5,
-            maxMessages: 100,
+            pool: config.POOL,
+            maxConnections: config.MAXCONNECTIONS,
+            maxMessages: config.MAXMESSAGES,
             logger: !config.isProduction,
             debug: !config.isProduction,
         });

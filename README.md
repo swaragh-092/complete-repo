@@ -57,6 +57,7 @@ Follow the prompts. The CLI will:
 
 - **Gateway (Nginx)**: Terminating SSL at port 443. Routes traffic to services based on subdomains (`auth.`, `admin.`, `account.`).
 - **Auth Service**: Node.js backend wrapping Keycloak Admin API. Handles client registration, organization management, and permissions.
+- **Email Service**: Standalone microservice for sending transactional emails (Port 4011).
 - **Keycloak**: Identity Provider (IdP). Running in a dedicated container.
 - **Frontend Clients**:
     - `auth-ui`: Admin dashboard for managing the system.
@@ -66,6 +67,7 @@ Follow the prompts. The CLI will:
 ## 📂 Project Structure
 
 - `auth-service/`: Node.js backend.
+- `email-service/`: Standalone email microservice.
 - `keycloak-setup/`: Keycloak docker config and initial SQL dumps.
 - `gateway/`: Nginx reverse proxy config.
 - `sso-cli-tools/`: The `sso-client` CLI tool.

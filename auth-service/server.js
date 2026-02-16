@@ -61,6 +61,7 @@ app.use(helmet());
 app.use(cookieParser());
 app.use(express.json());
 
+
 // Honour reverse proxies (NGINX, ingress, etc.) so req.secure works correctly.
 if (TRUST_PROXY !== 'false') {
   app.set('trust proxy', 1);
@@ -102,6 +103,7 @@ const corsOptions = {
     'X-Session-Id',
     'X-Org-Id',
     'X-Tenant-Id',
+    'X-Refresh-Token',
     'Accept',
     'Origin'
   ],

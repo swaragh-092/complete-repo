@@ -463,7 +463,7 @@ class WorkspaceService {
      */
     async sendInvitation({ requesterId, workspaceId, email, role, message }) {
         const { WorkspaceInvitation, Organization } = require('../config/database');
-        const emailModule = require('../modules/email');
+        const emailModule = require('./email-client');
 
         const transaction = await sequelize.transaction();
         try {

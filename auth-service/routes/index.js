@@ -114,7 +114,6 @@ router.use('/workspaces', require('./workspaces.routes')); // For auth-ui compat
 // Test auth routes (development only)
 router.use('/test-auth', require('./test-auth-routes'));
 
-// Internal API routes (Service-to-Service)
-router.use('/api/internal/email', require('./internal/email.routes'));
+
 
 module.exports = router;

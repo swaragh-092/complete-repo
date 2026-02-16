@@ -1,6 +1,6 @@
 /**
  * @fileoverview Auth Configuration
- * @description Auth client setup with session security, cross-tab sync, and idle timeout
+ * @description Auth client setup with session security and cross-tab sync
  * @matches centalized-login pattern
  */
 
@@ -18,14 +18,12 @@ const config = {
   onboardingFlow: import.meta.env.VITE_ONBOARDING_FLOW,
   
   // ========== SESSION SECURITY CONFIGURATION (matches centalized-login) ==========
-  tokenRefreshBuffer: 120, // Refresh 2 minutes before expiry (same as centalized-login)
-  sessionValidationInterval: 5 * 60 * 1000, // Validate every 5 minutes (same as centalized-login)
-  idleTimeoutMs: 30 * 60 * 1000, // 30 minutes
+  tokenRefreshBuffer: 60, // Refresh 60s before expiry
+  sessionValidationInterval: 15 * 60 * 1000, // Validate every 15 minutes
   enableSessionValidation: true,
   enableProactiveRefresh: true,
-  validateOnVisibility: false, // Disabled - was causing session_deleted_while_hidden errors
-  enableIdleTimeout: true,
-  skipValidationWhenHidden: true, // Skip validation when tab is hidden
+  validateOnVisibility: true,
+  persistRefreshToken: true, // ✅ Store refresh token in localStorage (needed for local HTTPS)
   
   // API configuration
   api: {
@@ -92,35 +90,44 @@ initCrossTabSync();
 
 // ========== SESSION SECURITY ==========
 let sessionSecurityCleanup = null;
-let idleTimer = null;
-let lastActivityTime = Date.now();
-
-function resetIdleTimer() {
-  lastActivityTime = Date.now();
-}
 
 function stopSessionSecurity() {
   if (sessionSecurityCleanup) {
     sessionSecurityCleanup.stopAll();
     sessionSecurityCleanup = null;
   }
-  if (idleTimer) {
-    clearInterval(idleTimer);
-    idleTimer = null;
-  }
-  if (typeof document !== 'undefined') {
-    document.removeEventListener('mousemove', resetIdleTimer);
-    document.removeEventListener('keydown', resetIdleTimer);
-    document.removeEventListener('click', resetIdleTimer);
-    document.removeEventListener('scroll', resetIdleTimer);
-  }
 }
 
-function handleSessionExpired(reason) {
-  console.log('🚨 Session expired:', reason);
+// Guard against concurrent refresh attempts
+let isRefreshing = false;
+
+async function handleSessionExpired(reason) {
+  // ── Resilient handler: try to refresh before giving up ──
+  // Browsers throttle background-tab timers, so proactive refresh
+  // may not fire while the tab is hidden.  The access token expires,
+  // but the refresh token & Keycloak session are still alive.
+  // A single refresh attempt can silently restore everything.
+
+  if (isRefreshing) return;
+  isRefreshing = true;
+
+  console.log('⚠️ Session security triggered:', reason, '— attempting silent refresh…');
+
+  try {
+    await auth.refreshToken();
+    console.log('✅ Token refreshed — session still active (false alarm)');
+    isRefreshing = false;
+    return; // Session is fine, do NOT redirect
+  } catch (err) {
+    console.log('❌ Refresh failed — session truly expired:', err.message);
+  }
+
+  isRefreshing = false;
+
+  // Refresh failed → session is genuinely dead
   auth.clearToken();
   auth.clearRefreshToken();
-  broadcastLogout(reason); // ✅ Notify other tabs
+  broadcastLogout(reason);
 
   const loginUrl = new URL('/login', window.location.origin);
   loginUrl.searchParams.set('expired', 'true');
@@ -131,30 +138,9 @@ function handleSessionExpired(reason) {
 function startSessionSecurity() {
   console.log('🔐 Starting session security');
   stopSessionSecurity();
-  lastActivityTime = Date.now();
 
   // Start auth-client's session security
   sessionSecurityCleanup = auth.startSessionSecurity(handleSessionExpired);
-
-  // Add idle timeout
-  if (config.enableIdleTimeout && typeof document !== 'undefined') {
-    document.addEventListener('mousemove', resetIdleTimer);
-    document.addEventListener('keydown', resetIdleTimer);
-    document.addEventListener('click', resetIdleTimer);
-    document.addEventListener('scroll', resetIdleTimer);
-
-    idleTimer = setInterval(() => {
-      const idleTime = Date.now() - lastActivityTime;
-      if (idleTime > config.idleTimeoutMs) {
-        console.log('⏰ Idle timeout');
-        stopSessionSecurity();
-        auth.clearToken();
-        auth.clearRefreshToken();
-        broadcastLogout('idle_timeout');
-        handleSessionExpired('idle_timeout');
-      }
-    }, 60000);
-  }
 }
 
 // Start session security if authenticated

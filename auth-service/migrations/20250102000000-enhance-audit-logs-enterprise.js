@@ -16,7 +16,7 @@ module.exports = {
       await queryInterface.addColumn('audit_logs', 'uuid', {
         type: Sequelize.UUID,
         allowNull: true,
-      }, { transaction });
+      }, { transaction }); 
 
       await queryInterface.addColumn('audit_logs', 'session_id', {
         type: Sequelize.STRING(255),

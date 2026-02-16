@@ -1,22 +1,22 @@
 'use strict';
 
-const provider = require('./provider');
-const templates = require('../templates');
 const { EMAIL_TYPES } = require('../config/constants');
+const { EmailLog } = require('../models');
+const { addEmailJob } = require('../queue/email.queue');
+const templates = require('../templates');
 const logger = require('../utils/logger');
+const { validEmail } = require('../utils/validation-schemas');
+const { Op } = require('sequelize');
 
 /**
  * Email Service
- * Core business logic for sending emails
+ * Core business logic — now queue-based with logging
  */
 class EmailService {
     /**
-     * Send an email
-     * @param {object} payload
-     * @param {string} payload.type - Email type (from EMAIL_TYPES)
-     * @param {string} payload.to - Recipient email
-     * @param {object} payload.data - Template data
-     * @returns {Promise<object>}
+     * Queue an email for sending
+     * Creates a log record and adds a job to the queue
+     * @returns {Promise<object>} - { logId, status: 'queued' }
      */
     async send({ type, to, data }) {
         // Validate type
@@ -27,7 +27,7 @@ class EmailService {
             });
         }
 
-        // Get template
+        // Validate template exists
         const template = templates[type];
         if (!template) {
             throw Object.assign(new Error(`Template not found for type: ${type}`), {
@@ -37,45 +37,131 @@ class EmailService {
         }
 
         // Validate recipient
-        if (!to || !this.isValidEmail(to)) {
+        const { error } = validEmail.validate(to);
+        if (!to || error) {
             throw Object.assign(new Error('Invalid recipient email address'), {
                 statusCode: 400,
                 code: 'INVALID_RECIPIENT',
             });
         }
 
-        // Render template
-        const { subject, html } = this.renderTemplate(template, data);
+        // 1. Create email log record
+        const emailLog = await EmailLog.create({
+            type,
+            to,
+            status: 'queued',
+            metadata: data,
+        });
 
-        // Send email
-        logger.info(`📧 Sending email [${type}] to [${to}]`);
-        const result = await provider.sendHtml(to, subject, html);
+        // 2. Add job to queue
+        await addEmailJob(emailLog.id, type, to, data);
+
+        logger.info(`📥 Email queued [${type}] to [${to}]`, { logId: emailLog.id });
 
         return {
-            messageId: result.messageId,
+            logId: emailLog.id,
+            status: 'queued',
             type,
             to,
         };
     }
 
     /**
-     * Render email template
+     * Resend a failed email
+     * @param {string} logId - EmailLog record ID
      */
-    renderTemplate(template, data) {
-        const subject = typeof template.subject === 'function'
-            ? template.subject(data)
-            : template.subject;
+    async resend(logId) {
+        const emailLog = await EmailLog.findByPk(logId);
 
-        const html = template.render(data);
+        if (!emailLog) {
+            throw Object.assign(new Error('Email log not found'), {
+                statusCode: 404,
+                code: 'NOT_FOUND',
+            });
+        }
 
-        return { subject, html };
+        if (emailLog.status !== 'failed') {
+            throw Object.assign(new Error(`Cannot resend email with status: ${emailLog.status}`), {
+                statusCode: 400,
+                code: 'INVALID_STATUS',
+            });
+        }
+
+        // Reset status and re-queue
+        await emailLog.update({
+            status: 'queued',
+            attempts: 0,
+            error: null,
+            failed_at: null,
+        });
+
+        await addEmailJob(emailLog.id, emailLog.type, emailLog.to, emailLog.metadata);
+
+        logger.info(`🔄 Email resend queued [${emailLog.type}] to [${emailLog.to}]`, { logId });
+
+        return {
+            logId: emailLog.id,
+            status: 'queued',
+            type: emailLog.type,
+            to: emailLog.to,
+        };
     }
 
     /**
-     * Simple email validation
+     * Get email history with pagination and filters
      */
-    isValidEmail(email) {
-        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    async getHistory({ page = 1, limit = 20, status, type, to } = {}) {
+        const where = {};
+        if (status) where.status = status;
+        if (type) where.type = type;
+        if (to) where.to = { [Op.iLike]: `%${to}%` };
+
+        const offset = (page - 1) * limit;
+
+        const { count, rows } = await EmailLog.findAndCountAll({
+            where,
+            order: [['created_at', 'DESC']],
+            limit,
+            offset,
+        });
+
+        return {
+            emails: rows,
+            pagination: {
+                page,
+                limit,
+                total: count,
+                totalPages: Math.ceil(count / limit),
+            },
+        };
+    }
+
+    /**
+     * Get email stats
+     */
+    async getStats() {
+        const [results] = await EmailLog.sequelize.query(`
+            SELECT
+                status,
+                COUNT(*)::int AS count
+            FROM email_logs
+            GROUP BY status
+        `);
+
+        const stats = {
+            queued: 0,
+            sending: 0,
+            sent: 0,
+            failed: 0,
+            total: 0,
+        };
+
+        results.forEach((row) => {
+            stats[row.status] = row.count;
+            stats.total += row.count;
+        });
+
+        return stats;
     }
 
     /**

@@ -570,6 +570,9 @@ router.get("/callback/:client", asyncHandler(async (req, res, next) => {
       // 8. Set refresh token cookie
       if (user.refreshToken) {
         const cookieOptions = buildRefreshCookieOptions(req, redirectUri, storedOrigin);
+        // Client-scoped cookie — prevents cross-app collision on shared domains
+        res.cookie(`rt_${clientKey}`, user.refreshToken, cookieOptions);
+        // Legacy names kept for backward compatibility during migration
         res.cookie("refreshToken", user.refreshToken, cookieOptions);
         res.cookie("account_refresh_token", user.refreshToken, cookieOptions);
 
@@ -650,9 +653,14 @@ router.get("/callback/:client", asyncHandler(async (req, res, next) => {
       // 11. Build final redirect URL
       let finalRedirect;
 
-      // For HTTP development, include refresh_token in URL since cookies don't work cross-origin
-      const isHttpDev = process.env.NODE_ENV !== 'production' && !req.secure;
-      const refreshTokenParam = isHttpDev && user.refreshToken
+      // Include refresh_token in URL for:
+      // 1. Plain HTTP (no cookies possible with Secure flag)
+      // 2. Development mode (cross-origin cookie delivery is unreliable)
+      // In production HTTPS, rely solely on httpOnly cookies
+      const isSecureConnection = req.secure || req.headers['x-forwarded-proto'] === 'https';
+      const isDev = process.env.NODE_ENV !== 'production';
+      const shouldIncludeTokenInUrl = (!isSecureConnection || isDev) && user.refreshToken;
+      const refreshTokenParam = shouldIncludeTokenInUrl
         ? `&refresh_token=${encodeURIComponent(user.refreshToken)}`
         : '';
 
@@ -675,7 +683,7 @@ router.get("/callback/:client", asyncHandler(async (req, res, next) => {
         logger.info("Redirecting to standard URL", {
           userId: user.id,
           redirectUri: finalRedirect,
-          includesRefreshToken: isHttpDev && !!user.refreshToken
+          includesRefreshToken: shouldIncludeTokenInUrl
         });
       }
 
@@ -760,9 +768,11 @@ router.post('/logout/:client', asyncHandler(async (req, res) => {
       throw new AppError('Realm not found', 500, 'REALM_NOT_FOUND');
     }
 
+    // Client-scoped cookie first, then legacy fallbacks
     const refreshToken = req.body.refreshToken ||
-      req.cookies.refreshToken ||
-      req.cookies.account_refresh_token ||
+      req.cookies?.[`rt_${clientKey}`] ||
+      req.cookies?.refreshToken ||
+      req.cookies?.account_refresh_token ||
       req.headers['x-refresh-token'];
 
     logger.info('🔵 POST Logout - Refresh token:', refreshToken ? 'Found' : 'Not found');
@@ -783,6 +793,8 @@ router.post('/logout/:client', asyncHandler(async (req, res) => {
       const clearOptions = { ...logoutCookieOptions };
       delete clearOptions.maxAge;
 
+      // Clear client-scoped and legacy cookies
+      res.clearCookie(`rt_${clientKey}`, clearOptions);
       res.clearCookie('refreshToken', clearOptions);
       res.clearCookie('account_refresh_token', clearOptions);
     }
@@ -1049,28 +1061,36 @@ router.post('/refresh/:client', asyncHandler(async (req, res) => {
     throw new AppError(`Invalid client: ${clientKey}`, 400, 'INVALID_CLIENT');
   }
 
-  // Check multiple sources for refresh token
-  const refreshToken = req.cookies.refreshToken ||
-    req.cookies.account_refresh_token ||
-    req.body.refreshToken ||
-    req.headers['x-refresh-token'];
+  // Resolve refresh token from multiple sources (priority: body > header > cookie)
+  // Client-scoped cookie first, then legacy fallbacks
+  const refreshToken = req.body?.refreshToken ||
+    req.headers['x-refresh-token'] ||
+    req.cookies?.[`rt_${clientKey}`] ||
+    req.cookies?.refreshToken ||
+    req.cookies?.account_refresh_token;
+
+  const tokenSource = req.body?.refreshToken ? 'body' :
+    req.headers['x-refresh-token'] ? 'header' :
+      req.cookies?.[`rt_${clientKey}`] ? `cookie:rt_${clientKey}` :
+        req.cookies?.refreshToken ? 'cookie:refreshToken' :
+          req.cookies?.account_refresh_token ? 'cookie:account_refresh_token' : 'NONE';
+
+  logger.info('Refresh token resolution', { clientKey, tokenSource, hasToken: !!refreshToken });
 
   if (!refreshToken) {
     throw new AppError('Refresh token not found in cookies, body, or headers', 400, 'MISSING_TOKEN');
   }
 
   try {
-    // Validate token exists in database
+    // Validate token in DB (non-blocking: warn but still forward to Keycloak)
     const validation = await RefreshTokenService.validateToken(refreshToken);
 
     if (!validation.valid) {
-      logger.warn('Invalid refresh token attempt', {
+      logger.warn('Token not found in DB, forwarding to Keycloak anyway', {
         reason: validation.reason,
         clientKey,
-        ip: req.ip,
+        tokenSource,
       });
-
-      throw new AppError('Invalid or expired refresh token', 401, 'INVALID_TOKEN', { reason: validation.reason });
     }
 
     // Get realm name (handle both old and new client structure)
@@ -1082,6 +1102,8 @@ router.post('/refresh/:client', asyncHandler(async (req, res) => {
     }
 
     // Request new tokens from Keycloak
+    // KEYCLOAK_URL must use HTTPS (e.g., https://keycloak:8443) so that
+    // Keycloak computes an issuer matching the token's issuer claim.
     const response = await fetch(
       `${KEYCLOAK_URL}/realms/${realmName}/protocol/openid-connect/token`,
       {
@@ -1108,6 +1130,13 @@ router.post('/refresh/:client', asyncHandler(async (req, res) => {
       // Revoke token if Keycloak says it's invalid
       if (response.status === 400 || response.status === 401) {
         await RefreshTokenService.revokeToken(refreshToken, 'keycloak_invalid');
+        // Clear stale cookies so browser stops retrying
+        const clearOpts = buildRefreshCookieOptions(req, client.redirect_url, req.headers.origin || null);
+        delete clearOpts.maxAge;
+        // Clear client-scoped and legacy cookies
+        res.clearCookie(`rt_${clientKey}`, clearOpts);
+        res.clearCookie('refreshToken', clearOpts);
+        res.clearCookie('account_refresh_token', clearOpts);
       }
 
 
@@ -1158,6 +1187,9 @@ router.post('/refresh/:client', asyncHandler(async (req, res) => {
       );
       cookieOptions.maxAge = (refresh_expires_in || 2592000) * 1000;
       // Write with both names for compatibility
+      // Client-scoped cookie — prevents cross-app collision on shared domains
+      res.cookie(`rt_${clientKey}`, new_refresh_token, cookieOptions);
+      // Legacy names kept for backward compatibility during migration
       res.cookie('refreshToken', new_refresh_token, cookieOptions);
       res.cookie('account_refresh_token', new_refresh_token, cookieOptions);
     }

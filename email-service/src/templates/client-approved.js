@@ -1,5 +1,5 @@
-const Layout = require('./_layout');
-const { InfoBox, KeyValue, Button } = require('./_components');
+const Layout = require('./components/_layout');
+const { InfoBox, KeyValue } = require('./components/_components');
 
 exports.clientApprovedTemplate = (data) => {
     const content = `

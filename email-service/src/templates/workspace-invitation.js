@@ -1,5 +1,5 @@
-const Layout = require('./_layout');
-const { InfoBox, KeyValue, Button, Badge } = require('./_components');
+const Layout = require('./components/_layout');
+const { InfoBox, KeyValue, Button, Badge } = require('./components/_components');
 
 exports.workspaceInvitationTemplate = (data) => {
   const content = `

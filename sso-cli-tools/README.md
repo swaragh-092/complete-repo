@@ -97,7 +97,14 @@ sso-cli-tools/
 ```
 
 ## 📚 Documentation
+## Session Architecture
 
+This project generates applications that follow a **Keycloak-Authoritative** session model. Frontend timeouts are removed in favor of reacting to Keycloak's session state.
+
+See [SESSION.md](./SESSION.md) for:
+-   Configuration details (buffer times, validation intervals).
+-   Debug Panel legend.
+-   Troubleshooting guide.
 - **[Organization & Workspace Guide](docs/ORGANIZATION_WORKSPACE_GUIDE.md)** - Complete A-to-Z guide covering organization models, workspace integration, and user flows
 - **[Configuration Guide](docs/configuration-guide.md)** - Detailed configuration options
 - **[Authentication Flows](docs/SSO_CLI_AUTHENTICATION_FLOWS_REPORT.md)** - Authentication flow diagrams and explanations

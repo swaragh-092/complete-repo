@@ -1,5 +1,5 @@
-const Layout = require('./_layout');
-const { InfoBox, KeyValue, Button } = require('./_components');
+const Layout = require('./components/_layout');
+const { InfoBox, KeyValue, Button } = require('./components/_components');
 
 exports.organizationCreatedTemplate = (data) => {
     const content = `

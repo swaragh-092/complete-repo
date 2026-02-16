@@ -9,7 +9,7 @@ Backend authentication and authorization service with Keycloak integration.
 - Multi-tenant realm management
 - User, role, and permission management
 - Session management with Redis
-- Email service for invitations
+- Email service integration (via standalone microservice)
 - Audit logging
 
 ## 📋 Prerequisites

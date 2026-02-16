@@ -18,7 +18,7 @@ const {
 
 
 } = require('../../config/database');
-const emailModule = require('../../modules/email');
+const emailModule = require('../../services/email-client');
 
 const ResponseHandler = require('../../utils/responseHandler');
 const AuditService = require('../../services/audit.service');

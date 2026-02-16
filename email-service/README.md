@@ -182,7 +182,10 @@ email-service/
 │   ├── routes/          # API endpoints
 │   ├── services/        # Business logic
 │   ├── templates/       # Email templates
-│   ├── utils/           # Logger, response handler
+│   │   ├── components/  # Shared layouts & components
+│   │   ├── index.js     # Template Registry
+│   │   └── ...          # Template files
+│   ├── utils/           # Logger, html-escaper, validator
 │   └── server.js        # Entry point
 ├── Dockerfile
 ├── package.json

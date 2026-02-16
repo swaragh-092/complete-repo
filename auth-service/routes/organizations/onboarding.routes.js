@@ -24,7 +24,7 @@ const { Op } = require('sequelize');
 const logger = require('../../utils/logger');
 const { loadClients } = require('../../config');
 const AuditService = require('../../services/audit.service');
-const emailModule = require('../../modules/email');
+const emailModule = require('../../services/email-client');
 
 const router = express.Router();
 
