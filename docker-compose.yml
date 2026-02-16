@@ -227,37 +227,37 @@ services:
   # ─────────────────────────────────────────────────────────────────────────────
   # Email Service (Microservice)
   # ─────────────────────────────────────────────────────────────────────────────
-  # email-service:
-  #   build:
-  #     context: ./email-service
-  #   container_name: email-service
-  #   restart: unless-stopped
-  #   environment:
-  #     NODE_ENV: ${NODE_ENV:-production}
-  #     PORT: 4011
+  email-service:
+    build:
+      context: ./email-service
+    container_name: email-service
+    restart: unless-stopped
+    environment:
+      NODE_ENV: ${NODE_ENV:-production}
+      PORT: 4011
 
-  #     # SMTP
-  #     SMTP_HOST: ${SMTP_HOST:-}
-  #     SMTP_PORT: ${SMTP_PORT:-587}
-  #     SMTP_USER: ${SMTP_USER:-}
-  #     SMTP_PASS: ${SMTP_PASS:-}
-  #     FROM_EMAIL: ${FROM_EMAIL:-noreply@example.com}
+      # SMTP
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS: ${SMTP_PASS:-}
+      FROM_EMAIL: ${FROM_EMAIL:-noreply@example.com}
 
-  #     # Application
-  #     APP_NAME: ${APP_NAME:-My Application}
+      # Application
+      APP_NAME: ${APP_NAME:-My Application}
 
       # Security
       SERVICE_SECRET: ${SERVICE_SECRET:?SERVICE_SECRET is required}
-    ports:
-      - "${EMAIL_SERVICE_PORT:-4011}:4011"
-    networks:
-      - auth-network
-    healthcheck:
-      test: [ "CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:4011/health" ]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 10s
+      ports:
+        - "${EMAIL_SERVICE_PORT:-4011}:4011"
+      networks:
+        - auth-network
+      healthcheck:
+        test: [ "CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:4011/health" ]
+        interval: 30s
+        timeout: 10s
+        retries: 3
+        start_period: 10s
 
   # ════════════════════════════════════════════════════════════════════════════
   # FRONTEND APPLICATIONS
