@@ -243,8 +243,18 @@ services:
       SMTP_PASS: ${SMTP_PASS:-}
       FROM_EMAIL: ${FROM_EMAIL:-noreply@example.com}
 
+      DB_HOST: ${DB_HOST:-}
+      DB_PORT: ${DB_PORT:-}
+      DB_NAME: ${EMIAL_DB_NAME:-email_service}
+      DB_USER: ${DB_USER:-}
+      DB_PASSWORD: ${DB_PASSWORD:-}
+
       # Application
       APP_NAME: ${APP_NAME:-My Application}
+
+      REDIS_HOST: ${REDIS_HOST:-}
+      REDIS_PORT: ${REDIS_PORT:-}
+      # REDIS_PASSWORD: ${REDIS_PASSWORD:-}
 
       # Security
       SERVICE_SECRET: ${SERVICE_SECRET:?SERVICE_SECRET is required}
@@ -253,7 +263,10 @@ services:
     networks:
       - auth-network
     healthcheck:
-      test: [ "CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:4011/health" ]
+
+
+      test: [ "CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:4011/health" ]
+
       interval: 30s
       timeout: 10s
       retries: 3
