@@ -15,16 +15,18 @@ const { schemas: validationSchemas, sendEmailSchema } = require('../utils/valida
 /**
  * POST /api/v1/email/send
  * Queue an email for sending (returns 202 Accepted)
+ *
+ * Body: { type, to, data, scope?, org_id?, user_id?, client_key?, service_name? }
  */
 router.post('/send', async (req, res, next) => {
     try {
-        // Validate type and basic fields
+        // Validate type, tracking fields, and conditional scope rules
         const { error, value } = sendEmailSchema.validate(req.body);
         if (error) {
             return ResponseHandler.error(res, error.details[0].message, 400, 'VALIDATION_ERROR');
         }
 
-        const { type, to, data } = value;
+        const { type, to, data, scope, org_id, user_id, client_key, service_name } = value;
 
         // Validate payload against template-specific schema
         const dataSchema = validationSchemas[type];
@@ -43,8 +45,10 @@ router.post('/send', async (req, res, next) => {
             logger.warn(`No validation schema found for email type: ${type}`);
         }
 
-        // Queue email (returns immediately)
-        const result = await emailService.send({ type, to, data });
+        // Queue email with tracking context (returns immediately)
+        const result = await emailService.send({
+            type, to, data, scope, org_id, user_id, client_key, service_name,
+        });
 
         return ResponseHandler.success(res, result, 'Email queued successfully', 202);
     } catch (err) {
@@ -65,19 +69,20 @@ router.get('/types', (req, res) => {
 
 /**
  * GET /api/v1/email/history
- * Get email sending history with pagination
- * Query params: page, limit, status, type, to
+ * Get email sending history with pagination and multi-tenant filters
+ *
+ * Query: page, limit, status, type, to, scope, org_id, user_id, client_key, service_name
  */
 router.get('/history', async (req, res, next) => {
     try {
-        const { page, limit, status, type, to } = req.query;
+        const {
+            page, limit, status, type, to,
+            scope, org_id, user_id, client_key, service_name,
+        } = req.query;
 
         const result = await emailService.getHistory({
-            page: page ? parseInt(page, 10) : 1,
-            limit: limit ? parseInt(limit, 10) : 20,
-            status,
-            type,
-            to,
+            page, limit, status, type, to,
+            scope, org_id, user_id, client_key, service_name,
         });
 
         return ResponseHandler.success(res, result, 'Email history retrieved');
@@ -89,11 +94,14 @@ router.get('/history', async (req, res, next) => {
 
 /**
  * GET /api/v1/email/stats
- * Get email sending statistics
+ * Get email sending statistics (supports multi-tenant filters)
+ *
+ * Query: org_id, scope, client_key, service_name
  */
 router.get('/stats', async (req, res, next) => {
     try {
-        const stats = await emailService.getStats();
+        const { org_id, scope, client_key, service_name } = req.query;
+        const stats = await emailService.getStats({ org_id, scope, client_key, service_name });
         return ResponseHandler.success(res, stats, 'Email statistics retrieved');
     } catch (err) {
         logger.error('Failed to get email stats', { error: err.message });
@@ -103,7 +111,7 @@ router.get('/stats', async (req, res, next) => {
 
 /**
  * POST /api/v1/email/resend/:id
- * Resend a failed email by log ID
+ * Resend a failed email by log ID (preserves original tracking)
  */
 router.post('/resend/:id', async (req, res, next) => {
     try {

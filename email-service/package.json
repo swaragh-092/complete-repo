@@ -20,6 +20,8 @@
     "author": "",
     "license": "ISC",
     "dependencies": {
+        "@bull-board/api": "^6.18.2",
+        "@bull-board/express": "^6.18.2",
         "bullmq": "^5.69.2",
         "cors": "^2.8.5",
         "dotenv": "^16.4.5",

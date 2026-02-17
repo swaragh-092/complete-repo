@@ -7,6 +7,7 @@ const { EMAIL_TYPES } = require('../config/constants');
 const { EmailLog } = require('../models');
 const logger = require('../utils/logger');
 const { QUEUE_NAME, connection } = require('./email.queue');
+const { escapeData } = require('../utils/html-escaper');
 
 /**
  * Email Worker
@@ -38,7 +39,6 @@ function startWorker() {
             throw new Error(`Template not found for type: ${type}`);
         }
 
-        const { escapeData } = require('../utils/html-escaper');
         const safeData = escapeData(data);
 
         const subject = typeof template.subject === 'function'

@@ -78,6 +78,7 @@ services:
       POSTGRES_PASSWORD: ${PMS_DB_PASSWORD:-1234}
     volumes:
       - postgres-pms-data:/var/lib/postgresql/data
+      - ./init-multiple-db.sql:/docker-entrypoint-initdb.d/init-multiple-db.sql
     networks:
       - auth-network
     healthcheck:
@@ -85,8 +86,77 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-      start_period: 10s
+      start_period: 60s
 
+  # ─────────────────────────────────────────────────────────────────────────────
+  # PostgreSQL for Email Service (Dedicated)
+  # ─────────────────────────────────────────────────────────────────────────────
+  db-email:
+    image: postgres:16
+    container_name: db-email
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: email_service
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${EMAIL_DB_PASSWORD:-1234}
+    volumes:
+      - postgres-email-data:/var/lib/postgresql/data
+    networks:
+      - auth-network
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+
+  email-service:
+    build:
+      context: ./email-service
+    container_name: email-service
+    restart: unless-stopped
+    environment:
+      NODE_ENV: ${NODE_ENV:-production}
+      PORT: 4011
+
+      # SMTP
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS: ${SMTP_PASS:-}
+      FROM_EMAIL: ${FROM_EMAIL:-noreply@example.com}
+
+      # Database (dedicated)
+      DB_HOST: db-email
+      DB_PORT: 5432
+      DB_NAME: email_service
+      DB_USER: postgres
+      DB_PASSWORD: ${EMAIL_DB_PASSWORD:-1234}
+
+      # Redis (internal service name)
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+
+      # Queue
+      QUEUE_MAX_ATTEMPTS: 3
+
+      # Security
+      SERVICE_SECRET: ${SERVICE_SECRET:?SERVICE_SECRET is required}
+    ports:
+      - "${EMAIL_SERVICE_PORT:-4011}:4011"
+    depends_on:
+      db-email:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - auth-network
+    healthcheck:
+      test: [ "CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:4011/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
 
   # ─────────────────────────────────────────────────────────────────────────────
   # PostgreSQL for super-adminostrator
@@ -101,7 +171,8 @@ services:
       POSTGRES_USER: ${PMS_DB_USER:-postgres}
       POSTGRES_PASSWORD: ${PMS_DB_PASSWORD:-1234}
     volumes:
-      - postgres-pms-data:/var/lib/postgresql/data
+      - postgres-super-admin-data:/var/lib/postgresql/data
+      - ./init-multiple-db.sql:/docker-entrypoint-initdb.d/init-multiple-db.sql
     networks:
       - auth-network
     healthcheck:
@@ -109,10 +180,11 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-      start_period: 30s
+      start_period: 60s
 
-  # ─────────────────────────────────────────────────────────────────────────────
-  # Redis (Required for PMS and Super Administrator)
+  # ... (skipping unchanged parts) ...
+
+
   # ─────────────────────────────────────────────────────────────────────────────
   redis:
     image: redis:7
@@ -191,11 +263,11 @@ services:
       CORS_FALLBACK_ORIGINS: ${CORS_FALLBACK_ORIGINS:-}
 
       # SMTP
-      SMTP_HOST: ${SMTP_HOST:-}
-      SMTP_PORT: ${SMTP_PORT:-587}
-      SMTP_USER: ${SMTP_USER:-}
-      SMTP_PASS: ${SMTP_PASS:-}
-      FROM_EMAIL: ${FROM_EMAIL:-noreply@example.com}
+      # SMTP_HOST: ${SMTP_HOST:-}
+      # SMTP_PORT: ${SMTP_PORT:-587}
+      # SMTP_USER: ${SMTP_USER:-}
+      # SMTP_PASS: ${SMTP_PASS:-}
+      # FROM_EMAIL: ${FROM_EMAIL:-noreply@example.com}
 
       # Email Service (Microservice)
       EMAIL_SERVICE_URL: http://email-service:4011
@@ -223,54 +295,6 @@ services:
       timeout: 10s
       retries: 3
       start_period: 30s
-
-  # ─────────────────────────────────────────────────────────────────────────────
-  # Email Service (Microservice)
-  # ─────────────────────────────────────────────────────────────────────────────
-  email-service:
-    build:
-      context: ./email-service
-    container_name: email-service
-    restart: unless-stopped
-    environment:
-      NODE_ENV: ${NODE_ENV:-production}
-      PORT: 4011
-
-      # SMTP
-      SMTP_HOST: ${SMTP_HOST:-}
-      SMTP_PORT: ${SMTP_PORT:-587}
-      SMTP_USER: ${SMTP_USER:-}
-      SMTP_PASS: ${SMTP_PASS:-}
-      FROM_EMAIL: ${FROM_EMAIL:-noreply@example.com}
-
-      DB_HOST: ${DB_HOST:-}
-      DB_PORT: ${DB_PORT:-}
-      DB_NAME: ${EMIAL_DB_NAME:-email_service}
-      DB_USER: ${DB_USER:-}
-      DB_PASSWORD: ${DB_PASSWORD:-}
-
-      # Application
-      APP_NAME: ${APP_NAME:-My Application}
-
-      REDIS_HOST: ${REDIS_HOST:-}
-      REDIS_PORT: ${REDIS_PORT:-}
-      # REDIS_PASSWORD: ${REDIS_PASSWORD:-}
-
-      # Security
-      SERVICE_SECRET: ${SERVICE_SECRET:?SERVICE_SECRET is required}
-    ports:
-      - "${EMAIL_SERVICE_PORT:-4011}:4011"
-    networks:
-      - auth-network
-    healthcheck:
-
-
-      test: [ "CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:4011/health" ]
-
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 10s
 
   # ════════════════════════════════════════════════════════════════════════════
   # FRONTEND APPLICATIONS
@@ -401,7 +425,7 @@ services:
       DB_PORT: 5432
       DB_USER: ${PMS_DB_USER}
       DB_PASSWORD: ${PMS_DB_PASSWORD}
-      DB_NAME: ${DB_NAME}
+      DB_NAME: super_administrator
       DB_TYPE: postgres
       DB_ZONE: "+05:30"
       DB_PREFIX: ${DB_PREFIX}
@@ -417,7 +441,6 @@ services:
       ACCESS_TOKEN_EXPIRE_TIME: ${ACCESS_TOKEN_EXPIRE_TIME}
       REFRESH_TOKEN_EXPIRE_TIME: ${REFRESH_TOKEN_EXPIRE_TIME}
       RESET_PASSWORD_TOKEN_EXPIRE_TIME: ${RESET_PASSWORD_TOKEN_EXPIRE_TIME}
-
 
       GLOBAL: http://localhost:8080/
       APP: http://localhost:8080/
@@ -456,3 +479,7 @@ volumes:
   redis-data:
   postgres-pms-data:
     name: sso-postgres-pms-data
+  postgres-super-admin-data:
+    name: sso-postgres-super-admin-data
+  postgres-email-data:
+    name: sso-postgres-email-data

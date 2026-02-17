@@ -35,6 +35,39 @@ module.exports = (sequelize) => {
             allowNull: false,
             defaultValue: 0,
         },
+
+        // ── Multi-Tenant Tracking ──────────────────────────────────────
+        scope: {
+            type: DataTypes.STRING(20),
+            allowNull: false,
+            defaultValue: 'system',
+            comment: 'Context level: system | organization | user',
+            validate: {
+                isIn: [['system', 'organization', 'user']],
+            },
+        },
+        org_id: {
+            type: DataTypes.UUID,
+            allowNull: true,
+            comment: 'Organization context (null for system-scoped)',
+        },
+        user_id: {
+            type: DataTypes.UUID,
+            allowNull: true,
+            comment: 'User context (null for system-scoped)',
+        },
+        client_key: {
+            type: DataTypes.STRING(50),
+            allowNull: true,
+            comment: 'Client that triggered this email (admin-ui, account-ui)',
+        },
+        service_name: {
+            type: DataTypes.STRING(50),
+            allowNull: true,
+            comment: 'Calling service (auth-service, pms, super-admin)',
+        },
+
+        // ── Delivery Info ──────────────────────────────────────────────
         sent_at: {
             type: DataTypes.DATE,
             allowNull: true,
@@ -67,6 +100,12 @@ module.exports = (sequelize) => {
             { fields: ['type'] },
             { fields: ['to'] },
             { fields: ['created_at'] },
+            { fields: ['org_id'] },
+            { fields: ['user_id'] },
+            { fields: ['scope'] },
+            { fields: ['client_key'] },
+            { fields: ['scope', 'org_id'] },    // composite: org-scoped queries
+            { fields: ['service_name', 'type'] }, // composite: service analytics
         ],
     });
 
