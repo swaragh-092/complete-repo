@@ -1,12 +1,19 @@
 'use strict';
 
+const { randomUUID } = require('crypto');
 const logger = require('../utils/logger');
 
 /**
  * Request Logger Middleware
- * Logs incoming requests with timing
+ * - Assigns correlation ID (x-request-id) for cross-service tracing
+ * - Logs incoming requests with timing
  */
 const requestLogger = (req, res, next) => {
+    // Correlation ID: use incoming header or generate a new one
+    const requestId = req.headers['x-request-id'] || randomUUID();
+    req.id = requestId;
+    res.setHeader('x-request-id', requestId);
+
     const start = Date.now();
 
     res.on('finish', () => {
@@ -17,6 +24,7 @@ const requestLogger = (req, res, next) => {
             status: res.statusCode,
             duration: `${duration}ms`,
             ip: req.ip,
+            requestId,
         });
     });
 

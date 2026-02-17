@@ -2,23 +2,21 @@
 
 const config = require('../config');
 const logger = require('../utils/logger');
-const ResponseHandler = require('../utils/response');
+const AppError = require('../utils/AppError');
 
 /**
- * Middleware to validate SERVICE_SECRET header
- * Protects internal API from unauthorized access
+ * Auth Middleware
+ * Validates x-service-secret header for internal API authentication
  */
 const authMiddleware = (req, res, next) => {
     const serviceSecret = req.headers['x-service-secret'];
 
     if (!serviceSecret) {
-        logger.warn('Missing x-service-secret header', { ip: req.ip, path: req.path });
-        return ResponseHandler.error(res, 'Unauthorized: Missing Service Secret', 401, 'UNAUTHORIZED');
+        throw AppError.unauthorized('Missing x-service-secret header');
     }
 
     if (serviceSecret !== config.SERVICE_SECRET) {
-        logger.warn('Invalid service secret', { ip: req.ip, path: req.path });
-        return ResponseHandler.error(res, 'Unauthorized: Invalid Service Secret', 401, 'UNAUTHORIZED');
+        throw AppError.unauthorized('Invalid service secret');
     }
 
     next();

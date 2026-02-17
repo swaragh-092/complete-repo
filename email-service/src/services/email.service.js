@@ -5,8 +5,9 @@ const { EmailLog } = require('../models');
 const { addEmailJob } = require('../queue/email.queue');
 const templates = require('../templates');
 const logger = require('../utils/logger');
+const AppError = require('../utils/AppError');
 const { validEmail } = require('../utils/validation-schemas');
-const { Op, fn, col, literal } = require('sequelize');
+const { Op, fn, col } = require('sequelize');
 
 const MAX_HISTORY_LIMIT = 100;
 
@@ -32,28 +33,19 @@ class EmailService {
     async send({ type, to, data, scope, org_id, user_id, client_key, service_name }) {
         // Validate type
         if (!EMAIL_TYPES[type]) {
-            throw Object.assign(new Error(`Invalid email type: ${type}`), {
-                statusCode: 400,
-                code: 'INVALID_EMAIL_TYPE',
-            });
+            throw AppError.badRequest(`Invalid email type: ${type}`, 'INVALID_EMAIL_TYPE');
         }
 
         // Validate template exists
         const template = templates[type];
         if (!template) {
-            throw Object.assign(new Error(`Template not found for type: ${type}`), {
-                statusCode: 500,
-                code: 'TEMPLATE_NOT_FOUND',
-            });
+            throw new AppError(`Template not found for type: ${type}`, 500, 'TEMPLATE_NOT_FOUND');
         }
 
         // Validate recipient
         const { error } = validEmail.validate(to);
         if (!to || error) {
-            throw Object.assign(new Error('Invalid recipient email address'), {
-                statusCode: 400,
-                code: 'INVALID_RECIPIENT',
-            });
+            throw AppError.badRequest('Invalid recipient email address', 'INVALID_RECIPIENT');
         }
 
         // Auto-detect scope if not provided
@@ -100,17 +92,11 @@ class EmailService {
         const emailLog = await EmailLog.findByPk(logId);
 
         if (!emailLog) {
-            throw Object.assign(new Error('Email log not found'), {
-                statusCode: 404,
-                code: 'NOT_FOUND',
-            });
+            throw AppError.notFound('Email log not found');
         }
 
         if (emailLog.status !== 'failed') {
-            throw Object.assign(new Error(`Cannot resend email with status: ${emailLog.status}`), {
-                statusCode: 400,
-                code: 'INVALID_STATUS',
-            });
+            throw AppError.badRequest(`Cannot resend email with status: ${emailLog.status}`, 'INVALID_STATUS');
         }
 
         // Reset status and re-queue (tracking fields preserved)

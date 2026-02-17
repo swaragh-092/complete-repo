@@ -1,3 +1,5 @@
+'use strict';
+
 /**
  * Escapes HTML characters in a string to prevent injection.
  * @param {string} str - The string to escape.
