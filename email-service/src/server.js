@@ -12,6 +12,7 @@ const requestLogger = require('./middleware/request-logger');
 const errorMiddleware = require('./middleware/error.middleware');
 const { syncDatabase, sequelize } = require('./models');
 const { startWorker } = require('./queue/email.worker');
+const { startCleanupWorker, scheduleCleanupJob } = require('./queue/cleanup.queue');
 
 const healthRoutes = require('./routes/health.routes');
 const emailRoutes = require('./routes/email.routes');
@@ -59,16 +60,21 @@ app.use(errorMiddleware);
 const PORT = config.PORT;
 let server;
 let worker;
+let cleanupWorker;
 
 async function start() {
     try {
         // 1. Sync database (create tables if needed)
         await syncDatabase();
 
-        // 2. Start BullMQ worker
+        // 2. Start BullMQ workers
         worker = startWorker();
+        cleanupWorker = startCleanupWorker();
 
-        // 3. Start HTTP server
+        // 3. Schedule repeatable cleanup job
+        await scheduleCleanupJob();
+
+        // 4. Start HTTP server
         server = app.listen(PORT, '0.0.0.0', () => {
             logger.info(`🚀 Email Service running on port ${PORT}`);
             logger.info(`   Environment: ${config.NODE_ENV}`);
@@ -101,13 +107,22 @@ async function shutdown(signal) {
         });
     }
 
-    // 2. Wait for BullMQ worker to finish active jobs
+    // 2. Wait for BullMQ workers to finish active jobs
     if (worker) {
         try {
             await worker.close();
-            logger.info('   ✅ BullMQ worker closed');
+            logger.info('   ✅ Email worker closed');
         } catch (err) {
-            logger.error('   ❌ Error closing worker:', { error: err.message });
+            logger.error('   ❌ Error closing email worker:', { error: err.message });
+        }
+    }
+
+    if (cleanupWorker) {
+        try {
+            await cleanupWorker.close();
+            logger.info('   ✅ Cleanup worker closed');
+        } catch (err) {
+            logger.error('   ❌ Error closing cleanup worker:', { error: err.message });
         }
     }
 

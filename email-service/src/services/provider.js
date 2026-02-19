@@ -6,67 +6,94 @@ const logger = require('../utils/logger');
 const AppError = require('../utils/AppError');
 
 /**
- * Email Provider - Nodemailer Transporter
- * Handles SMTP connection and email sending
- * Validates SMTP config at send-time (not startup)
+ * Email Provider with Failover
+ * Supports primary + backup SMTP provider.
+ * Auto-switches to backup if primary fails.
  */
 class EmailProvider {
     constructor() {
-        this._transporter = null;
+        this._primary = null;
+        this._backup = null;
         this.fromEmail = config.FROM_EMAIL;
         this.appName = config.APP_NAME;
     }
 
     /**
-     * Check if SMTP is configured (host + auth present)
+     * Check if primary SMTP is configured
      */
     isConfigured() {
         return !!(config.SMTP_HOST && config.SMTP_USER && config.SMTP_PASS);
     }
 
     /**
-     * Lazy-initialize transporter on first use
-     * @returns {import('nodemailer').Transporter}
+     * Check if backup SMTP is configured
      */
-    _getTransporter() {
-        if (this._transporter) return this._transporter;
+    hasBackup() {
+        return !!(config.SMTP_BACKUP_HOST && config.SMTP_BACKUP_USER && config.SMTP_BACKUP_PASS);
+    }
 
-        if (!this.isConfigured()) {
-            throw AppError.serviceUnavailable(
-                'SMTP is not configured. Set SMTP_HOST, SMTP_USER, and SMTP_PASS environment variables.',
-                'SMTP_NOT_CONFIGURED',
-            );
-        }
-
-        this._transporter = nodemailer.createTransport({
-            host: config.SMTP_HOST,
-            port: config.SMTP_PORT,
-            secure: config.SMTP_PORT === 465,
-            auth: {
-                user: config.SMTP_USER,
-                pass: config.SMTP_PASS,
-            },
+    /**
+     * Create a nodemailer transporter from config
+     */
+    _createTransporter(host, port, user, pass) {
+        return nodemailer.createTransport({
+            host,
+            port,
+            secure: port === 465,
+            auth: { user, pass },
             pool: config.POOL,
             maxConnections: config.MAXCONNECTIONS,
             maxMessages: config.MAXMESSAGES,
             logger: !config.isProduction,
             debug: !config.isProduction,
         });
-
-        logger.info('📧 SMTP transporter initialized', {
-            host: config.SMTP_HOST,
-            port: config.SMTP_PORT,
-        });
-
-        return this._transporter;
     }
 
     /**
-     * Verify SMTP connection
+     * Get primary transporter (lazy init)
+     */
+    _getPrimary() {
+        if (this._primary) return this._primary;
+
+        if (!this.isConfigured()) {
+            throw AppError.serviceUnavailable(
+                'SMTP is not configured. Set SMTP_HOST, SMTP_USER, and SMTP_PASS.',
+                'SMTP_NOT_CONFIGURED',
+            );
+        }
+
+        this._primary = this._createTransporter(
+            config.SMTP_HOST, config.SMTP_PORT,
+            config.SMTP_USER, config.SMTP_PASS,
+        );
+
+        logger.info('📧 Primary SMTP initialized', { host: config.SMTP_HOST, port: config.SMTP_PORT });
+        return this._primary;
+    }
+
+    /**
+     * Get backup transporter (lazy init)
+     */
+    _getBackup() {
+        if (this._backup) return this._backup;
+
+        if (!this.hasBackup()) return null;
+
+        this._backup = this._createTransporter(
+            config.SMTP_BACKUP_HOST, config.SMTP_BACKUP_PORT,
+            config.SMTP_BACKUP_USER, config.SMTP_BACKUP_PASS,
+        );
+
+        logger.info('📧 Backup SMTP initialized', { host: config.SMTP_BACKUP_HOST });
+        return this._backup;
+    }
+
+    /**
+     * Verify SMTP connection (primary)
      */
     async verify() {
         try {
-            const transporter = this._getTransporter();
+            const transporter = this._getPrimary();
             await transporter.verify();
             logger.info('✅ SMTP connection verified');
             return true;
@@ -78,15 +105,10 @@ class EmailProvider {
     }
 
     /**
-     * Send HTML email
-     * @param {string} to - Recipient email
-     * @param {string} subject - Email subject
-     * @param {string} html - HTML content
-     * @returns {Promise<object>} - Nodemailer response
+     * Send HTML email with automatic failover
+     * Tries primary first, falls back to backup if primary fails
      */
     async sendHtml(to, subject, html) {
-        const transporter = this._getTransporter();
-
         const mailOptions = {
             from: `"${this.appName}" <${this.fromEmail}>`,
             to,
@@ -94,9 +116,33 @@ class EmailProvider {
             html,
         };
 
-        const info = await transporter.sendMail(mailOptions);
-        logger.info(`✅ Email sent to ${to}`, { messageId: info.messageId });
-        return info;
+        // Try primary
+        try {
+            const primary = this._getPrimary();
+            const info = await primary.sendMail(mailOptions);
+            logger.info(`✅ Email sent via primary to ${to}`, { messageId: info.messageId });
+            return { ...info, provider: 'primary' };
+        } catch (primaryError) {
+            logger.warn(`⚠️ Primary SMTP failed for ${to}`, { error: primaryError.message });
+
+            // Try backup
+            const backup = this._getBackup();
+            if (!backup) {
+                // No backup, re-throw original error
+                throw primaryError;
+            }
+
+            try {
+                const info = await backup.sendMail(mailOptions);
+                logger.info(`✅ Email sent via backup to ${to}`, { messageId: info.messageId });
+                return { ...info, provider: 'backup' };
+            } catch (backupError) {
+                logger.error(`❌ Backup SMTP also failed for ${to}`, { error: backupError.message });
+                // Throw the backup error (more recent), attach primary error for context
+                backupError.primaryError = primaryError.message;
+                throw backupError;
+            }
+        }
     }
 }
 

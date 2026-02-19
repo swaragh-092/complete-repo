@@ -6,6 +6,7 @@ const emailService = require('../services/email.service');
 const authMiddleware = require('../middleware/auth.middleware');
 const ResponseHandler = require('../utils/response');
 const logger = require('../utils/logger');
+const { runCleanupNow } = require('../queue/cleanup.queue');
 
 // Apply auth middleware to all routes
 router.use(authMiddleware);
@@ -26,7 +27,7 @@ router.post('/send', async (req, res, next) => {
             return ResponseHandler.error(res, error.details[0].message, 400, 'VALIDATION_ERROR');
         }
 
-        const { type, to, data, scope, org_id, user_id, client_key, service_name } = value;
+        const { type, to, data, scope, org_id, user_id, client_key, service_name, delay } = value;
 
         // Validate payload against template-specific schema
         const dataSchema = validationSchemas[type];
@@ -47,7 +48,7 @@ router.post('/send', async (req, res, next) => {
 
         // Queue email with tracking context (returns immediately)
         const result = await emailService.send({
-            type, to, data, scope, org_id, user_id, client_key, service_name,
+            type, to, data, scope, org_id, user_id, client_key, service_name, delay,
         });
 
         return ResponseHandler.success(res, result, 'Email queued successfully', 202);
@@ -121,6 +122,21 @@ router.post('/resend/:id', async (req, res, next) => {
         return ResponseHandler.success(res, result, 'Email re-queued successfully', 202);
     } catch (err) {
         logger.error('Failed to resend email', { error: err.message, logId: req.params.id });
+        next(err);
+    }
+});
+
+/**
+ * POST /api/v1/email/cleanup
+ * Manually trigger cleanup of old email logs
+ */
+router.post('/cleanup', async (req, res, next) => {
+    try {
+        const retentionDays = parseInt(req.query.retention_days, 10) || undefined;
+        const result = await runCleanupNow(retentionDays);
+        return ResponseHandler.success(res, result, 'Cleanup job queued', 202);
+    } catch (err) {
+        logger.error('Failed to trigger cleanup', { error: err.message });
         next(err);
     }
 });

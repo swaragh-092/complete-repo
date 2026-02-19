@@ -2,6 +2,7 @@
 
 const Joi = require('joi');
 const { EMAIL_TYPES, SCOPES, TYPE_SCOPE_MAP } = require('../config/constants');
+const config = require('../config');
 
 // ── Per-Type Data Schemas ──────────────────────────────────────────────────
 const schemas = {
@@ -94,6 +95,13 @@ const sendEmailSchema = Joi.object({
     user_id: Joi.string().uuid().optional(),
     client_key: Joi.string().max(50).trim().optional(),
     service_name: Joi.string().max(50).trim().optional(),
+
+    // Scheduling (optional)
+    delay: Joi.number().integer().min(1000).max(config.MAX_DELAY_MS).optional()
+        .messages({
+            'number.min': 'Delay must be at least 1 second (1000ms)',
+            'number.max': `Delay cannot exceed ${config.MAX_DELAY_MS / 86400000} days`,
+        }),
 }).custom((value, helpers) => {
     // Auto-detect scope if not provided
     const scope = value.scope || TYPE_SCOPE_MAP[value.type] || SCOPES.SYSTEM;

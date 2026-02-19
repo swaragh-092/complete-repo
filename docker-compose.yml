@@ -119,12 +119,26 @@ services:
       NODE_ENV: ${NODE_ENV:-production}
       PORT: 4011
 
-      # SMTP
+      # SMTP — Primary
       SMTP_HOST: ${SMTP_HOST:-}
       SMTP_PORT: ${SMTP_PORT:-587}
       SMTP_USER: ${SMTP_USER:-}
       SMTP_PASS: ${SMTP_PASS:-}
       FROM_EMAIL: ${FROM_EMAIL:-noreply@example.com}
+
+      # SMTP — Backup (optional failover)
+      SMTP_BACKUP_HOST: ${SMTP_BACKUP_HOST:-}
+      SMTP_BACKUP_PORT: ${SMTP_BACKUP_PORT:-587}
+      SMTP_BACKUP_USER: ${SMTP_BACKUP_USER:-}
+      SMTP_BACKUP_PASS: ${SMTP_BACKUP_PASS:-}
+
+      # Application
+      APP_NAME: ${APP_NAME:-Email Service}
+
+      # SMTP Pool
+      POOL: ${POOL:-true}
+      MAXCONNECTIONS: ${MAXCONNECTIONS:-5}
+      MAXMESSAGES: ${MAXMESSAGES:-100}
 
       # Database (dedicated)
       DB_HOST: db-email
@@ -137,8 +151,10 @@ services:
       REDIS_HOST: redis
       REDIS_PORT: 6379
 
-      # Queue
-      QUEUE_MAX_ATTEMPTS: 3
+      # Queue & Scheduling
+      QUEUE_MAX_ATTEMPTS: ${QUEUE_MAX_ATTEMPTS:-3}
+      LOG_RETENTION_DAYS: ${LOG_RETENTION_DAYS:-90}
+      MAX_DELAY_MS: ${MAX_DELAY_MS:-604800000}
 
       # Security
       SERVICE_SECRET: ${SERVICE_SECRET:?SERVICE_SECRET is required}

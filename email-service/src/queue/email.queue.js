@@ -35,19 +35,27 @@ const emailQueue = new Queue(QUEUE_NAME, {
  * @param {string} type - Email type
  * @param {string} to - Recipient email
  * @param {object} data - Template data
+ * @param {number} [delay] - Delay in milliseconds before processing
  * @returns {Promise<object>} - BullMQ job
  */
-async function addEmailJob(logId, type, to, data) {
+async function addEmailJob(logId, type, to, data, delay) {
+    const jobOpts = {
+        jobId: logId, // Use log ID as job ID for easy tracking
+    };
+
+    if (delay && delay > 0) {
+        jobOpts.delay = delay;
+    }
+
     const job = await emailQueue.add('send-email', {
         logId,
         type,
         to,
         data,
-    }, {
-        jobId: logId, // Use log ID as job ID for easy tracking
-    });
+    }, jobOpts);
 
-    logger.info(`📥 Email job queued [${type}] to [${to}]`, { jobId: job.id, logId });
+    const delayInfo = delay ? ` (delayed ${Math.round(delay / 60000)}min)` : '';
+    logger.info(`📥 Email job queued [${type}] to [${to}]${delayInfo}`, { jobId: job.id, logId });
     return job;
 }
 

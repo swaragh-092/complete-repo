@@ -30,7 +30,7 @@ class EmailService {
      * @param {string} [params.service_name] - Calling service name
      * @returns {Promise<object>} - { logId, status, scope }
      */
-    async send({ type, to, data, scope, org_id, user_id, client_key, service_name }) {
+    async send({ type, to, data, scope, org_id, user_id, client_key, service_name, delay }) {
         // Validate type
         if (!EMAIL_TYPES[type]) {
             throw AppError.badRequest(`Invalid email type: ${type}`, 'INVALID_EMAIL_TYPE');
@@ -65,13 +65,16 @@ class EmailService {
         });
 
         // 2. Add job to queue
-        await addEmailJob(emailLog.id, type, to, data);
+        await addEmailJob(emailLog.id, type, to, data, delay);
+
+        const scheduledInfo = delay ? { scheduled_for: new Date(Date.now() + delay).toISOString() } : {};
 
         logger.info(`📥 Email queued [${type}] to [${to}]`, {
             logId: emailLog.id,
             scope: resolvedScope,
             org_id: org_id || null,
             client_key: client_key || null,
+            ...(delay && { delay_ms: delay }),
         });
 
         return {
@@ -80,6 +83,7 @@ class EmailService {
             type,
             to,
             scope: resolvedScope,
+            ...scheduledInfo,
         };
     }
 
