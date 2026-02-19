@@ -3,6 +3,11 @@
 const { Policy, ResourceAttribute } = require('../../../config/database');
 const { Op } = require('sequelize');
 
+// In-memory policy cache
+const _policyCache = new Map();
+const CACHE_TTL = 60_000; // 60 seconds
+let _cacheStats = { hits: 0, misses: 0 };
+
 class PolicyEngine {
   /**
    * Evaluate ABAC policies for a request
@@ -38,11 +43,24 @@ class PolicyEngine {
       whereClause[Op.or].push({ client_id: null }, { client_id: clientId });
     }
 
-    // Get all applicable policies, ordered by priority
-    const policies = await Policy.findAll({
-      where: whereClause,
-      order: [['priority', 'DESC'], ['created_at', 'ASC']],
-    });
+    // Check cache first
+    const cacheKey = `${orgId || 'global'}:${clientId || 'all'}`;
+    const cached = _policyCache.get(cacheKey);
+    let policies;
+
+    if (cached && Date.now() - cached.time < CACHE_TTL) {
+      policies = cached.policies;
+      _cacheStats.hits++;
+    } else {
+      // Get all applicable policies, ordered by priority
+      policies = await Policy.findAll({
+        where: whereClause,
+        order: [['priority', 'DESC'], ['created_at', 'ASC']],
+      });
+
+      _policyCache.set(cacheKey, { policies, time: Date.now() });
+      _cacheStats.misses++;
+    }
 
     // Evaluate policies in priority order
     for (const policy of policies) {
@@ -216,6 +234,27 @@ class PolicyEngine {
     });
 
     return attr ? attr.attributes : {};
+  }
+
+  /**
+   * Clear the policy cache (call after policy create/update/delete)
+   */
+  static clearCache() {
+    _policyCache.clear();
+  }
+
+  /**
+   * Get cache statistics for monitoring
+   */
+  static getCacheStats() {
+    return {
+      size: _policyCache.size,
+      hits: _cacheStats.hits,
+      misses: _cacheStats.misses,
+      hitRate: _cacheStats.hits + _cacheStats.misses > 0
+        ? (_cacheStats.hits / (_cacheStats.hits + _cacheStats.misses) * 100).toFixed(1) + '%'
+        : '0%',
+    };
   }
 }
 

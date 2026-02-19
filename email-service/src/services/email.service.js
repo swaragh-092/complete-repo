@@ -151,7 +151,11 @@ class EmailService {
         // Existing filters
         if (status) where.status = status;
         if (type) where.type = type;
-        if (to) where.to = { [Op.iLike]: `%${to}%` };
+        if (to) {
+            // Escape SQL wildcards to prevent pattern injection
+            const safeTo = to.replace(/[%_]/g, '\\$&');
+            where.to = { [Op.iLike]: `%${safeTo}%` };
+        }
 
         // Multi-tenant filters
         if (scope) where.scope = scope;

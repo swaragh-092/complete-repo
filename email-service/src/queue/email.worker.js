@@ -3,7 +3,6 @@
 const { Worker } = require('bullmq');
 const provider = require('../services/provider');
 const templates = require('../templates');
-const { EMAIL_TYPES } = require('../config/constants');
 const { EmailLog } = require('../models');
 const logger = require('../utils/logger');
 const { QUEUE_NAME, connection } = require('./email.queue');

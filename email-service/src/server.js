@@ -93,8 +93,11 @@ async function shutdown(signal) {
 
     // 1. Stop accepting new HTTP requests
     if (server) {
-        server.close(() => {
-            logger.info('   ✅ HTTP server closed');
+        await new Promise((resolve) => {
+            server.close(() => {
+                logger.info('   ✅ HTTP server closed');
+                resolve();
+            });
         });
     }
 
@@ -122,6 +125,16 @@ async function shutdown(signal) {
 
 process.on('SIGTERM', () => shutdown('SIGTERM'));
 process.on('SIGINT', () => shutdown('SIGINT'));
+
+// Catch unhandled rejections — log and exit instead of silent death
+process.on('unhandledRejection', (reason, promise) => {
+    logger.error('Unhandled Promise Rejection', {
+        reason: reason?.message || reason,
+        stack: reason?.stack,
+    });
+    // In production, exit so Docker restarts the container
+    if (config.isProduction) process.exit(1);
+});
 
 start();
 

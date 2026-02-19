@@ -85,6 +85,7 @@ router.post(
     }
 
     const policy = await Policy.create(value);
+    PolicyEngine.clearCache();
 
     return ResponseHandler.created(res, policy, 'Policy created successfully');
   })
@@ -113,6 +114,7 @@ router.put(
     }
 
     await policy.update(value);
+    PolicyEngine.clearCache();
 
     return ResponseHandler.success(res, policy, 'Policy updated successfully');
   })
@@ -134,6 +136,7 @@ router.delete(
     }
 
     await policy.destroy();
+    PolicyEngine.clearCache();
 
     return ResponseHandler.success(res, null, 'Policy deleted successfully');
   })
@@ -362,6 +365,28 @@ router.post(
     });
 
     return ResponseHandler.success(res, { results }, 'Batch access check completed');
+  })
+);
+
+/* ========== HEALTH / STATUS ========== */
+
+// GET /authorization/health - Module health & stats (no auth required)
+router.get(
+  '/health',
+  asyncHandler(async (req, res) => {
+    const [policyCount, relationshipCount] = await Promise.all([
+      Policy.count({ where: { is_active: true } }),
+      Relationship.count({ where: { is_active: true } }),
+    ]);
+
+    return ResponseHandler.success(res, {
+      status: 'healthy',
+      module: 'authorization',
+      activePolicies: policyCount,
+      activeRelationships: relationshipCount,
+      cache: PolicyEngine.getCacheStats(),
+      timestamp: new Date().toISOString(),
+    }, 'Authorization module health check');
   })
 );
 

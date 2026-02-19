@@ -1,5 +1,7 @@
 // services/authorization.service.js - Unified Authorization Service (RBAC + ABAC + ReBAC)
 
+const crypto = require('crypto');
+
 const PolicyEngine = require('./policy-engine');
 const RelationshipGraph = require('./relationship-graph');
 const { Role, Permission, OrganizationMembership } = require('../../../config/database');
@@ -41,20 +43,10 @@ class AuthorizationService {
       const clientId = user.client_id || user.azp || options.clientId || '*';
       results.rbac = await this.checkRBAC({ user, action, resource, clientId });
       if (requireAll && !results.rbac.allowed) {
-        return {
-          allowed: false,
-          method: 'RBAC',
-          reason: results.rbac.reason,
-          results,
-        };
+        return this._buildDecision(false, 'RBAC', results.rbac.reason, results);
       }
       if (!requireAll && results.rbac.allowed) {
-        return {
-          allowed: true,
-          method: 'RBAC',
-          reason: results.rbac.reason,
-          results,
-        };
+        return this._buildDecision(true, 'RBAC', results.rbac.reason, results);
       }
     }
 
@@ -67,20 +59,10 @@ class AuthorizationService {
         environment,
       });
       if (requireAll && !results.abac.allowed) {
-        return {
-          allowed: false,
-          method: 'ABAC',
-          reason: results.abac.reason,
-          results,
-        };
+        return this._buildDecision(false, 'ABAC', results.abac.reason, results);
       }
       if (!requireAll && results.abac.allowed) {
-        return {
-          allowed: true,
-          method: 'ABAC',
-          reason: results.abac.reason,
-          results,
-        };
+        return this._buildDecision(true, 'ABAC', results.abac.reason, results);
       }
     }
 
@@ -92,20 +74,10 @@ class AuthorizationService {
         resource,
       });
       if (requireAll && !results.rebac.allowed) {
-        return {
-          allowed: false,
-          method: 'ReBAC',
-          reason: results.rebac.reason,
-          results,
-        };
+        return this._buildDecision(false, 'ReBAC', results.rebac.reason, results);
       }
       if (!requireAll && results.rebac.allowed) {
-        return {
-          allowed: true,
-          method: 'ReBAC',
-          reason: results.rebac.reason,
-          results,
-        };
+        return this._buildDecision(true, 'ReBAC', results.rebac.reason, results);
       }
     }
 
@@ -114,23 +86,18 @@ class AuthorizationService {
       const allAllowed = Object.values(results).every(
         (r) => r === null || r.allowed
       );
-      return {
-        allowed: allAllowed,
-        method: 'COMBINED',
-        reason: allAllowed
+      return this._buildDecision(
+        allAllowed,
+        'COMBINED',
+        allAllowed
           ? 'All authorization methods allow access'
           : 'One or more authorization methods deny access',
-        results,
-      };
+        results
+      );
     }
 
     // Default deny
-    return {
-      allowed: false,
-      method: 'NONE',
-      reason: 'No authorization method granted access',
-      results,
-    };
+    return this._buildDecision(false, 'NONE', 'No authorization method granted access', results);
   }
 
   /**
@@ -190,7 +157,7 @@ class AuthorizationService {
 
     return {
       allowed: false,
-      reason: `User lacks permission: ${permissionName} and role: ${requiredRole}`,
+      reason: `User lacks permission: ${clientPrefixedPermission} and role: ${requiredRole}`,
     };
   }
 
@@ -410,6 +377,21 @@ class AuthorizationService {
     );
 
     return results;
+  }
+
+  /**
+   * Build a standardized decision object with audit fields
+   * @private
+   */
+  static _buildDecision(allowed, method, reason, results = null) {
+    return {
+      allowed,
+      method,
+      reason,
+      decisionId: crypto.randomUUID(),
+      timestamp: new Date().toISOString(),
+      ...(results && { results }),
+    };
   }
 }
 

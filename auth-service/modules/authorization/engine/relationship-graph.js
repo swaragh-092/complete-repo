@@ -3,6 +3,8 @@
 const { Relationship, Organization, OrganizationMembership, Role, Sequelize } = require('../../../config/database');
 const { Op } = Sequelize;
 
+const MAX_GRAPH_DEPTH = 5;
+
 class RelationshipGraph {
   /**
    * Check if a relationship exists
@@ -120,6 +122,7 @@ class RelationshipGraph {
       resourceType,
       resourceId,
       orgId,
+      depth: 0,
     });
 
     return transitiveAccess;
@@ -128,7 +131,12 @@ class RelationshipGraph {
   /**
    * Check transitive access (follow relationship chains)
    */
-  static async checkTransitiveAccess({ userId, resourceType, resourceId, orgId }) {
+  static async checkTransitiveAccess({ userId, resourceType, resourceId, orgId, depth = 0 }) {
+    // Guard against infinite recursion on cyclic relationship graphs
+    if (depth >= MAX_GRAPH_DEPTH) {
+      return false;
+    }
+
     // Get all relationships where user is source
     const userRelationships = await Relationship.findAll({
       where: {
@@ -153,13 +161,14 @@ class RelationshipGraph {
 
       if (targetHasAccess) return true;
 
-      // Recursively check transitive access
+      // Recursively check transitive access (with depth guard)
       if (rel.target_type === 'organization' || rel.target_type === 'group') {
         const transitive = await this.checkTransitiveAccess({
           userId: rel.target_id,
           resourceType,
           resourceId,
           orgId,
+          depth: depth + 1,
         });
         if (transitive) return true;
       }
