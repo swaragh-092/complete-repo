@@ -4,26 +4,45 @@
 // Version: 1.0.0
 
 const Redis = require("ioredis");
+const { REDIS_CONNECTION } = require("./config");
 
+let redis = null;
 
-const { REDIS_CONNECTION } = require('./config');
+function getRedis() {
+  // 🔥 Do not connect in test
+  // if (process.env.NODE_ENV === "test") {
+  //   return null;
+  // }
 
-console.log(REDIS_CONNECTION);
+  if (!redis) {
+    redis = new Redis({
+      ...REDIS_CONNECTION,
+      retryStrategy(times) {
+        if (times > 10) return null;
+        return times * 100;
+      },
+    });
 
-const redis = new Redis({
-  ...REDIS_CONNECTION,
-  retryStrategy(times) {
-    if (times > 10) return null; // stop retrying
-    return times * 100;
+    redis.on("connect", () => {
+      console.log("✅ Redis connected");
+    });
+
+    redis.on("error", (err) => {
+      console.error("❌ Redis error", err);
+    });
   }
-});
 
-redis.on("connect", () => {
-  console.log("✅ Redis connected");
-});
+  return redis;
+}
 
-redis.on("error", (err) => {
-  console.error("❌ Redis error", err);
-});
+async function closeRedis() {
+  if (redis) {
+    await redis.quit();
+    redis = null;
+  }
+}
 
-module.exports = redis;
+module.exports = {
+  getRedis,
+  closeRedis,
+};

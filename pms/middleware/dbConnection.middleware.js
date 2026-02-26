@@ -33,4 +33,12 @@ async function getTenantDB(req, res, next) {
   }
 }
 
-module.exports = getTenantDB;
+async function closeAllConnections() {
+  for (const key in connections) {
+    if (connections[key].sequelize) {
+      await connections[key].sequelize.close();
+    }
+  }
+}
+
+module.exports = { getTenantDB, closeAllConnections };

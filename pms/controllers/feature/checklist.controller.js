@@ -40,7 +40,7 @@ exports.getAllChecklistsOfFeature = async (req, res) => {
       req,
       {
         feature_id: req.params.featureId,
-        query : req.params
+        query : req.query
       }
     );
     return ResponseService.apiResponse({ res, ...result, ...thisAction });

@@ -6,7 +6,7 @@
 const Response = require("../services/Response");
 const { namespace } = require("../config/cls");
 const { DOMAIN, MODULE_CODE } = require("../config/config");
-const redis = require("../config/redisConnection");
+const { getRedis} = require("../config/redisConnection");
 
 const dataValidation = async (req, res, next) => {
   try {
@@ -70,15 +70,11 @@ async function getRequiredData(subdomain, moduleCode, req) {
   const cacheKey = `app_config:${req.organization_id}:${subdomain}:${moduleCode}`;
 
   //  Try Redis first
+  const redis = getRedis();
   const cached = await redis.get(cacheKey);
-
   if (cached) {
     return JSON.parse(cached);
   }
-
-  
-  console.log("coming here");
-
 
 
   console.log(`${DOMAIN.superAdmin}/api/required-data/${req.organization_id}/${subdomain}/${moduleCode}`);

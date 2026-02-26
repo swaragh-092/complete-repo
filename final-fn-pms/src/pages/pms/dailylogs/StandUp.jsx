@@ -23,7 +23,7 @@ const getPriorityColor = (priority) => {
   }
 };
 
-export default function StandUp() {
+export default function StandUp({reloadTrigger, onTaskChange}) {
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState({state : false, for : ""});
   const [createStandup, setCreateStandup] = useState(false);
@@ -33,10 +33,11 @@ export default function StandUp() {
   const theme = useTheme();
   const colors = colorCodes(theme.palette.mode);
 
+
   useEffect(() => {
     loadTasks(1);
-  }, []);
-
+  }, [reloadTrigger]);
+  
   const loadTasks = async (nextPage = 1) => {
     try {
       setLoading({state : true, for: "fetchlogs"});
@@ -91,7 +92,10 @@ export default function StandUp() {
 
   return (
     <>
-      <CreateDialog isOpen={createStandup} onClose={() => setCreateStandup(false)} usefor={"Stand Up"} backendEndpoint={BACKEND_ENDPOINT.create_stand_up} onSuccess={() => loadTasks(1)} formFields={addStandUpFormFields} />
+      <CreateDialog isOpen={createStandup} onClose={() => setCreateStandup(false)} usefor={"Stand Up"} backendEndpoint={BACKEND_ENDPOINT.create_stand_up} onSuccess={() => {
+        loadTasks(1);
+        onTaskChange?.();
+      }} formFields={addStandUpFormFields} />
 
       <Box display={"flex"} alignItems={"center"} justifyContent={"space-between"}>
         <Heading title={"Today's Stand Up"} level={3} giveMarginBottom={false} />
