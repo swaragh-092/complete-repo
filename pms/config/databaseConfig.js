@@ -30,6 +30,7 @@ async function getTenantSequelize(connectionId) {
     connection.password,
     {
       host: connection.host,
+      port: Number(connection.port),
       dialect: connection.type,
       pool: { max: 10, min: 0, idle: 10000 },
       logging: process.env.NODE_ENV === "development"? (msg) => console.log(`[Sequelize] ${msg}`): false,
@@ -46,7 +47,7 @@ async function getTenantSequelize(connectionId) {
   // await sequelize.sync({ alter: true }); // or { force: true }
   // console.log("All models were synchronized.");
 
-  return sequelize;
+  return {sequelize, modules};
 }
 
 module.exports = {

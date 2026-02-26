@@ -116,3 +116,17 @@ exports.getOverviewData = async (req, res) => {
     return sendErrorResponse(thisAction, err, res);
   }
 };
+
+
+
+// complete project
+exports.completeProject = async (req, res) => {
+  const thisAction = { usedFor: "Project", action: "complete" };
+  try {
+    const { id } = req.params;
+    const result = await ProjectService.completeProject(req, id);
+    return ResponseService.apiResponse({ res, ...result, ...thisAction });
+  } catch (err) {
+    return sendErrorResponse(thisAction, err, res);
+  }
+};

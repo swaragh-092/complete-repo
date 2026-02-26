@@ -12,7 +12,43 @@ const { uuid, name, description } = require("../../services/validation");
 
 const router = express.Router();
 
-// Create Checklist for a Feature
+// /{moduleCode}/check-list/...
+
+
+/**
+ * @swagger
+ * /{moduleCode}/check-list/feature/{featureId}:
+ *   post:
+ *     tags:
+ *       - Feature
+ *     summary: Create a checklist for a feature
+ *     parameters:
+ *       - in: path
+ *         name: moduleCode
+ *         required: true
+ *         schema:
+ *           type: string
+ *           default: ALREADY_TAKEN
+ *       - in: path
+ *         name: featureId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               title:
+ *                 type: string
+ *               description:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Checklist created successfully
+ */
 router.post(
   "/feature/:featureId",
   [
@@ -20,10 +56,34 @@ router.post(
     name("title"),
     description().optional()
   ],
-  validationMiddleware("Checklist", "Create"), checklistController.createChecklist
+  validationMiddleware("Checklist", "Create"),
+  checklistController.createChecklist
 );
 
-// Get All Checklists of a Feature
+
+/**
+ * @swagger
+ * /{moduleCode}/check-list/feature/{featureId}:
+ *   get:
+ *     tags:
+ *       - Feature
+ *     summary: Get all checklists of a feature
+ *     parameters:
+ *       - in: path
+ *         name: moduleCode
+ *         required: true
+ *         schema:
+ *           type: string
+ *           default: ALREADY_TAKEN
+ *       - in: path
+ *         name: featureId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: List of checklists retrieved successfully
+ */
 router.get(
   "/feature/:featureId",
   [uuid("featureId")],
@@ -31,7 +91,30 @@ router.get(
   checklistController.getAllChecklistsOfFeature
 );
 
-// Get Single Checklist by ID
+
+/**
+ * @swagger
+ * /{moduleCode}/check-list/{checklistId}:
+ *   get:
+ *     tags:
+ *       - Feature
+ *     summary: Get a single checklist by ID
+ *     parameters:
+ *       - in: path
+ *         name: moduleCode
+ *         required: true
+ *         schema:
+ *           type: string
+ *           default: ALREADY_TAKEN
+ *       - in: path
+ *         name: checklistId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Checklist retrieved successfully
+ */
 router.get(
   "/:checklistId",
   [uuid("checklistId")],
@@ -39,7 +122,41 @@ router.get(
   checklistController.getChecklistById
 );
 
-// Update Checklist by ID
+
+/**
+ * @swagger
+ * /{moduleCode}/check-list/{checklistId}:
+ *   put:
+ *     tags:
+ *       - Feature
+ *     summary: Update a checklist by ID
+ *     parameters:
+ *       - in: path
+ *         name: moduleCode
+ *         required: true
+ *         schema:
+ *           type: string
+ *           default: ALREADY_TAKEN
+ *       - in: path
+ *         name: checklistId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: false
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               title:
+ *                 type: string
+ *               description:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Checklist updated successfully
+ */
 router.put(
   "/:checklistId",
   [
@@ -51,12 +168,36 @@ router.put(
   checklistController.updateChecklist
 );
 
-// Delete Checklist by ID
+
+/**
+ * @swagger
+ * /{moduleCode}/check-list/{checklistId}:
+ *   delete:
+ *     tags:
+ *       - Feature
+ *     summary: Delete a checklist by ID
+ *     parameters:
+ *       - in: path
+ *         name: moduleCode
+ *         required: true
+ *         schema:
+ *           type: string
+ *           default: ALREADY_TAKEN
+ *       - in: path
+ *         name: checklistId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Checklist deleted successfully
+ */
 router.delete(
   "/:checklistId",
   [uuid("checklistId")],
   validationMiddleware("Checklist", "Delete"),
   checklistController.deleteChecklist
 );
+
 
 module.exports = router;

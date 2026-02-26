@@ -136,8 +136,18 @@ class TaskService {
             userId: assignedMember.user_id,
           };
 
-          if (project.iscompleted) {
-            await project.update( {is_completed : false },{...withContext(req),transaction: t,});
+          const projectUpdates = {};
+          
+          if (project.is_completed) {
+            projectUpdates.is_completed = false;
+          }
+          
+          if (!project.start_date) {
+            projectUpdates.start_date = new Date();
+          }
+          
+          if (Object.keys(projectUpdates).length > 0) {
+            await project.update(projectUpdates, {...withContext(req),transaction: t,});
           }
 
           const notificationResult = await createNotification(

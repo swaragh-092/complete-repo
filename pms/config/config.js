@@ -1,17 +1,17 @@
 require('dotenv').config();
 
-const DOMAIN = {
-    superAdmin: 'http://super-administrator:4010',
-    auth: 'http://auth-service:4000',
-}
 // const DOMAIN = {
-//     superAdmin: 'http://localhost:2500',
+//     superAdmin: 'http://super-administrator:4010',
 //     auth: 'http://auth-service:4000',
 // }
+const DOMAIN = {
+    superAdmin: 'http://localhost:2500',
+    auth: 'http://auth-service:4000',
+}
 
 const DATABASE_DETAILS = {
     "default-shared": {
-        name: process.env.DB_NAME || 'pms',
+        name: process.env.DB_NAME || 'pms_test',
         user: process.env.DB_USER || 'postgres',
         password: process.env.DB_PASSWORD || '1234',
         host: process.env.DB_HOST || 'localhost',
@@ -42,7 +42,14 @@ module.exports = {
     MODULE_CODE: "pms_mod",
     DATABASE_DETAILS,
     REDIS_CONNECTION,
-    frontendDomain: "https://final-fn-pms.local.test:7000"
+    frontendDomain: [
+        "https://final-fn-pms.local.test:7000",      // main PMS frontend
+        "https://admin.local.test",                   // admin UI
+        "https://account.local.test",                 // login UI
+        "http://localhost:5173",                      // dev frontend
+        "http://localhost:3000",                      // dev frontend alt
+        "http://localhost:7000"                       // dev frontend
+    ]
 };
 
 

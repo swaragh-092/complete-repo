@@ -399,6 +399,7 @@ services:
         condition: service_healthy
     environment:
       NODE_ENV: ${NODE_ENV:-production}
+      PORT: 3010
       DB_PREFIX: pms
       DB_HOST: db-pms
       DB_PORT: 5432
