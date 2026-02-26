@@ -46,6 +46,7 @@ const authSlice = createSlice({
         access_version,
       } = action.payload;
 
+      console.log("permissions",metadata.memberships);
 
       state.user = {
         id,
@@ -78,7 +79,6 @@ const authSlice = createSlice({
         gender: null,
         last_login: null,
         memberships: null,
-        
       },
       state.accessVersion = null,
       state.isLoggedIn = false;

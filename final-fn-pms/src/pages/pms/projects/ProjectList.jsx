@@ -14,12 +14,67 @@ import { Link, useSearchParams } from "react-router-dom";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import CreateDialog from "../../../components/pms/CreateDialog";
 
+
 const displayColumns = [
   { field: "name", headerName: "Name", flex: 1 },
   { field: "description", headerName: "Overview", flex: 1 },
   { field: "code", headerName: "Project Code", flex: 1 },
-  { field: "start_date", headerName: "Date Started", flex: 1 },
-  { field: "end_date", headerName: "Date Ended", flex: 1 },
+  {
+    field: "start_date",
+    headerName: "Date Started",
+    flex: 1,
+    renderCell: (params) => {
+      const startDate = params.row.start_date;
+      const estimatedStartDate = params.row.estimated_start_date;
+      
+      if (startDate) {
+        return new Date(startDate).toLocaleDateString();
+      }
+      return `${new Date(estimatedStartDate).toLocaleDateString()} (estimated)`;
+    },
+  },
+  {
+    field: "end_date",
+    headerName: "Date Ended",
+    flex: 1,
+    renderCell: (params) => {
+      const endDate = params.row.end_date;
+      const completedAt = params.row.completed_at;
+      const estimatedEndDate = params.row.estimated_end_date;
+      
+      if (endDate) {
+        return new Date(endDate).toLocaleDateString();
+      }
+      if (completedAt) {
+        return new Date(completedAt).toLocaleDateString();
+      }
+      return `${new Date(estimatedEndDate).toLocaleDateString()} (estimated)`;
+    },
+  },
+  {
+    field: "is_completed",
+    headerName: "Status",
+    flex: 0.8,
+    renderCell: (params) => {
+      return params.row.is_completed ? "Completed" : "Ongoing";
+    },
+  },
+  {
+    field: "critical_high_issues_count",
+    headerName: "Critical/High Issues",
+    flex: 0.8,
+    renderCell: (params) => {
+      return params.row.critical_high_issues_count || "0";
+    },
+  },
+  {
+    field: "overdue_tasks_count",
+    headerName: "Overdue Tasks",
+    flex: 0.8,
+    renderCell: (params) => {
+      return params.row.overdue_tasks_count || "0";
+    },
+  },
   {
     field: "actions",
     headerName: "Actions",
@@ -30,7 +85,7 @@ const displayColumns = [
       <Box display="flex" justifyContent="center" alignItems="center" width="100%" height="100%">
         <Button
           component={Link}
-          to={paths.projectDetail(params.row.id).actualPath} // Navigate using project id
+          to={paths.projectDetail(params.row.id).actualPath}
           variant="text"
           size="small"
           startIcon={<VisibilityIcon />}

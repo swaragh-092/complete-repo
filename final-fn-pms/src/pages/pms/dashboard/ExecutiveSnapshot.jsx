@@ -22,13 +22,13 @@ const SNAPSHOT_META = {
     route: paths.projects("critical"),
   },
 };
-
-const SnapshotCard = ({ label, count, trend, color, onClick }) => {
+const SnapshotCard = ({ label, count, trend, color, onClick, title }) => {
   const isPositive = trend >= 0;
 
   return (
     <Card
       onClick={onClick}
+      title={title}
       sx={{
         cursor: "pointer",
         p: 2.5,
@@ -67,22 +67,26 @@ const ExecutiveSnapshot = ({ data, loading }) => {
     ongoing: {
       label: "Ongoing Projects",
       count: data?.ongoingProjects,
-      trend: +3, // positive = up, negative = down
+      trend: +3,
+      title: "Total number of projects currently in progress",
     },
     onTrack: {
       label: "On Track",
       count: data?.healthoverview?.counts?.safe,
       trend: +2,
+      title: "Projects with no critical issues or overdue tasks",
     },
     atRisk: {
       label: "At Risk",
       count: data?.healthoverview?.counts?.at_risk,
       trend: -1,
+      title: "Projects with 1-5 critical/high priority issues or overdue tasks",
     },
     critical: {
       label: "Critical",
       count: data?.healthoverview?.counts?.critical,
       trend: +1,
+      title: "Projects with 6+ critical/high priority issues or overdue tasks",
     },
   };
 
@@ -120,14 +124,19 @@ const ExecutiveSnapshot = ({ data, loading }) => {
 
             return (
               <Grid paddingBottom={3} item xs={12} sm={6} md={3} key={key}>
-                <SnapshotCard label={data.label} count={data.count} trend={data.trend} color={meta.color} onClick={() => navigate(meta.route)} />
+                <SnapshotCard 
+                  label={data.label} 
+                  count={data.count} 
+                  trend={data.trend} 
+                  color={meta.color} 
+                  title={data.title}
+                  onClick={() => navigate(meta.route)} 
+                />
               </Grid>
             );
           })}
         </Grid>
       }
-
-      
     </>
   );
 };

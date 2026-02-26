@@ -54,7 +54,7 @@ export default function DataTable({ columns, fetchEndpoint, selectedAction = fal
     
     setLoading(true);
     const data = await fetchData(fetchEndpoint, querySets, dataPath);
-
+    console.log("Fetched data: ", data);
     setLoading(false);
     setResponseData(data);
   };

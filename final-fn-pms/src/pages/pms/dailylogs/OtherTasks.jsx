@@ -1,128 +1,4 @@
-// import { useEffect, useState } from "react";
-// import Header from "../../../components/Header";
-// import { Box, Paper, Typography, CircularProgress, Grid, Chip, Divider, useTheme } from "@mui/material";
-// import { colorCodes } from "../../../theme";
 
-// export default function OtherTasks() {
-//   const [tasks, setTasks] = useState([]);
-//   const [loading, setLoading] = useState(true);
-
-//   const theme = useTheme();
-//   const colors = colorCodes(theme.palette.mode);
-
-//   useEffect(() => {
-//     loadDummyData();
-//   }, []);
-
-//   const loadDummyData = () => {
-
-    
-//     // const dummyTasks = [
-//     //   {
-//     //     id: 1,
-//     //     title: "Refactor User Service",
-//     //     type: "Feature",
-//     //     worked_duration: "02:15",
-//     //   },
-//     //   {
-//     //     id: 2,
-//     //     title: "Update Documentation",
-//     //     type: "Documentation",
-//     //     worked_duration: "01:00",
-//     //   },
-//     //   {
-//     //     id: 3,
-//     //     title: "Fix Notifications Bug",
-//     //     type: "Bug",
-//     //     worked_duration: "", // currently being worked
-//     //   },
-//     // ];
-
-    
-
-//     setTasks(dummyTasks);
-//     setTimeout(() => setLoading(false), 400);
-//   };
-
-//   return (
-//     <>
-//       <Header title={"Other Tasks Worked"} level={3} />
-
-//       <Box sx={{ p: 2 }}>
-//         {loading ? (
-//           <Box sx={{ textAlign: "center", mt: 5 }}>
-//             <CircularProgress />
-//           </Box>
-//         ) : (
-//           <Grid container spacing={2}>
-//             {tasks.map((task) => (
-//               <Grid
-//                 item
-//                 key={task.id}
-//                 xs={12}
-//                 sm={6}
-//                 md={4}
-//                 lg={3}
-//                 sx={{ display: "flex", justifyContent: "center" }}
-//               >
-//                 <Paper
-//                   sx={{
-//                     p: 2.5,
-//                     borderRadius: 3,
-//                     background: colors.background.light,
-//                     boxShadow: "0 4px 14px rgba(0,0,0,0.1)",
-//                     width: "260px",
-//                     minHeight: "130px",
-//                     display: "flex",
-//                     flexDirection: "column",
-//                     justifyContent: "space-between",
-//                   }}
-//                 >
-//                   <Box sx={{ width: "100%" }}>
-//                     <Box
-//                       sx={{
-//                         display: "flex",
-//                         justifyContent: "space-between",
-//                         mb: 1,
-//                         width: "100%",
-//                       }}
-//                     >
-//                       <Typography
-//                         variant="subtitle1"
-//                         sx={{
-//                           fontWeight: 700,
-//                           fontSize: "15px",
-//                           maxWidth: "75%",
-//                           whiteSpace: "normal",
-//                           lineHeight: 1.3,
-//                         }}
-//                       >
-//                         {task.title}
-//                       </Typography>
-
-//                       <Chip
-//                         label={task.type}
-//                         size="small"
-//                         sx={{ fontWeight: 600, height: 22 }}
-//                       />
-//                     </Box>
-
-//                     <Divider sx={{ opacity: 0.2, my: 1 }} />
-
-//                     <Typography variant="body2" sx={{ opacity: 0.8 }}>
-//                       <strong>Worked: </strong>
-//                       {task.worked_duration ? task.worked_duration + " hrs" : "Working currently"}
-//                     </Typography>
-//                   </Box>
-//                 </Paper>
-//               </Grid>
-//             ))}
-//           </Grid>
-//         )}
-//       </Box>
-//     </>
-//   );
-// }
 import { useEffect, useState } from "react";
 import Heading from "../../../components/Heading";
 import { Box, Paper, Typography, CircularProgress, Grid, Chip, Divider, useTheme, Button } from "@mui/material";
@@ -145,7 +21,7 @@ const getPriorityColor = (priority) => {
   }
 };
 
-export default function OtherTasks() {
+export default function OtherTasks({reloadTrigger, onTaskChange}) {
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState({state : false, for : ""});
   const [page, setPage] = useState(1);
@@ -156,7 +32,7 @@ export default function OtherTasks() {
 
   useEffect(() => {
     loadTasks(1);
-  }, []);
+  }, [reloadTrigger]);
 
   const loadTasks = async (nextPage = 1) => {
     try {
@@ -206,6 +82,7 @@ export default function OtherTasks() {
       setTasks([]);
       setPage(1);
       loadTasks(1);
+      onTaskChange?.();
     }
   }
 

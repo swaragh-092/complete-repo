@@ -119,7 +119,39 @@ export default function ProjectDetail() {
             
 
             <DoButton onclick={() => setEditProjectDialog(true)}>Edit Project</DoButton>
-            
+            <DoButton 
+              isDisable={project.is_completed}
+              onclick={async () => {
+                showConfirmDialog({
+                  title: "Complete Project",
+                  message: "Are you sure you want to complete this project? Please ensure all validations are met (no open issues, no pending tasks, at least 5 completed tasks).",
+                  onConfirm: async () => {
+                    setLoading(true);
+                    const response = await backendRequest({
+                      endpoint: BACKEND_ENDPOINT.completeProject(project.id),
+                      method: "POST"
+                    });
+                    
+                    if (response.success) {
+                      showToast({message: "Project completed successfully", type: "success"});
+                      setProject((prev) => ({ ...prev, is_completed: true }));
+                      revalidator.revalidate();
+                    } else {
+                      const errorMsg = response.validation_errors 
+                        ? Object.entries(response.validation_errors)
+                          .map(([key, val]) => `${key}: ${val}`)
+                          .join(", ")
+                        : response.message;
+                      showToast({message: errorMsg || "Failed to complete project", type: "error"});
+                    }
+                    setLoading(false);
+                  }
+                });
+              }}
+              disabled={project.is_completed}
+            >
+              {project.is_completed ? "Project Completed" : "Complete Project"}
+            </DoButton>
           </Box>
         </Box>
         <Stack spacing={3} mt={3}>
