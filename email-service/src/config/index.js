@@ -38,6 +38,10 @@ module.exports = {
 
     // Security
     SERVICE_SECRET: process.env.SERVICE_SECRET,
+    KEYCLOAK_URL: process.env.KEYCLOAK_URL || 'http://keycloak:8080',
+    KEYCLOAK_REALM: process.env.KEYCLOAK_REALM || 'my-projects',
+    // Issuer URL for token validation (should match what browser/client sees or internal if configured that way)
+    KEYCLOAK_ISSUER_URL: process.env.KEYCLOAK_ISSUER_URL || process.env.KEYCLOAK_URL || 'http://keycloak:8080',
 
     // SMTP Pool
     MAXCONNECTIONS: parseInt(process.env.MAXCONNECTIONS, 10) || 5,

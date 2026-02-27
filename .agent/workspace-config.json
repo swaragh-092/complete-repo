@@ -1,0 +1,17 @@
+{
+  "workspaceName": "antigravity-superpowers",
+  "strictMode": true,
+  "executionMode": "workflow-enforced",
+  "skills": [
+    "superpowers:brainstorming",
+    "superpowers:writing-plans",
+    "superpowers:executing-plans",
+    "superpowers:test-driven-development",
+    "superpowers:reviewing-code"
+  ],
+  "rules": [
+    "workflow-rules",
+    "quality-rules",
+    "workflow-enforcement"
+  ]
+}

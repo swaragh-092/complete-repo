@@ -4,12 +4,12 @@ import {
 } from '@mui/material';
 import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useSnackbar } from 'notistack';
+import { useToast } from '../hooks/useToast';
 import api from '../services/api';
 
 function RoleFormDialog({ open, onClose, roleType, selectedClient, onSuccess }) {
   const queryClient = useQueryClient();
-  const { enqueueSnackbar } = useSnackbar();
+  const { showSuccess, showError, showWarning, showInfo, enqueueSnackbar } = useToast();
   const [formData, setFormData] = useState({ name: '', description: '' });
 
   const createMutation = useMutation({
@@ -32,7 +32,7 @@ function RoleFormDialog({ open, onClose, roleType, selectedClient, onSuccess }) 
 
   const handleSubmit = () => {
     if (!formData.name) {
-      enqueueSnackbar('Role name is required', { variant: 'warning' });
+      showWarning('Role name is required');
       return;
     }
     createMutation.mutate();

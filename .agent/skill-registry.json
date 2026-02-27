@@ -1,0 +1,40 @@
+{
+  "superpowers": {
+    "brainstorming": {
+      "enabled": true,
+      "priority": 1
+    },
+    "specification": {
+      "enabled": true,
+      "priority": 2
+    },
+    "writing-plans": {
+      "enabled": true,
+      "priority": 3
+    },
+    "executing-plans": {
+      "enabled": true,
+      "priority": 4
+    },
+    "test-driven-development": {
+      "enabled": true,
+      "priority": 5
+    },
+    "reviewing-code": {
+      "enabled": true,
+      "priority": 6
+    },
+    "refactoring": {
+      "enabled": true,
+      "priority": 7
+    },
+    "debugging": {
+      "enabled": true,
+      "priority": 8
+    },
+    "documentation": {
+      "enabled": true,
+      "priority": 9
+    }
+  }
+}

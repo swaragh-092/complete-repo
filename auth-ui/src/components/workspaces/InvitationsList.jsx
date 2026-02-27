@@ -23,13 +23,13 @@ import {
   AccessTime as TimeIcon
 } from '@mui/icons-material';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useSnackbar } from 'notistack';
+import { useToast } from '../../hooks/useToast';
 import { formatDistanceToNow } from 'date-fns';
 import workspaceService from '../../services/workspaceService';
 
 export default function InvitationsList({ workspaceId }) {
   const queryClient = useQueryClient();
-  const { enqueueSnackbar } = useSnackbar();
+  const { showSuccess, showError, showWarning, showInfo, enqueueSnackbar } = useToast();
   const [error, setError] = useState('');
 
   // Fetch Invitations
@@ -44,7 +44,7 @@ export default function InvitationsList({ workspaceId }) {
     mutationFn: (invitationId) => workspaceService.revokeInvitation(workspaceId, invitationId),
     onSuccess: () => {
       queryClient.invalidateQueries(['workspace-invitations', workspaceId]);
-      enqueueSnackbar('Invitation revoked', { variant: 'success' });
+      showSuccess('Invitation revoked');
     },
     onError: (err) => {
       const errorMessage = err.response?.data?.message || 'Failed to revoke invitation';

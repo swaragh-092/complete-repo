@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useSnackbar } from 'notistack';
+import { useToast } from '../../hooks/useToast';
 import {
   Box,
   Paper,
@@ -55,7 +55,7 @@ function UserDetail() {
   const { realmName, userId } = useParams();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { enqueueSnackbar } = useSnackbar();
+  const { showSuccess, showError, showWarning, showInfo, enqueueSnackbar } = useToast();
   const [activeTab, setActiveTab] = useState(0);
 
   // Fetch User Details
@@ -69,7 +69,7 @@ function UserDetail() {
     mutationFn: (data) => userService.updateUser(userId, data, realmName),
     onSuccess: () => {
       queryClient.invalidateQueries(['user', realmName, userId]);
-      enqueueSnackbar('User updated successfully', { variant: 'success' });
+      showSuccess('User updated successfully');
     },
     onError: (err) => {
       enqueueSnackbar(err.message || 'Failed to update user', { variant: 'error' });
@@ -253,7 +253,7 @@ function UserDetail() {
                         disabled={user.emailVerified}
                         onClick={() => {
                           userService.verifyEmail(userId, realmName)
-                            .then(() => enqueueSnackbar('Verification email sent', { variant: 'success' }))
+                            .then(() => showSuccess('Verification email sent'))
                             .catch(err => enqueueSnackbar(err.message, { variant: 'error' }));
                         }}
                       >
@@ -276,7 +276,7 @@ function UserDetail() {
                         onClick={() => {
                           if(window.confirm('Are you sure you want to logout this user from all sessions?')) {
                             userService.logoutAllSessions(userId, realmName)
-                              .then(() => enqueueSnackbar('User logged out', { variant: 'success' }))
+                              .then(() => showSuccess('User logged out'))
                               .catch(err => enqueueSnackbar(err.message, { variant: 'error' }));
                           }
                         }}
@@ -299,7 +299,7 @@ function UserDetail() {
                         variant="outlined"
                         onClick={() => {
                            userService.sendPasswordResetEmail(userId, realmName)
-                            .then(() => enqueueSnackbar('Password reset email sent', { variant: 'success' }))
+                            .then(() => showSuccess('Password reset email sent'))
                             .catch(err => enqueueSnackbar(err.message, { variant: 'error' }));
                         }}
                       >

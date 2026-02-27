@@ -14,12 +14,12 @@ import {
   VpnKey as KeyIcon
 } from '@mui/icons-material';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useSnackbar } from 'notistack';
+import { useToast } from '../../hooks/useToast';
 import api, { extractData } from '../../services/api';
 
 function RealmClients({ realmName }) {
   const queryClient = useQueryClient();
-  const { enqueueSnackbar } = useSnackbar();
+  const { showSuccess, showError, showWarning, showInfo, enqueueSnackbar } = useToast();
   const [openCreate, setOpenCreate] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedClient, setSelectedClient] = useState(null);
@@ -56,7 +56,7 @@ function RealmClients({ realmName }) {
       });
     },
     onError: (error) => {
-      enqueueSnackbar(`Failed to create client: ${error.response?.data?.message || error.message}`, { variant: 'error' });
+      showError(error, 'Failed to create client');
     }
   });
 
@@ -68,7 +68,7 @@ function RealmClients({ realmName }) {
       setAnchorEl(null);
     },
     onError: (error) => {
-      enqueueSnackbar(`Failed to delete client: ${error.response?.data?.message || error.message}`, { variant: 'error' });
+      showError(error, 'Failed to delete client');
     }
   });
 
@@ -80,13 +80,13 @@ function RealmClients({ realmName }) {
       setAnchorEl(null);
     },
     onError: (error) => {
-      enqueueSnackbar(`Failed to regenerate secret: ${error.response?.data?.message || error.message}`, { variant: 'error' });
+      showError(error, 'Failed to regenerate secret');
     }
   });
 
   const handleCreateClient = () => {
     if (!formData.clientId) {
-      enqueueSnackbar('Client ID is required', { variant: 'warning' });
+      showWarning('Client ID is required');
       return;
     }
     createClientMutation.mutate(formData);

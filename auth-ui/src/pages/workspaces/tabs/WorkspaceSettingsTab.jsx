@@ -20,7 +20,7 @@ import {
 } from '@mui/icons-material';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
-import { useSnackbar } from 'notistack';
+import { useToast } from '../../../hooks/useToast';
 import workspaceService from '../../../services/workspaceService';
 import { useWorkspace } from '../../../context/WorkspaceContext';
 
@@ -28,7 +28,7 @@ export default function WorkspaceSettingsTab({ workspace }) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { refreshWorkspaces } = useWorkspace();
-  const { enqueueSnackbar } = useSnackbar();
+  const { showSuccess, showError, showWarning, showInfo, enqueueSnackbar } = useToast();
   const [error, setError] = useState('');
   const [formData, setFormData] = useState({ name: '', description: '' });
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -48,7 +48,7 @@ export default function WorkspaceSettingsTab({ workspace }) {
     onSuccess: () => {
       queryClient.invalidateQueries(['workspace', workspace.id]);
       refreshWorkspaces && refreshWorkspaces();
-      enqueueSnackbar('Workspace updated successfully', { variant: 'success' });
+      showSuccess('Workspace updated successfully');
     },
     onError: (err) => {
       const errorMessage = err.response?.data?.message || 'Failed to update workspace';
@@ -62,7 +62,7 @@ export default function WorkspaceSettingsTab({ workspace }) {
     mutationFn: () => workspaceService.delete(workspace.id),
     onSuccess: () => {
       refreshWorkspaces && refreshWorkspaces();
-      enqueueSnackbar('Workspace deleted successfully', { variant: 'success' });
+      showSuccess('Workspace deleted successfully');
       // Navigate back to the organization page
       navigate(workspace.org_id ? `/organizations/${workspace.org_id}` : '/');
     },

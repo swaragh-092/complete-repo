@@ -572,9 +572,10 @@ router.get("/callback/:client", asyncHandler(async (req, res, next) => {
         const cookieOptions = buildRefreshCookieOptions(req, redirectUri, storedOrigin);
         // Client-scoped cookie — prevents cross-app collision on shared domains
         res.cookie(`rt_${clientKey}`, user.refreshToken, cookieOptions);
-        // Legacy names kept for backward compatibility during migration
-        res.cookie("refreshToken", user.refreshToken, cookieOptions);
-        res.cookie("account_refresh_token", user.refreshToken, cookieOptions);
+
+        // Clear legacy cookies to migrate old clients
+        res.clearCookie("refreshToken", cookieOptions);
+        res.clearCookie("account_refresh_token", cookieOptions);
 
         logger.info("Refresh token cookie set", {
           userId: user.id,
@@ -768,12 +769,10 @@ router.post('/logout/:client', asyncHandler(async (req, res) => {
       throw new AppError('Realm not found', 500, 'REALM_NOT_FOUND');
     }
 
-    // Client-scoped cookie first, then legacy fallbacks
+    // Client-scoped cookie only (legacy cookies removed)
     const refreshToken = req.body.refreshToken ||
-      req.cookies?.[`rt_${clientKey}`] ||
-      req.cookies?.refreshToken ||
-      req.cookies?.account_refresh_token ||
-      req.headers['x-refresh-token'];
+      req.headers['x-refresh-token'] ||
+      req.cookies?.[`rt_${clientKey}`];
 
     logger.info('🔵 POST Logout - Refresh token:', refreshToken ? 'Found' : 'Not found');
 
@@ -1062,18 +1061,14 @@ router.post('/refresh/:client', asyncHandler(async (req, res) => {
   }
 
   // Resolve refresh token from multiple sources (priority: body > header > cookie)
-  // Client-scoped cookie first, then legacy fallbacks
+  // Client-scoped cookie only (legacy cookies removed to prevent cross-app collision)
   const refreshToken = req.body?.refreshToken ||
     req.headers['x-refresh-token'] ||
-    req.cookies?.[`rt_${clientKey}`] ||
-    req.cookies?.refreshToken ||
-    req.cookies?.account_refresh_token;
+    req.cookies?.[`rt_${clientKey}`];
 
   const tokenSource = req.body?.refreshToken ? 'body' :
     req.headers['x-refresh-token'] ? 'header' :
-      req.cookies?.[`rt_${clientKey}`] ? `cookie:rt_${clientKey}` :
-        req.cookies?.refreshToken ? 'cookie:refreshToken' :
-          req.cookies?.account_refresh_token ? 'cookie:account_refresh_token' : 'NONE';
+      req.cookies?.[`rt_${clientKey}`] ? `cookie:rt_${clientKey}` : 'NONE';
 
   logger.info('Refresh token resolution', { clientKey, tokenSource, hasToken: !!refreshToken });
 
@@ -1189,9 +1184,10 @@ router.post('/refresh/:client', asyncHandler(async (req, res) => {
       // Write with both names for compatibility
       // Client-scoped cookie — prevents cross-app collision on shared domains
       res.cookie(`rt_${clientKey}`, new_refresh_token, cookieOptions);
-      // Legacy names kept for backward compatibility during migration
-      res.cookie('refreshToken', new_refresh_token, cookieOptions);
-      res.cookie('account_refresh_token', new_refresh_token, cookieOptions);
+
+      // Clear legacy cookies to migrate old clients
+      res.clearCookie('refreshToken', cookieOptions);
+      res.clearCookie('account_refresh_token', cookieOptions);
     }
 
     // Log successful refresh
@@ -1219,402 +1215,6 @@ router.post('/refresh/:client', asyncHandler(async (req, res) => {
   }
 }));
 
-
-
-
-
-// LEGACY_DISABLED: router.post('/org/create', asyncHandler(async (req, res) => {
-// LEGACY_DISABLED:   const { token, client_id, name, slug, plan, db_type, db_name, logo_url, storage_limit } = req.body;
-// LEGACY_DISABLED:   const client = Object.values(CLIENTS).find((c) => c.client_id === client_id);
-// LEGACY_DISABLED:   if (!client) {
-// LEGACY_DISABLED:     throw new AppError('Invalid client', 400, 'INVALID_CLIENT');
-// LEGACY_DISABLED:   }
-// LEGACY_DISABLED: 
-// LEGACY_DISABLED:   try {
-// LEGACY_DISABLED:     const { rows } = await pool.query(
-// LEGACY_DISABLED:       'INSERT INTO organizations (name, slug, plan, db_type, db_name, logo_url, storage_limit) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id',
-// LEGACY_DISABLED:       [name, slug, plan || 'free', db_type || 'shared', db_name, logo_url, storage_limit]
-// LEGACY_DISABLED:     );
-// LEGACY_DISABLED:     const org_id = rows[0].id;
-// LEGACY_DISABLED: 
-// LEGACY_DISABLED:     await pool.query(
-// LEGACY_DISABLED:       'INSERT INTO tenants_apps (org_id, client_id, app_name) VALUES ($1, $2, $3)',
-// LEGACY_DISABLED:       [org_id, client_id, client_id.split('-')[0].toUpperCase()]
-// LEGACY_DISABLED:     );
-// LEGACY_DISABLED: 
-// LEGACY_DISABLED:     const user = req.user;
-// LEGACY_DISABLED:     await pool.query(
-// LEGACY_DISABLED:       'INSERT INTO user_metadata (keycloak_id, org_id, designation) VALUES ($1, $2, $3)',
-// LEGACY_DISABLED:       [user.id, org_id, 'Owner']
-// LEGACY_DISABLED:     );
-// LEGACY_DISABLED: 
-// LEGACY_DISABLED:     const keycloakService = new KeycloakService(client.realm);
-// LEGACY_DISABLED:     await keycloakService.initialize();
-// LEGACY_DISABLED:     await keycloakService.updateUserAttributes(user.id, { org_id });
-// LEGACY_DISABLED:     await keycloakService.assignRole(user.id, `${client_id}:admin`, client_id);
-// LEGACY_DISABLED: 
-// LEGACY_DISABLED:     await pool.query(
-// LEGACY_DISABLED:       'INSERT INTO audit_logs (org_id, user_id, client_id, action, details) VALUES ($1, $2, $3, $4, $5)',
-// LEGACY_DISABLED:       [org_id, user.id, client_id, 'org_created', { name, slug }]
-// LEGACY_DISABLED:     );
-// LEGACY_DISABLED: 
-// LEGACY_DISABLED:     return ResponseHandler.created(res, { org_id }, 'Organization created');
-// LEGACY_DISABLED:   } catch (error) {
-// LEGACY_DISABLED:     if (error instanceof AppError) throw error;
-// LEGACY_DISABLED:     throw new AppError('Organization creation failed', 500, 'CREATION_FAILED', { originalError: error.message });
-// LEGACY_DISABLED:   }
-// LEGACY_DISABLED: }));
-// LEGACY_DISABLED: 
-// LEGACY_DISABLED: router.post('/org/join', asyncHandler(async (req, res) => {
-// LEGACY_DISABLED:   const { token, client_id, org_slug, invitation_code } = req.body;
-// LEGACY_DISABLED:   const client = Object.values(CLIENTS).find((c) => c.client_id === client_id);
-// LEGACY_DISABLED:   if (!client) {
-// LEGACY_DISABLED:     throw new AppError('Invalid client', 400, 'INVALID_CLIENT');
-// LEGACY_DISABLED:   }
-// LEGACY_DISABLED: 
-// LEGACY_DISABLED:   try {
-// LEGACY_DISABLED:     const { rows } = await pool.query('SELECT id FROM organizations WHERE slug = $1', [org_slug]);
-// LEGACY_DISABLED:     if (!rows[0]) {
-// LEGACY_DISABLED:       throw new AppError('Organization not found', 404, 'NOT_FOUND');
-// LEGACY_DISABLED:     }
-// LEGACY_DISABLED:     const org_id = rows[0].id;
-// LEGACY_DISABLED: 
-// LEGACY_DISABLED:     // Placeholder for invitation code validation
-// LEGACY_DISABLED:     if (invitation_code !== 'valid_code') {
-// LEGACY_DISABLED:       throw new AppError('Invalid invitation code', 403, 'INVALID_CODE');
-// LEGACY_DISABLED:     }
-// LEGACY_DISABLED: 
-// LEGACY_DISABLED:     const user = req.user;
-// LEGACY_DISABLED:     await pool.query(
-// LEGACY_DISABLED:       'INSERT INTO user_metadata (keycloak_id, org_id) VALUES ($1, $2) ON CONFLICT (keycloak_id) UPDATE SET org_id = $2',
-// LEGACY_DISABLED:       [user.id, org_id]
-// LEGACY_DISABLED:     );
-// LEGACY_DISABLED: 
-// LEGACY_DISABLED:     const keycloakService = new KeycloakService(client.realm);
-// LEGACY_DISABLED:     await keycloakService.initialize();
-// LEGACY_DISABLED:     await keycloakService.updateUserAttributes(user.id, { org_id });
-// LEGACY_DISABLED:     await keycloakService.assignRole(user.id, `${client_id}:default`, client_id);
-// LEGACY_DISABLED: 
-// LEGACY_DISABLED:     await pool.query(
-// LEGACY_DISABLED:       'INSERT INTO audit_logs (org_id, user_id, client_id, action, details) VALUES ($1, $2, $3, $4, $5)',
-// LEGACY_DISABLED:       [org_id, user.id, client_id, 'org_joined', { org_slug }]
-// LEGACY_DISABLED:     );
-// LEGACY_DISABLED: 
-// LEGACY_DISABLED:     res.json({ org_id, message: 'Joined organization' });
-// LEGACY_DISABLED:   } catch (error) {
-// LEGACY_DISABLED:     if (error instanceof AppError) throw error;
-// LEGACY_DISABLED:     throw new AppError('Failed to join organization', 500, 'JOIN_FAILED', { originalError: error.message });
-// LEGACY_DISABLED:   }
-// LEGACY_DISABLED: }));
-// LEGACY_DISABLED: 
-// LEGACY_DISABLED: 
-// LEGACY_DISABLED: 
-// LEGACY_DISABLED: 
-// LEGACY_DISABLED: router.post('/clients', asyncHandler(async (req, res) => {
-// LEGACY_DISABLED:   const { client_key, realm, client_id, client_secret, redirect_url, requires_tenant, tenant_id } = req.body;
-// LEGACY_DISABLED:   if (!client_key || !realm || !client_id || !client_secret || !redirect_url) {
-// LEGACY_DISABLED:     throw new AppError('Missing required fields', 400, 'MISSING_FIELDS');
-// LEGACY_DISABLED:   }
-// LEGACY_DISABLED: 
-// LEGACY_DISABLED:   try {
-// LEGACY_DISABLED:     const kc = await getKeycloakService(realm);
-// LEGACY_DISABLED:     await kc.createClient({ clientId: client_id, secret: client_secret, redirectUris: [redirect_url] });
-// LEGACY_DISABLED: 
-// LEGACY_DISABLED:     const client = await Client.create({
-// LEGACY_DISABLED:       client_key,
-// LEGACY_DISABLED:       realm,
-// LEGACY_DISABLED:       client_id,
-// LEGACY_DISABLED:       client_secret,
-// LEGACY_DISABLED:       callback_url: `${APP_URL}/auth/callback/${client_key}`,
-// LEGACY_DISABLED:       redirect_url,
-// LEGACY_DISABLED:       requires_tenant: requires_tenant || false,
-// LEGACY_DISABLED:       tenant_id,
-// LEGACY_DISABLED:     });
-// LEGACY_DISABLED: 
-// LEGACY_DISABLED:     await AuditLog.create({
-// LEGACY_DISABLED:       org_id: null,
-// LEGACY_DISABLED:       user_id: null,
-// LEGACY_DISABLED:       client_id,
-// LEGACY_DISABLED:       action: 'client_create',
-// LEGACY_DISABLED:       details: { client_key, realm },
-// LEGACY_DISABLED:     });
-// LEGACY_DISABLED: 
-// LEGACY_DISABLED:     await require('../passport').configurePassport();
-// LEGACY_DISABLED: 
-// LEGACY_DISABLED:     res.json(client);
-// LEGACY_DISABLED:   } catch (err) {
-// LEGACY_DISABLED:     logger.error('Client registration error:', err);
-// LEGACY_DISABLED:     if (err instanceof AppError) throw err;
-// LEGACY_DISABLED:     throw new AppError('Failed to register client', 500, 'REGISTRATION_FAILED', { originalError: err.message });
-// LEGACY_DISABLED:   }
-// LEGACY_DISABLED: }));
-// LEGACY_DISABLED: 
-// LEGACY_DISABLED: 
-// LEGACY_DISABLED: 
-// LEGACY_DISABLED: router.get('/clients', asyncHandler(async (req, res) => {
-// LEGACY_DISABLED:   try {
-// LEGACY_DISABLED:     const {
-// LEGACY_DISABLED:       realm = 'my-projects',
-// LEGACY_DISABLED:       page = 1,
-// LEGACY_DISABLED:       limit = 10,
-// LEGACY_DISABLED:       search = '',
-// LEGACY_DISABLED:       sortBy = 'clientId',
-// LEGACY_DISABLED:       sortOrder = 'asc',
-// LEGACY_DISABLED:     } = req.query;
-// LEGACY_DISABLED: 
-// LEGACY_DISABLED:     const kc = await getKeycloakService(realm);
-// LEGACY_DISABLED:     const allClients = await kc.getClients();
-// LEGACY_DISABLED: 
-// LEGACY_DISABLED:     // Filter by search
-// LEGACY_DISABLED:     let filtered = allClients.filter(client =>
-// LEGACY_DISABLED:       client.clientId.toLowerCase().includes(search.toLowerCase()) ||
-// LEGACY_DISABLED:       (client.name || '').toLowerCase().includes(search.toLowerCase())
-// LEGACY_DISABLED:     );
-// LEGACY_DISABLED: 
-// LEGACY_DISABLED:     // Sort
-// LEGACY_DISABLED:     filtered.sort((a, b) => {
-// LEGACY_DISABLED:       const valA = (a[sortBy] || '').toString().toLowerCase();
-// LEGACY_DISABLED:       const valB = (b[sortBy] || '').toString().toLowerCase();
-// LEGACY_DISABLED:       if (sortOrder === 'asc') return valA.localeCompare(valB);
-// LEGACY_DISABLED:       else return valB.localeCompare(valA);
-// LEGACY_DISABLED:     });
-// LEGACY_DISABLED: 
-// LEGACY_DISABLED:     // Paginate
-// LEGACY_DISABLED:     const offset = (page - 1) * limit;
-// LEGACY_DISABLED:     const paginated = filtered.slice(offset, offset + Number(limit));
-// LEGACY_DISABLED: 
-// LEGACY_DISABLED:     res.json({
-// LEGACY_DISABLED:       rows: paginated,
-// LEGACY_DISABLED:       count: filtered.length,
-// LEGACY_DISABLED:     });
-// LEGACY_DISABLED:   } catch (err) {
-// LEGACY_DISABLED:     logger.error('Client fetch error:', err);
-// LEGACY_DISABLED:     if (err instanceof AppError) throw err;
-// LEGACY_DISABLED:     throw new AppError('Failed to fetch clients', 500, 'FETCH_FAILED', { originalError: err.message });
-// LEGACY_DISABLED:   }
-// LEGACY_DISABLED: }));
-// LEGACY_DISABLED: 
-// LEGACY_DISABLED: 
-// LEGACY_DISABLED: 
-// LEGACY_DISABLED: 
-// LEGACY_DISABLED: // async function getKeycloakAdminToken() {
-// LEGACY_DISABLED: //   const response = await axios.post(
-// LEGACY_DISABLED: //     `${KEYCLOAK_URL}/realms/master/protocol/openid-connect/token`,
-// LEGACY_DISABLED: //     new URLSearchParams({
-// LEGACY_DISABLED: //       client_id: 'admin-cli',
-// LEGACY_DISABLED: //       username: 'admin', // Replace with env variable
-// LEGACY_DISABLED: //       password: 'admin', // Replace with env variable
-// LEGACY_DISABLED: //       grant_type: 'password',
-// LEGACY_DISABLED: //     })
-// LEGACY_DISABLED: //   );
-// LEGACY_DISABLED: //   return response.data.access_token;
-// LEGACY_DISABLED: // }
-// LEGACY_DISABLED: 
-// LEGACY_DISABLED: 
-// LEGACY_DISABLED: 
-// LEGACY_DISABLED: 
-// LEGACY_DISABLED: router.post('/verify-token', asyncHandler(async (req, res) => {
-// LEGACY_DISABLED:   const { token, client_id } = req.body;
-// LEGACY_DISABLED:   const client = Object.values(CLIENTS).find((c) => c.client_id === client_id);
-// LEGACY_DISABLED:   if (!client) {
-// LEGACY_DISABLED:     throw new AppError('Invalid client', 400, 'INVALID_CLIENT');
-// LEGACY_DISABLED:   }
-// LEGACY_DISABLED: 
-// LEGACY_DISABLED:   try {
-// LEGACY_DISABLED:     const decoded = await verifyJwt(token, client.realm);
-// LEGACY_DISABLED:     let metadata = {};
-// LEGACY_DISABLED:     if (client.requiresTenant) {
-// LEGACY_DISABLED:       const { rows } = await pool.query(
-// LEGACY_DISABLED:         'SELECT * FROM user_metadata WHERE keycloak_id = $1 AND org_id = $2',
-// LEGACY_DISABLED:         [decoded.sub, decoded.tenant_id]
-// LEGACY_DISABLED:       );
-// LEGACY_DISABLED:       if (!rows[0]) {
-// LEGACY_DISABLED:         throw new AppError('Invalid tenant', 403, 'INVALID_TENANT');
-// LEGACY_DISABLED:       }
-// LEGACY_DISABLED:       metadata = rows[0];
-// LEGACY_DISABLED:     }
-// LEGACY_DISABLED:     const user = {
-// LEGACY_DISABLED:       id: decoded.sub,
-// LEGACY_DISABLED:       tenant_id: decoded.tenant_id,
-// LEGACY_DISABLED:       roles: decoded.realm_access?.roles || [],
-// LEGACY_DISABLED:       email: decoded.email,
-// LEGACY_DISABLED:       displayName: decoded.name,
-// LEGACY_DISABLED:       metadata,
-// LEGACY_DISABLED:     };
-// LEGACY_DISABLED:     res.json(user);
-// LEGACY_DISABLED:   } catch (error) {
-// LEGACY_DISABLED:     if (error instanceof AppError) throw error;
-// LEGACY_DISABLED:     throw new AppError('Invalid or expired token', 401, 'INVALID_TOKEN', { originalError: error.message });
-// LEGACY_DISABLED:   }
-// LEGACY_DISABLED: }));
-// LEGACY_DISABLED: 
-// LEGACY_DISABLED: // GET /roles?realm=my-projects&clientId=my-client
-// LEGACY_DISABLED: router.get('/roles', asyncHandler(async (req, res) => {
-// LEGACY_DISABLED:   const { realm = 'my-projects', clientId } = req.query;
-// LEGACY_DISABLED: 
-// LEGACY_DISABLED:   if (!clientId) {
-// LEGACY_DISABLED:     return res.status(400).json({ error: 'clientId is required' });
-// LEGACY_DISABLED:   }
-// LEGACY_DISABLED: 
-// LEGACY_DISABLED:   try {
-// LEGACY_DISABLED:     const kc = await getKeycloakService(realm);
-// LEGACY_DISABLED:     const roles = await kc.getClientRoles(clientId);
-// LEGACY_DISABLED:     res.json(roles);
-// LEGACY_DISABLED:   } catch (error) {
-// LEGACY_DISABLED:     logger.error('Failed to fetch roles:', error.message);
-// LEGACY_DISABLED:     if (error instanceof AppError) throw error;
-// LEGACY_DISABLED:     throw new AppError('Failed to fetch roles', 500, 'FETCH_FAILED', { originalError: error.message });
-// LEGACY_DISABLED:   }
-// LEGACY_DISABLED: }));
-// LEGACY_DISABLED: 
-// LEGACY_DISABLED: router.get('/roles/client/:clientId', asyncHandler(async (req, res) => {
-// LEGACY_DISABLED:   const { realm = 'my-projects' } = req.query;
-// LEGACY_DISABLED:   const { clientId } = req.params;
-// LEGACY_DISABLED: 
-// LEGACY_DISABLED:   if (!clientId) {
-// LEGACY_DISABLED:     return res.status(400).json({ error: 'clientId is required' });
-// LEGACY_DISABLED:   }
-// LEGACY_DISABLED: 
-// LEGACY_DISABLED:   try {
-// LEGACY_DISABLED:     const kc = await getKeycloakService(realm);
-// LEGACY_DISABLED:     const roles = await kc.getClientRoles(clientId);
-// LEGACY_DISABLED:     res.json(roles);
-// LEGACY_DISABLED:   } catch (error) {
-// LEGACY_DISABLED:     logger.error('Failed to fetch client roles:', error.message);
-// LEGACY_DISABLED:     if (error instanceof AppError) throw error;
-// LEGACY_DISABLED:     throw new AppError('Failed to fetch client roles', 500, 'FETCH_FAILED', { originalError: error.message });
-// LEGACY_DISABLED:   }
-// LEGACY_DISABLED: }));
-// LEGACY_DISABLED: 
-// LEGACY_DISABLED: 
-// LEGACY_DISABLED: 
-// LEGACY_DISABLED: router.post('/roles/client/:clientId', asyncHandler(async (req, res) => {
-// LEGACY_DISABLED:   const { realm = 'my-projects', roleName, description = '' } = req.body;
-// LEGACY_DISABLED:   const { clientId } = req.params;
-// LEGACY_DISABLED:   if (!clientId || !roleName) {
-// LEGACY_DISABLED:     return res.status(400).json({ error: 'clientId and roleName are required' });
-// LEGACY_DISABLED:   }
-// LEGACY_DISABLED:   try {
-// LEGACY_DISABLED: 
-// LEGACY_DISABLED:     const kc = await getKeycloakService(realm);
-// LEGACY_DISABLED:     const role = await kc.createClientRole(clientId, roleName, description);
-// LEGACY_DISABLED:     return ResponseHandler.created(res, role, 'Role created successfully');
-// LEGACY_DISABLED:   } catch (error) {
-// LEGACY_DISABLED:     logger.error('Failed to create role:', error.message);
-// LEGACY_DISABLED:     if (error instanceof AppError) throw error;
-// LEGACY_DISABLED:     throw new AppError('Failed to create role', 500, 'CREATION_FAILED', { originalError: error.message });
-// LEGACY_DISABLED:   }
-// LEGACY_DISABLED: }));
-// LEGACY_DISABLED: 
-// LEGACY_DISABLED: // PUT /roles/:id
-// LEGACY_DISABLED: router.put('/roles/:id', asyncHandler(async (req, res) => {
-// LEGACY_DISABLED:   const { realm = 'my-projects' } = req.query;
-// LEGACY_DISABLED:   const { id } = req.params;
-// LEGACY_DISABLED:   const { clientId, roleName, description } = req.body;
-// LEGACY_DISABLED: 
-// LEGACY_DISABLED:   if (!clientId || !roleName) {
-// LEGACY_DISABLED:     return res.status(400).json({ error: 'clientId and roleName are required' });
-// LEGACY_DISABLED:   }
-// LEGACY_DISABLED: 
-// LEGACY_DISABLED:   try {
-// LEGACY_DISABLED:     const kc = await getKeycloakService(realm);
-// LEGACY_DISABLED:     const updatedRole = await kc.updateClientRole(clientId, id, roleName, description);
-// LEGACY_DISABLED:     res.json(updatedRole);
-// LEGACY_DISABLED:   } catch (error) {
-// LEGACY_DISABLED:     logger.error('Failed to update role:', error.message);
-// LEGACY_DISABLED:     if (error instanceof AppError) throw error;
-// LEGACY_DISABLED:     throw new AppError('Failed to update role', 500, 'UPDATE_FAILED', { originalError: error.message });
-// LEGACY_DISABLED:   }
-// LEGACY_DISABLED: }));
-// LEGACY_DISABLED: 
-// LEGACY_DISABLED: 
-// LEGACY_DISABLED: 
-// LEGACY_DISABLED: router.post('/roles', asyncHandler(async (req, res) => {
-// LEGACY_DISABLED:   const { realm, role_name, description } = req.body;
-// LEGACY_DISABLED:   if (!realm || !role_name) {
-// LEGACY_DISABLED:     throw new AppError('Missing required fields', 400, 'MISSING_FIELDS');
-// LEGACY_DISABLED:   }
-// LEGACY_DISABLED: 
-// LEGACY_DISABLED:   try {
-// LEGACY_DISABLED:     const adminToken = await getKeycloakAdminToken();
-// LEGACY_DISABLED:     await axios.post(
-// LEGACY_DISABLED:       `${KEYCLOAK_URL}/admin/realms/${realm}/roles`,
-// LEGACY_DISABLED:       { name: role_name, description },
-// LEGACY_DISABLED:       {
-// LEGACY_DISABLED:         headers: {
-// LEGACY_DISABLED:           Authorization: `Bearer ${adminToken}`,
-// LEGACY_DISABLED:           'Content-Type': 'application/json',
-// LEGACY_DISABLED:         },
-// LEGACY_DISABLED:       }
-// LEGACY_DISABLED:     );
-// LEGACY_DISABLED: 
-// LEGACY_DISABLED:     await pool.query(
-// LEGACY_DISABLED:       'INSERT INTO audit_logs (org_id, user_id, client_id, action, details) VALUES ($1, $2, $3, $4, $5)',
-// LEGACY_DISABLED:       [null, null, null, 'role_create', { realm, role_name }]
-// LEGACY_DISABLED:     );
-// LEGACY_DISABLED: 
-// LEGACY_DISABLED:     res.json({ message: `Role ${role_name} created` });
-// LEGACY_DISABLED:   } catch (err) {
-// LEGACY_DISABLED:     logger.error('Role creation error:', err);
-// LEGACY_DISABLED:     if (err instanceof AppError) throw err;
-// LEGACY_DISABLED:     throw new AppError('Failed to create role', 500, 'CREATION_FAILED', { originalError: err.message });
-// LEGACY_DISABLED:   }
-// LEGACY_DISABLED: }));
-
-// router.get('/users', authMiddleware, async(req, res)=> {
-//   const realm =  req?.query.realm;
-
-//   if(!realm){
-//     res.status(404).json('incalid realm')
-//   }
-
-//     const kc = await getKeycloakService(realm);
-
-//     const users = await  kc.getAllUser() ;
-//     logger.info(users);
-
-
-//     logger.info(users.length);
-
-//     // let userData = []
-
-
-//     // users.forEach(user => {
-//     //     userData.push({
-//     //   id: user.sub,
-//     //   email: user.email,
-//     //   name: user.name || user.preferred_username,
-//     //   roles: user.realm_access?.roles || accessTokenClaims.realm_access?.roles || [],
-//     //   accessToken: access_token,
-//     //   refreshToken: new_refresh_token,
-//     //   idToken: id_token,
-//     //   tenant_id: claims.tenant_id || null,
-//     // });
-
-//     // await AuditLog.create({
-//     //   org_id: user.tenant_id || null,
-//     //   user_id: user.id,
-//     //   client_id: client.client_id,
-//     //   action: 'token_refresh',
-//     //   details: { email: user.email, roles: user.roles },
-//     // });
-
-//     // if (user.tenant_id) {
-//     //   await UserMetadata.upsert({
-//     //     keycloak_id: user.id,
-//     //     org_id: user.tenant_id,
-//     //     is_active: true,
-//     //     last_login: new Date(),
-//     //   });
-//     // }
-
-//     // res.json(user);
-
-
-//      logger.info('User data:', users.length);
-//       res.json(users);
-
-// })
 
 router.get('/users', authMiddleware, asyncHandler(async (req, res) => {
   const realm = req?.query.realm;
@@ -1863,23 +1463,6 @@ router.post('/users/:userId/roles', asyncHandler(async (req, res) => {
 }));
 
 
-// router.get('/audit-logs', authMiddleware, requireSuperAdmin(), async (req, res) => {
-//   try {
-//     const { page = 1, limit = 10 } = req.query;
-//     const offset = (parseInt(page) - 1) * parseInt(limit);
-
-//     const { count, rows } = await AuditLog.findAndCountAll({
-//       limit: parseInt(limit),
-//       offset: offset,
-//       order: [['created_at', 'DESC']],
-//     });
-
-//     res.status(200).json({ count, rows });
-//   } catch (error) {
-//     res.status(400).json({ error: error.message });
-//   }
-// });
-// module.exports = router;
 
 router.get('/audit-logs', authMiddleware, requireSuperAdmin(), asyncHandler(async (req, res) => {
   try {

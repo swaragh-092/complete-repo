@@ -52,7 +52,6 @@ const databaseItems = [
   { text: 'Organizations', icon: <OrganizationIcon />, path: '/organizations' },
   { text: 'Database Roles', icon: <RolesIcon />, path: '/database-roles' },
   { text: 'Permissions', icon: <PermissionIcon />, path: '/permissions' },
-  { text: 'Memberships', icon: <MembershipIcon />, path: '/memberships' },
   { text: 'Onboarding', icon: <MembershipIcon />, path: '/onboarding' }
 ];
 

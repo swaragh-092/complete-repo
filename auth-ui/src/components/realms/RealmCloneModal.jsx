@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useSnackbar } from 'notistack';
+import { useToast } from '../../hooks/useToast';
 import {
   Dialog,
   DialogTitle,
@@ -14,14 +14,14 @@ import realmService from '../../services/realmService';
 
 function RealmCloneModal({ open, onClose, sourceRealm }) {
   const queryClient = useQueryClient();
-  const { enqueueSnackbar } = useSnackbar();
+  const { showSuccess, showError, showWarning, showInfo, enqueueSnackbar } = useToast();
   const [newRealmName, setNewRealmName] = useState('');
 
   const cloneMutation = useMutation({
     mutationFn: (name) => realmService.cloneRealm(sourceRealm, name),
     onSuccess: () => {
       queryClient.invalidateQueries(['realms']);
-      enqueueSnackbar(`Realm cloned successfully to ${newRealmName}`, { variant: 'success' });
+      showSuccess(`Realm cloned successfully to ${newRealmName}`);
       onClose();
       setNewRealmName('');
     },

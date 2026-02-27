@@ -17,7 +17,7 @@ import {
   SupervisorAccount as CompositeIcon
 } from '@mui/icons-material';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useSnackbar } from 'notistack';
+import { useToast } from '../../hooks/useToast';
 import api, { extractData } from '../../services/api';
 
 function TabPanel({ children, value, index }) {
@@ -30,7 +30,7 @@ function TabPanel({ children, value, index }) {
 
 function RealmRoles({ realmName }) {
   const queryClient = useQueryClient();
-  const { enqueueSnackbar } = useSnackbar();
+  const { showSuccess, showError, showWarning, showInfo, enqueueSnackbar } = useToast();
   const [tabValue, setTabValue] = useState(0);
   const [openCreate, setOpenCreate] = useState(false);
   const [openAssign, setOpenAssign] = useState(false);
@@ -83,7 +83,7 @@ function RealmRoles({ realmName }) {
       resetForm();
     },
     onError: (error) => {
-      enqueueSnackbar(`Failed to create role: ${error.response?.data?.message || error.message}`, { variant: 'error' });
+      showError(error, 'Failed to create role');
     }
   });
 
@@ -97,7 +97,7 @@ function RealmRoles({ realmName }) {
       setAnchorEl(null);
     },
     onError: (error) => {
-      enqueueSnackbar(`Failed to update role: ${error.response?.data?.message || error.message}`, { variant: 'error' });
+      showError(error, 'Failed to update role');
     }
   });
 
@@ -109,7 +109,7 @@ function RealmRoles({ realmName }) {
       setAnchorEl(null);
     },
     onError: (error) => {
-      enqueueSnackbar(`Failed to delete role: ${error.response?.data?.message || error.message}`, { variant: 'error' });
+      showError(error, 'Failed to delete role');
     }
   });
 
@@ -122,7 +122,7 @@ function RealmRoles({ realmName }) {
       setAssignData({ userId: '', selectedUsers: [] });
     },
     onError: (error) => {
-      enqueueSnackbar(`Failed to assign role: ${error.response?.data?.message || error.message}`, { variant: 'error' });
+      showError(error, 'Failed to assign role');
     }
   });
 
@@ -135,7 +135,7 @@ function RealmRoles({ realmName }) {
       setCompositeData({ selectedRoles: [] });
     },
     onError: (error) => {
-      enqueueSnackbar(`Failed to add composite roles: ${error.response?.data?.message || error.message}`, { variant: 'error' });
+      showError(error, 'Failed to add composite roles');
     }
   });
 
@@ -145,7 +145,7 @@ function RealmRoles({ realmName }) {
 
   const handleCreateRole = () => {
     if (!formData.name.trim()) {
-      enqueueSnackbar('Role name is required', { variant: 'warning' });
+      showWarning('Role name is required');
       return;
     }
     createRoleMutation.mutate(formData);

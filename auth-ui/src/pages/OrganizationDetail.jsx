@@ -20,11 +20,13 @@ import {
   Business as OrgIcon,
   Workspaces as WorkspacesIcon,
   People as MembersIcon,
-  Settings as SettingsIcon
+  Settings as SettingsIcon,
+  Dashboard as OverviewIcon
 } from '@mui/icons-material';
 import api, { extractData } from '../services/api';
 
 // Tab Components
+import OrganizationOverview from '../components/organizations/OrganizationOverview';
 import OrganizationWorkspaces from '../components/organizations/OrganizationWorkspaces';
 import OrganizationMembers from '../components/organizations/OrganizationMembers';
 import OrganizationSettings from '../components/organizations/OrganizationSettings';
@@ -73,7 +75,7 @@ export default function OrganizationDetail() {
         <IconButton onClick={() => navigate('/organizations')}>
           <BackIcon />
         </IconButton>
-        <Box>
+        <Box sx={{ flex: 1 }}>
           <Breadcrumbs>
             <Link
               underline="hover"
@@ -85,13 +87,29 @@ export default function OrganizationDetail() {
             </Link>
             <Typography color="text.primary">{organization?.name}</Typography>
           </Breadcrumbs>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.5 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.5, flexWrap: 'wrap' }}>
             <OrgIcon color="primary" />
             <Typography variant="h4" component="h1">
               {organization?.name}
             </Typography>
             {organization?.tenant_id && (
               <Chip label={organization.tenant_id} size="small" variant="outlined" />
+            )}
+            {organization?.total_users != null && (
+              <Chip
+                icon={<MembersIcon />}
+                label={`${organization.total_users} user${organization.total_users !== 1 ? 's' : ''}`}
+                size="small"
+                color="primary"
+                variant="outlined"
+              />
+            )}
+            {organization?.current_user_role && (
+              <Chip
+                label={organization.current_user_role}
+                size="small"
+                color="warning"
+              />
             )}
           </Box>
         </Box>
@@ -105,6 +123,7 @@ export default function OrganizationDetail() {
           variant="scrollable"
           scrollButtons="auto"
         >
+          <Tab icon={<OverviewIcon />} iconPosition="start" label="Overview" />
           <Tab icon={<WorkspacesIcon />} iconPosition="start" label="Workspaces" />
           <Tab icon={<MembersIcon />} iconPosition="start" label="Members" />
           <Tab icon={<SettingsIcon />} iconPosition="start" label="Settings" />
@@ -113,19 +132,23 @@ export default function OrganizationDetail() {
 
       {/* Tab Panels */}
       <TabPanel value={tabIndex} index={0}>
+        <OrganizationOverview organization={organization} />
+      </TabPanel>
+      <TabPanel value={tabIndex} index={1}>
         <OrganizationWorkspaces 
           orgId={id} 
           orgName={organization?.name} 
           currentUserRole={organization?.current_user_role} 
         />
       </TabPanel>
-      <TabPanel value={tabIndex} index={1}>
+      <TabPanel value={tabIndex} index={2}>
         <OrganizationMembers 
           orgId={id}
           orgName={organization?.name}
+          primaryUsers={organization?.primary_users}
         />
       </TabPanel>
-      <TabPanel value={tabIndex} index={2}>
+      <TabPanel value={tabIndex} index={3}>
         <OrganizationSettings 
           organization={organization}
         />

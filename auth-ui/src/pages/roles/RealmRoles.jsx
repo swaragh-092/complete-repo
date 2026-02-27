@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useSnackbar } from 'notistack';
+import { useToast } from '../../hooks/useToast';
 import { useForm } from 'react-hook-form';
 import {
   Box,
@@ -42,7 +42,7 @@ function RealmRoles() {
   const { realmName } = useParams();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { enqueueSnackbar } = useSnackbar();
+  const { showSuccess, showError, showWarning, showInfo, enqueueSnackbar } = useToast();
   const [openDialog, setOpenDialog] = useState(false);
   const [editingRole, setEditingRole] = useState(null);
 
@@ -81,7 +81,7 @@ function RealmRoles() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries(['realm-roles', realmName]);
-      enqueueSnackbar(`Role ${editingRole ? 'updated' : 'created'} successfully`, { variant: 'success' });
+      showSuccess(`Role ${editingRole ? 'updated' : 'created'} successfully`);
       handleClose();
     },
     onError: (err) => {
@@ -94,7 +94,7 @@ function RealmRoles() {
     mutationFn: (roleName) => roleService.deleteRealmRole(roleName, realmName),
     onSuccess: () => {
       queryClient.invalidateQueries(['realm-roles', realmName]);
-      enqueueSnackbar('Role deleted successfully', { variant: 'success' });
+      showSuccess('Role deleted successfully');
     },
     onError: (err) => {
       enqueueSnackbar(err.message || 'Delete failed', { variant: 'error' });

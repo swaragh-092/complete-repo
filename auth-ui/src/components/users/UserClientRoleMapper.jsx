@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useSnackbar } from 'notistack';
+import { useToast } from '../../hooks/useToast';
 import {
   Box,
   Typography,
@@ -28,7 +28,7 @@ import clientService from '../../services/clientService';
 
 function UserClientRoleMapper({ realmName, userId }) {
   const queryClient = useQueryClient();
-  const { enqueueSnackbar } = useSnackbar();
+  const { showSuccess, showError, showWarning, showInfo, enqueueSnackbar } = useToast();
   const [open, setOpen] = useState(false);
   const [selectedClient, setSelectedClient] = useState('');
   const [selectedRoles, setSelectedRoles] = useState([]);
@@ -64,7 +64,7 @@ function UserClientRoleMapper({ realmName, userId }) {
     mutationFn: (roles) => userService.assignClientRoles(userId, selectedClient, roles, realmName),
     onSuccess: () => {
       queryClient.invalidateQueries(['user-client-roles', realmName, userId, selectedClient]);
-      enqueueSnackbar('Client roles assigned successfully', { variant: 'success' });
+      showSuccess('Client roles assigned successfully');
       setOpen(false);
       setSelectedRoles([]);
     },
@@ -78,7 +78,7 @@ function UserClientRoleMapper({ realmName, userId }) {
     mutationFn: (roles) => userService.removeClientRoles(userId, selectedClient, roles, realmName),
     onSuccess: () => {
       queryClient.invalidateQueries(['user-client-roles', realmName, userId, selectedClient]);
-      enqueueSnackbar('Client role removed successfully', { variant: 'success' });
+      showSuccess('Client role removed successfully');
     },
     onError: (err) => {
       enqueueSnackbar(err.message || 'Failed to remove client role', { variant: 'error' });

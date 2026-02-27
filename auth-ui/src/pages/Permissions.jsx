@@ -44,7 +44,7 @@ import {
   Lock as LockIcon
 } from '@mui/icons-material';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useSnackbar } from 'notistack';
+import { useToast } from '../hooks/useToast';
 import { formatDistanceToNow } from 'date-fns';
 import api, { extractData } from '../services/api';
 import SearchFilter from '../components/SearchFilter';
@@ -59,7 +59,7 @@ function TabPanel({ children, value, index }) {
 
 function Permissions() {
   const queryClient = useQueryClient();
-  const { enqueueSnackbar } = useSnackbar();
+  const { showSuccess, showError, showWarning, showInfo, enqueueSnackbar } = useToast();
   const [tabValue, setTabValue] = useState(0);
   const [openCreate, setOpenCreate] = useState(false);
   const [openEdit, setOpenEdit] = useState(false);
@@ -112,7 +112,7 @@ function Permissions() {
       setFormData({ name: '', description: '', resource: '', action: '' });
     },
     onError: (error) => {
-      enqueueSnackbar(`Failed to create permission: ${error.response?.data?.message || error.message}`, { variant: 'error' });
+      showError(error, 'Failed to create permission');
     }
   });
 
@@ -124,10 +124,10 @@ function Permissions() {
       queryClient.invalidateQueries(['permissions-stats']);
       setOpenBulkCreate(false);
       setBulkPermissions('');
-      enqueueSnackbar(`Created ${response.data.created} permissions. ${response.data.errors} errors.`, { variant: 'success' });
+      showSuccess(`Created ${response.data.created} permissions. ${response.data.errors} errors.`);
     },
     onError: (error) => {
-      enqueueSnackbar(`Failed to bulk create permissions: ${error.response?.data?.message || error.message}`, { variant: 'error' });
+      showError(error, 'Failed to bulk create permissions');
     }
   });
 
@@ -140,7 +140,7 @@ function Permissions() {
       setSelectedPermission(null);
     },
     onError: (error) => {
-      enqueueSnackbar(`Failed to update permission: ${error.response?.data?.message || error.message}`, { variant: 'error' });
+      showError(error, 'Failed to update permission');
     }
   });
 
@@ -154,13 +154,13 @@ function Permissions() {
       setSelectedPermission(null);
     },
     onError: (error) => {
-      enqueueSnackbar(`Failed to delete permission: ${error.response?.data?.message || error.message}`, { variant: 'error' });
+      showError(error, 'Failed to delete permission');
     }
   });
 
   const handleCreatePermission = () => {
     if (!formData.name) {
-      enqueueSnackbar('Permission name is required', { variant: 'warning' });
+      showWarning('Permission name is required');
       return;
     }
     
@@ -178,7 +178,7 @@ function Permissions() {
 
   const handleBulkCreate = () => {
     if (!bulkPermissions.trim()) {
-      enqueueSnackbar('Please enter permissions', { variant: 'warning' });
+      showWarning('Please enter permissions');
       return;
     }
 
@@ -197,13 +197,13 @@ function Permissions() {
 
       bulkCreateMutation.mutate(permissionsData);
     } catch {
-      enqueueSnackbar('Invalid bulk format. Please use "permission:name, description" per line', { variant: 'error' });
+      showError('Invalid bulk format. Please use "permission:name, description" per line');
     }
   };
 
   const handleEditPermission = () => {
     if (!formData.name) {
-      enqueueSnackbar('Permission name is required', { variant: 'warning' });
+      showWarning('Permission name is required');
       return;
     }
     updateMutation.mutate({ id: selectedPermission.id, ...formData });

@@ -43,10 +43,14 @@ async function verifyJwt(token, realm) {
 
     return new Promise((resolve, reject) => {
       jwt.verify(token, getKey, {
-        issuer: `${FRONTEND_AUTH_URL}/realms/${realm}`, // Use browser-facing URL to match token issuer
+        issuer: [
+          `${FRONTEND_AUTH_URL}/realms/${realm}`,
+          `${KEYCLOAK_URL}/realms/${realm}`
+        ],
         algorithms: ['RS256'],
       }, (err, decoded) => {
         if (err) {
+          console.error('------- JWT VERIFY ERROR -------', err);
           logger.error(`JWT verification failed for realm ${realm}`, { error: err.message });
           reject(err);
         } else {
@@ -61,10 +65,10 @@ async function verifyJwt(token, realm) {
     });
 
   } catch (e) {
+    console.error('------- JWT CATCH ERROR -------', e);
     logger.error(`JWT verification failed for realm ${realm}`, { error: e.message });
     throw e;
   }
 }
 
 module.exports = { verifyJwt };
-

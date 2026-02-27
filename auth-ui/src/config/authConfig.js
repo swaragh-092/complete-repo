@@ -3,7 +3,9 @@ import { auth } from '@spidy092/auth-client';
 
 const config = {
   clientKey: import.meta.env.VITE_CLIENT_KEY || 'admin-ui',
-  authBaseUrl: import.meta.env.VITE_AUTH_BASE_URL || 'https://auth.local.test',
+  authBaseUrl: import.meta.env.VITE_AUTH_BASE_URL
+    ? (import.meta.env.VITE_AUTH_BASE_URL.endsWith('/auth') ? import.meta.env.VITE_AUTH_BASE_URL : `${import.meta.env.VITE_AUTH_BASE_URL}/auth`)
+    : 'https://auth.local.test/auth',
   accountUiUrl: import.meta.env.VITE_ACCOUNT_UI_URL || 'https://account.local.test',
   redirectUri: import.meta.env.VITE_CALLBACK_URL || `${window.location.origin}/callback`,
 

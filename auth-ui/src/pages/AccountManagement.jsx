@@ -36,7 +36,7 @@ import {
   Devices as DevicesIcon,
 } from '@mui/icons-material';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useSnackbar } from 'notistack';
+import { useToast } from '../hooks/useToast';
 import api from '../services/api';
 
 // Tab Components
@@ -58,7 +58,7 @@ function TabPanel({ children, value, index }) {
 
 function AccountManagement() {
   const queryClient = useQueryClient();
-  const { enqueueSnackbar } = useSnackbar();
+  const { showSuccess, showError, showWarning, showInfo, enqueueSnackbar } = useToast();
   const theme = useTheme();
   const [tabValue, setTabValue] = useState(0);
   const [openChangePassword, setOpenChangePassword] = useState(false);
@@ -111,10 +111,10 @@ function AccountManagement() {
     onSuccess: () => {
       queryClient.invalidateQueries(['user-profile']);
       setOpenEdit(false);
-      enqueueSnackbar('Profile updated successfully', { variant: 'success' });
+      showSuccess('Profile updated successfully');
     },
     onError: (error) => {
-      enqueueSnackbar(`Failed to update profile: ${error.response?.data?.message || error.message}`, { variant: 'error' });
+      showError(error, 'Failed to update profile');
     }
   });
 
@@ -124,10 +124,10 @@ function AccountManagement() {
     onSuccess: () => {
       setOpenChangePassword(false);
       setPasswordData({ currentPassword: '', newPassword: '', confirmNewPassword: '' });
-      enqueueSnackbar('Password changed successfully', { variant: 'success' });
+      showSuccess('Password changed successfully');
     },
     onError: (error) => {
-      enqueueSnackbar(`Failed to change password: ${error.response?.data?.message || error.message}`, { variant: 'error' });
+      showError(error, 'Failed to change password');
     }
   });
 
@@ -136,10 +136,10 @@ function AccountManagement() {
     mutationFn: (orgId) => api.put('/auth/account/primary-organization', { org_id: orgId }),
     onSuccess: () => {
       queryClient.invalidateQueries(['user-organizations']);
-      enqueueSnackbar('Primary organization updated successfully', { variant: 'success' });
+      showSuccess('Primary organization updated successfully');
     },
     onError: (error) => {
-      enqueueSnackbar(`Failed to update primary organization: ${error.response?.data?.message || error.message}`, { variant: 'error' });
+      showError(error, 'Failed to update primary organization');
     }
   });
 
@@ -162,11 +162,11 @@ function AccountManagement() {
 
   const handleChangePassword = () => {
     if (passwordData.newPassword !== passwordData.confirmNewPassword) {
-      enqueueSnackbar('Passwords do not match', { variant: 'warning' });
+      showWarning('Passwords do not match');
       return;
     }
     if (passwordData.newPassword.length < 8) {
-      enqueueSnackbar('Password must be at least 8 characters long', { variant: 'warning' });
+      showWarning('Password must be at least 8 characters long');
       return;
     }
     changePasswordMutation.mutate(passwordData);

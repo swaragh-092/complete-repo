@@ -213,6 +213,88 @@ const SYSTEM_LIMITS = {
 | GET    | `/invitations/preview?code=xxx` | JWT            | Preview invitation |
 | POST   | `/invitations/accept`           | JWT            | Accept invitation  |
 
+### Member Lookup (Cross-Service)
+
+| Method | Endpoint          | Auth | Description                                      |
+| ------ | ----------------- | ---- | ------------------------------------------------ |
+| POST   | `/members/lookup` | JWT  | Batch lookup members and their workspace details |
+
+#### POST `/members/lookup`
+
+Designed for **cross-service callers** (e.g., PMS) to resolve user details and workspace memberships in a single call. Supports both `UserMetadata.id` and `keycloak_id` as input.
+
+**Request:**
+```http
+POST /api/workspaces/members/lookup
+Content-Type: application/json
+Authorization: Bearer <jwt>
+
+{
+  "user_ids": ["e24db5d4-319e-469d-9617-04f23ac73b9e", "7c74fef3-398f-4bd7-9b71-4f3061ab49eb"],
+  "workspace_ids": ["a1b2c3d4-e5f6-7890-abcd-ef1234567890"],
+  "user_id_type": "keycloak_id"
+}
+```
+
+**Fields:**
+
+| Field           | Type   | Required | Default       | Description                                               |
+| --------------- | ------ | -------- | ------------- | --------------------------------------------------------- |
+| `user_ids`      | UUID[] | No*      | `[]`          | User IDs to look up                                       |
+| `workspace_ids` | UUID[] | No*      | `[]`          | Workspace IDs to filter by                                |
+| `user_id_type`  | string | No       | `keycloak_id` | Type of user IDs: `id` (UserMetadata.id) or `keycloak_id` |
+
+> \* At least one of `user_ids` or `workspace_ids` must be provided. Max 50 items per array.
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "members": [
+      {
+        "user": {
+          "id": "uuid-from-user-metadata",
+          "name": "John Doe",
+          "email": "john@example.com"
+        },
+        "workspaces": [
+          { "id": "ws-uuid-1", "name": "Engineering", "role": "admin" },
+          { "id": "ws-uuid-2", "name": "Design", "role": "viewer" }
+        ]
+      }
+    ]
+  }
+}
+```
+
+**Behavior:**
+- When `user_id_type` is `keycloak_id`, the service resolves Keycloak IDs → `UserMetadata.id` before querying workspace memberships
+- User names are fetched from the Keycloak Admin API; if Keycloak is unavailable, falls back to `email` as the name
+- Only `active` workspace memberships are returned
+
+**PMS Usage Example:**
+```javascript
+// From PMS or any external service
+const response = await fetch('https://auth-service/api/workspaces/members/lookup', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${token}`
+  },
+  body: JSON.stringify({
+    user_ids: ['keycloak-uuid-1', 'keycloak-uuid-2'],
+    workspace_ids: ['workspace-uuid-1'],
+    user_id_type: 'keycloak_id'
+  })
+});
+
+const { data } = await response.json();
+// data.members → [{ user: { id, name, email }, workspaces: [{ id, name, role }] }]
+```
+
+---
+
 ### Request/Response Examples
 
 #### Create Workspace
@@ -553,6 +635,7 @@ return ResponseHandler.error(res, message, statusCode);
 │ LIST:         GET /api/workspaces?org_id=xxx                │
 │ INVITE:       POST /api/workspaces/:id/invitations          │
 │ ACCEPT:       POST /api/workspaces/invitations/accept       │
+│ LOOKUP:       POST /api/workspaces/members/lookup           │
 └─────────────────────────────────────────────────────────────┘
 ```
 

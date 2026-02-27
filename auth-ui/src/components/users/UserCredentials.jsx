@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useSnackbar } from 'notistack';
+import { useToast } from '../../hooks/useToast';
 import {
   Box,
   Button,
@@ -17,7 +17,7 @@ import {
 import userService from '../../services/userService';
 
 function UserCredentials({ realmName, userId }) {
-  const { enqueueSnackbar } = useSnackbar();
+  const { showSuccess, showError, showWarning, showInfo, enqueueSnackbar } = useToast();
   const [open, setOpen] = useState(false);
   const [password, setPassword] = useState('');
   const [temporary, setTemporary] = useState(true);
@@ -25,7 +25,7 @@ function UserCredentials({ realmName, userId }) {
   const resetMutation = useMutation({
     mutationFn: (data) => userService.resetPassword(userId, data, realmName),
     onSuccess: () => {
-      enqueueSnackbar('Password reset successfully', { variant: 'success' });
+      showSuccess('Password reset successfully');
       setOpen(false);
       setPassword('');
       setTemporary(true);

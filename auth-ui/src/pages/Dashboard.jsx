@@ -4,7 +4,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { useSnackbar } from 'notistack';
+import { useToast } from '../hooks/useToast';
 import {
   Box, Grid, Card, CardContent, Typography, Button, Avatar,
   Chip, LinearProgress, List, ListItem, ListItemText, ListItemAvatar,
@@ -38,7 +38,7 @@ import roleService from '../services/roleService';
 function Dashboard() {
   const navigate = useNavigate();
   const theme = useTheme();
-  const { enqueueSnackbar } = useSnackbar();
+  const { showSuccess, showError, showWarning, showInfo, enqueueSnackbar } = useToast();
   const [refreshing, setRefreshing] = useState(false);
 
   // Fetch all realms using service layer
@@ -134,7 +134,7 @@ function Dashboard() {
     setRefreshing(true);
     await Promise.all([refetchRealms(), refetchStats()]);
     setRefreshing(false);
-    enqueueSnackbar('Dashboard refreshed', { variant: 'success' });
+    showSuccess('Dashboard refreshed');
   };
 
   const isLoading = realmsLoading || statsLoading;

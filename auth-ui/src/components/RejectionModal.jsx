@@ -1,11 +1,11 @@
 import { useState } from 'react';
-import { useSnackbar } from 'notistack';
+import { useToast } from '../hooks/useToast';
 import './Modal.css';
 
 export default function RejectionModal({ request, onConfirm, onCancel }) {
   const [reason, setReason] = useState('');
   const [selectedTemplate, setSelectedTemplate] = useState('');
-  const { enqueueSnackbar } = useSnackbar();
+  const { showSuccess, showError, showWarning, showInfo, enqueueSnackbar } = useToast();
 
   const rejectionTemplates = [
     {
@@ -42,7 +42,7 @@ export default function RejectionModal({ request, onConfirm, onCancel }) {
 
   const handleConfirm = () => {
     if (!reason.trim()) {
-      enqueueSnackbar('Please provide a reason for rejection', { variant: 'warning' });
+      showWarning('Please provide a reason for rejection');
       return;
     }
     onConfirm(reason);

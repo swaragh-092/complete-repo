@@ -7,7 +7,7 @@ import { useState, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { useSnackbar } from 'notistack';
+import { useToast } from '../hooks/useToast';
 import {
   Box,
   Table,
@@ -67,7 +67,7 @@ import RealmCloneModal from '../components/realms/RealmCloneModal';
 function Realms() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { enqueueSnackbar } = useSnackbar();
+  const { showSuccess, showError, showWarning, showInfo, enqueueSnackbar } = useToast();
   
   // UI State
   const [openCreate, setOpenCreate] = useState(false);
@@ -120,7 +120,7 @@ function Realms() {
     mutationFn: (data) => realmService.createRealm(data),
     onSuccess: () => {
       queryClient.invalidateQueries(['realms']);
-      enqueueSnackbar('Realm created successfully', { variant: 'success' });
+      showSuccess('Realm created successfully');
       reset();
       setOpenCreate(false);
     },
@@ -157,7 +157,7 @@ function Realms() {
     mutationFn: (realmName) => realmService.deleteRealm(realmName),
     onSuccess: (_, realmName) => {
       queryClient.invalidateQueries(['realms']);
-      enqueueSnackbar(`Realm "${realmName}" deleted successfully`, { variant: 'success' });
+      showSuccess(`Realm "${realmName}" deleted successfully`);
       setDeleteDialogOpen(false);
       setRealmToDelete(null);
     },
@@ -171,7 +171,7 @@ function Realms() {
   const handleNavigateToRealm = useCallback((realmName) => {
     if (!realmName) {
       console.error('Attempted to navigate with undefined realm name');
-      enqueueSnackbar('Invalid realm name', { variant: 'error' });
+      showError('Invalid realm name');
       return;
     }
     navigate(`/realms/${realmName}`);

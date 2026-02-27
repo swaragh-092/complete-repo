@@ -140,6 +140,13 @@ services:
       MAXCONNECTIONS: ${MAXCONNECTIONS:-5}
       MAXMESSAGES: ${MAXMESSAGES:-100}
 
+      # Keycloak
+      # Internal Docker URL (container to container)
+      KEYCLOAK_URL: ${EMAIL_KEYCLOAK_URL:-http://keycloak:8080}
+      KEYCLOAK_REALM: ${KEYCLOAK_REALM:-my-projects}
+      # Use front-facing URL for issuer validation if tokens are issued by it
+      KEYCLOAK_ISSUER_URL: ${FRONTEND_AUTH_URL:-https://keycloak.local.test:8443}
+
       # Database (dedicated)
       DB_HOST: db-email
       DB_PORT: 5432
@@ -260,6 +267,10 @@ services:
       ACCOUNT_UI_URL: ${ACCOUNT_UI_URL:-https://client.local.test}
       AUTH_SERVICE_URL: ${AUTH_SERVICE_URL:-https://auth.local.test}
 
+      # Service Account Identity (for calling other services like email-service)
+      AUTH_SERVICE_CLIENT_ID: ${AUTH_SERVICE_CLIENT_ID:-auth-service}
+      AUTH_SERVICE_CLIENT_SECRET: ${AUTH_SERVICE_CLIENT_SECRET:-}
+
       # Session
       SESSION_SECRET: ${SESSION_SECRET:?SESSION_SECRET is required}
       SESSION_COOKIE_NAME: ${SESSION_COOKIE_NAME:-auth.sid}
@@ -267,7 +278,6 @@ services:
       SESSION_COOKIE_SECURE: ${SESSION_COOKIE_SECURE:-true}
       SESSION_COOKIE_SAMESITE: ${SESSION_COOKIE_SAMESITE:-none}
 
-      # Refresh Token
       # Refresh Token
       REFRESH_COOKIE_DOMAIN: ${REFRESH_COOKIE_DOMAIN:-.local.test}
       REFRESH_COOKIE_SECURE: ${REFRESH_COOKIE_SECURE:-true}

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useSnackbar } from 'notistack';
+import { useToast } from '../../hooks/useToast';
 import {
   Box,
   Typography,
@@ -16,7 +16,7 @@ import clientService from '../../services/clientService';
 
 function ClientSecret({ realmName, clientId }) {
   const queryClient = useQueryClient();
-  const { enqueueSnackbar } = useSnackbar();
+  const { showSuccess, showError, showWarning, showInfo, enqueueSnackbar } = useToast();
   const [showSecret, setShowSecret] = useState(false);
 
   // Fetch Secret
@@ -30,7 +30,7 @@ function ClientSecret({ realmName, clientId }) {
     mutationFn: () => clientService.regenerateClientSecret(clientId, realmName),
     onSuccess: () => {
       queryClient.invalidateQueries(['client-secret', realmName, clientId]);
-      enqueueSnackbar('Client secret regenerated successfully', { variant: 'success' });
+      showSuccess('Client secret regenerated successfully');
     },
     onError: (err) => {
       enqueueSnackbar(err.message || 'Failed to regenerate secret', { variant: 'error' });

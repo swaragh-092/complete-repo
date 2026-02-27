@@ -24,7 +24,10 @@ const authMiddleware = async (req, res, next) => {
     });
   }
 
-  const token = authHeader.split(' ')[1];
+  let token = authHeader.split(' ')[1];
+  if (token) {
+    token = token.replace(/^["']|["']$/g, '').trim();
+  }
 
 
   const realm = extractRealmFromToken(token);

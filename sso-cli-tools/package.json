@@ -21,16 +21,17 @@
   "author": "chethan",
   "license": "MIT",
   "dependencies": {
+    "@opentelemetry/api": "^1.9.0",
+    "@opentelemetry/exporter-trace-otlp-http": "^0.52.0",
+    "@opentelemetry/sdk-node": "^0.52.0",
+    "@spidy092/auth-client": "^3.0.5",
     "axios": "^1.11.0",
     "chalk": "^5.5.0",
     "commander": "^11.1.0",
-    "inquirer": "^9.3.7",
-    "@opentelemetry/api": "^1.9.0",
-    "@opentelemetry/sdk-node": "^0.52.0",
-    "@opentelemetry/exporter-trace-otlp-http": "^0.52.0"
+    "inquirer": "^9.3.7"
   },
   "devDependencies": {
-    "vitest": "^2.0.0",
-    "@vitest/coverage-v8": "^2.0.0"
+    "@vitest/coverage-v8": "^2.0.0",
+    "vitest": "^2.0.0"
   }
 }

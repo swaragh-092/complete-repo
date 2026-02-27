@@ -9,7 +9,8 @@
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
     "db:migrate": "sequelize-cli db:migrate",
-    "db:seed": "sequelize-cli db:seed:all"
+    "db:seed": "sequelize-cli db:seed:all",
+    "test": "jest"
   },
   "keywords": [],
   "author": "",
@@ -49,8 +50,10 @@
     "eslint": "^9.39.2",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-node": "^11.1.0",
+    "jest": "^29.7.0",
     "nodemon": "^3.1.10",
     "prettier": "^3.7.4",
-    "sequelize-cli": "^6.6.3"
+    "sequelize-cli": "^6.6.3",
+    "supertest": "^7.2.2"
   }
 }

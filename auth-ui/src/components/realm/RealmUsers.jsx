@@ -14,13 +14,13 @@ import {
   Lock as LockIcon, LockOpen as UnlockIcon
 } from '@mui/icons-material';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useSnackbar } from 'notistack';
+import { useToast } from '../../hooks/useToast';
 import { formatDistanceToNow } from 'date-fns';
 import api, { extractData } from '../../services/api';
 
 function RealmUsers({ realmName }) {
   const queryClient = useQueryClient();
-  const { enqueueSnackbar } = useSnackbar();
+  const { showSuccess, showError, showWarning, showInfo, enqueueSnackbar } = useToast();
   const [openCreate, setOpenCreate] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedUser, setSelectedUser] = useState(null);
@@ -52,7 +52,7 @@ function RealmUsers({ realmName }) {
       });
     },
     onError: (error) => {
-      enqueueSnackbar(`Failed to create user: ${error.response?.data?.message || error.message}`, { variant: 'error' });
+      showError(error, 'Failed to create user');
     }
   });
 
@@ -64,7 +64,7 @@ function RealmUsers({ realmName }) {
       setAnchorEl(null);
     },
     onError: (error) => {
-      enqueueSnackbar(`Failed to delete user: ${error.response?.data?.message || error.message}`, { variant: 'error' });
+      showError(error, 'Failed to delete user');
     }
   });
 
@@ -73,17 +73,17 @@ function RealmUsers({ realmName }) {
     mutationFn: ({ userId, newPassword }) => 
       api.post(`/users/${userId}/reset-password?realm=${realmName}`, { newPassword }),
     onSuccess: () => {
-      enqueueSnackbar('Password reset successfully', { variant: 'success' });
+      showSuccess('Password reset successfully');
       setAnchorEl(null);
     },
     onError: (error) => {
-      enqueueSnackbar(`Failed to reset password: ${error.response?.data?.message || error.message}`, { variant: 'error' });
+      showError(error, 'Failed to reset password');
     }
   });
 
   const handleCreateUser = () => {
     if (!formData.username || !formData.email || !formData.password) {
-      enqueueSnackbar('Username, email, and password are required', { variant: 'warning' });
+      showWarning('Username, email, and password are required');
       return;
     }
     createUserMutation.mutate(formData);

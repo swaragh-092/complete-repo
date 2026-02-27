@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useSnackbar } from 'notistack';
+import { useToast } from '../../hooks/useToast';
 import { useForm, Controller } from 'react-hook-form';
 import {
   Box,
@@ -27,7 +27,7 @@ import clientService from '../../services/clientService';
 
 function ClientMappers({ realmName, clientId }) {
   const queryClient = useQueryClient();
-  const { enqueueSnackbar } = useSnackbar();
+  const { showSuccess, showError, showWarning, showInfo, enqueueSnackbar } = useToast();
   const [open, setOpen] = useState(false);
   const [editingMapper, setEditingMapper] = useState(null);
 
@@ -63,7 +63,7 @@ function ClientMappers({ realmName, clientId }) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries(['client-mappers', realmName, clientId]);
-      enqueueSnackbar(`Mapper ${editingMapper ? 'updated' : 'created'} successfully`, { variant: 'success' });
+      showSuccess(`Mapper ${editingMapper ? 'updated' : 'created'} successfully`);
       handleClose();
     },
     onError: (err) => {
@@ -76,7 +76,7 @@ function ClientMappers({ realmName, clientId }) {
     mutationFn: (mapperId) => clientService.deleteProtocolMapper(realmName, clientId, mapperId),
     onSuccess: () => {
       queryClient.invalidateQueries(['client-mappers', realmName, clientId]);
-      enqueueSnackbar('Mapper deleted successfully', { variant: 'success' });
+      showSuccess('Mapper deleted successfully');
     },
     onError: (err) => {
       enqueueSnackbar(err.message || 'Failed to delete mapper', { variant: 'error' });

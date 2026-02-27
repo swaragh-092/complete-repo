@@ -7,7 +7,7 @@ import { useState, useCallback, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { useSnackbar } from 'notistack';
+import { useToast } from '../hooks/useToast';
 import {
   useQuery,
   useMutation,
@@ -67,7 +67,7 @@ import EmptyState from '../components/EmptyState';
  */
 function Clients() {
   const queryClient = useQueryClient();
-  const { enqueueSnackbar } = useSnackbar();
+  const { showSuccess, showError, showWarning, showInfo, enqueueSnackbar } = useToast();
   const navigate = useNavigate();
 
   // Pagination and sorting state
@@ -133,7 +133,7 @@ function Clients() {
     mutationFn: (data) => clientService.createClient(data),
     onSuccess: () => {
       queryClient.invalidateQueries(['clients']);
-      enqueueSnackbar('Client created successfully', { variant: 'success' });
+      showSuccess('Client created successfully');
       handleCloseCreate();
     },
     onError: (error) => {
@@ -147,7 +147,7 @@ function Clients() {
     mutationFn: ({ clientId, realm }) => clientService.deleteClient(clientId, realm),
     onSuccess: (_, { clientId }) => {
       queryClient.invalidateQueries(['clients']);
-      enqueueSnackbar(`Client "${clientId}" deleted successfully`, { variant: 'success' });
+      showSuccess(`Client "${clientId}" deleted successfully`);
       setDeleteDialogOpen(false);
       setClientToDelete(null);
     },

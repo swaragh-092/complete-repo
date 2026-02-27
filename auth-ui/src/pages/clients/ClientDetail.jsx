@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useSnackbar } from 'notistack';
+import { useToast } from '../../hooks/useToast';
 import { useForm, Controller } from 'react-hook-form';
 import {
   Box,
@@ -54,7 +54,7 @@ function ClientDetail() {
   const { realmName, clientId } = useParams();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { enqueueSnackbar } = useSnackbar();
+  const { showSuccess, showError, showWarning, showInfo, enqueueSnackbar } = useToast();
   const [activeTab, setActiveTab] = useState(0);
 
   // Fetch Client Details
@@ -73,7 +73,7 @@ function ClientDetail() {
     mutationFn: (data) => clientService.updateClient(clientId, realmName, data),
     onSuccess: () => {
       queryClient.invalidateQueries(['client', realmName, clientId]);
-      enqueueSnackbar('Client updated successfully', { variant: 'success' });
+      showSuccess('Client updated successfully');
     },
     onError: (err) => {
       enqueueSnackbar(err.message || 'Failed to update client', { variant: 'error' });

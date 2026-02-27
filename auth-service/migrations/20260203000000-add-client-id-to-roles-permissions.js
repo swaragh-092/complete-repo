@@ -14,31 +14,37 @@ module.exports = {
         const transaction = await queryInterface.sequelize.transaction();
 
         try {
-            // Add client_id to roles table
-            await queryInterface.addColumn('roles', 'client_id', {
-                type: Sequelize.STRING(100),
-                allowNull: true,
-                comment: 'Client/App scope (NULL = global, visible to all apps)',
-                references: {
-                    model: 'clients',
-                    key: 'client_id'
-                },
-                onUpdate: 'CASCADE',
-                onDelete: 'SET NULL'
-            }, { transaction });
+            const rolesTableInfo = await queryInterface.describeTable('roles');
+            if (!rolesTableInfo.client_id) {
+                // Add client_id to roles table
+                await queryInterface.addColumn('roles', 'client_id', {
+                    type: Sequelize.STRING(100),
+                    allowNull: true,
+                    comment: 'Client/App scope (NULL = global, visible to all apps)',
+                    references: {
+                        model: 'clients',
+                        key: 'client_id'
+                    },
+                    onUpdate: 'CASCADE',
+                    onDelete: 'SET NULL'
+                }, { transaction });
+            }
 
-            // Add client_id to permissions table
-            await queryInterface.addColumn('permissions', 'client_id', {
-                type: Sequelize.STRING(100),
-                allowNull: true,
-                comment: 'Client/App scope (NULL = global permission)',
-                references: {
-                    model: 'clients',
-                    key: 'client_id'
-                },
-                onUpdate: 'CASCADE',
-                onDelete: 'SET NULL'
-            }, { transaction });
+            const permsTableInfo = await queryInterface.describeTable('permissions');
+            if (!permsTableInfo.client_id) {
+                // Add client_id to permissions table
+                await queryInterface.addColumn('permissions', 'client_id', {
+                    type: Sequelize.STRING(100),
+                    allowNull: true,
+                    comment: 'Client/App scope (NULL = global permission)',
+                    references: {
+                        model: 'clients',
+                        key: 'client_id'
+                    },
+                    onUpdate: 'CASCADE',
+                    onDelete: 'SET NULL'
+                }, { transaction });
+            }
 
             // Add index for efficient querying by client_id
             await queryInterface.addIndex('roles', ['client_id'], {

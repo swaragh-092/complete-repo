@@ -8,14 +8,14 @@ import {
   TextField, 
   Alert 
 } from '@mui/material';
-import { useSnackbar } from 'notistack';
+import { useToast } from '../../hooks/useToast';
 import { useWorkspace } from '../../context/WorkspaceContext';
 import { useUser } from '../../hooks/useUser';
 
 export default function CreateWorkspaceModal({ open, onClose, forcedOrgId = null }) {
   const { createWorkspace } = useWorkspace();
   const { data: user } = useUser();
-  const { enqueueSnackbar } = useSnackbar();
+  const { showSuccess, showError, showWarning, showInfo, enqueueSnackbar } = useToast();
   const [formData, setFormData] = useState({ name: '', slug: '', description: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -86,7 +86,7 @@ export default function CreateWorkspaceModal({ open, onClose, forcedOrgId = null
           ...formData,
           org_id: orgId
       });
-      enqueueSnackbar('Workspace created successfully!', { variant: 'success' });
+      showSuccess('Workspace created successfully!');
       onClose();
       setFormData({ name: '', slug: '', description: '' });
     } catch (err) {

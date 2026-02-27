@@ -15,22 +15,24 @@ import {
   Avatar
 } from '@mui/material';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useSnackbar } from 'notistack';
+import { useToast } from '../../hooks/useToast';
 import api, { extractData } from '../../services/api'; // Direct API usage for org memberships
 import workspaceService from '../../services/workspaceService';
 
 export default function AddMemberModal({ open, onClose, workspaceId, orgId, existingMemberIds = [] }) {
   const queryClient = useQueryClient();
-  const { enqueueSnackbar } = useSnackbar();
+  const { showSuccess, showError, showWarning, showInfo, enqueueSnackbar } = useToast();
   const [formData, setFormData] = useState({ userId: '', role: 'viewer' });
   const [error, setError] = useState('');
 
   // Fetch Organization Members
-  const { data: orgMemberships = [], isLoading } = useQuery({
+  const { data: orgMembershipsData, isLoading } = useQuery({
     queryKey: ['org-members', orgId],
-    queryFn: () => api.get(`/organization-memberships?org_id=${orgId}`).then(extractData),
+    queryFn: () => api.get(`/organizations/${orgId}/members`).then(extractData),
     enabled: !!orgId && open
   });
+
+  const orgMemberships = orgMembershipsData?.members || [];
 
   // Filter out existing workspace members
   // orgMemberships structure: { user: { id, email }, role: ... }
@@ -42,7 +44,7 @@ export default function AddMemberModal({ open, onClose, workspaceId, orgId, exis
     mutationFn: (data) => workspaceService.addMember(workspaceId, { user_id: data.userId, role: data.role }),
     onSuccess: () => {
       queryClient.invalidateQueries(['workspace-members', workspaceId]);
-      enqueueSnackbar('Member added successfully', { variant: 'success' });
+      showSuccess('Member added successfully');
       onClose();
       setFormData({ userId: '', role: 'viewer' });
     },

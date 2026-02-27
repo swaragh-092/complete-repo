@@ -31,7 +31,7 @@ const authRouter = require('./auth');
 const adminRouter = require('./admin');
 
 // Organizations domain - org CRUD, memberships, onboarding
-const organizationsRouter = require('./organizations');
+// (Delegated to Authorization Module)
 
 // Permissions domain - RBAC (permissions and database roles)
 const permissionsRouter = require('./permissions');
@@ -76,11 +76,12 @@ router.use('/users', require('./admin/users.routes'));
 router.use('/clients', require('./admin/clients.routes'));
 
 // Organization routes
-router.use('/auth/organizations', organizationsRouter.crud);
-router.use('/organizations', organizationsRouter.crud); // Frontend compatibility
-router.use('/organization-memberships', organizationsRouter.memberships);
-router.use('/org-onboarding', organizationsRouter.onboarding);
-router.use('/auth/org-onboarding', organizationsRouter.onboarding); // For auth-client compatibility
+const organizationModule = require('../modules/organization');
+router.use('/auth/organizations', organizationModule.crud);
+router.use('/organizations', organizationModule.crud); // Frontend compatibility
+router.use('/organization-memberships', organizationModule.memberships);
+router.use('/org-onboarding', organizationModule.onboarding);
+router.use('/auth/org-onboarding', organizationModule.onboarding); // For auth-client compatibility
 
 // Permissions routes
 router.use('/permissions', permissionsRouter.permissions);
@@ -108,8 +109,18 @@ router.use('/auth/api/org-roles', orgRolesRouter); // For auth-client compatibil
 router.use('/auth/trusted-devices', require('./trusted-devices.route'));
 
 // Workspace routes
-router.use('/auth/workspaces', require('./workspaces.routes')); // For auth-client compatibility
-router.use('/workspaces', require('./workspaces.routes')); // For auth-ui compatibility
+router.use('/auth/workspaces', organizationModule.workspaces); // For auth-client compatibility
+router.use('/workspaces', organizationModule.workspaces); // For auth-ui compatibility
+
+// Organization Settings (Global)
+router.use('/api/organizations/settings', organizationModule.settings);
+router.use('/auth/api/organizations/settings', organizationModule.settings); // For auth-client compatibility
+
+// Organization Requests (Limit increases, features, etc)
+router.use('/api/organizations/requests', organizationModule.requests); // For GET /requests
+router.use('/api/organizations', organizationModule.requests); // For GET /:id/requests
+router.use('/auth/api/organizations', organizationModule.requests); // For auth-client compatibility
+router.use('/auth/api/organizations/requests', organizationModule.requests);
 
 // Test auth routes (development only)
 router.use('/test-auth', require('./test-auth-routes'));

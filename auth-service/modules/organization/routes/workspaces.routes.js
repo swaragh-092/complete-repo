@@ -3,10 +3,10 @@
 const express = require('express');
 const router = express.Router();
 const WorkspaceService = require('../services/workspace.service');
-const { requireWorkspaceAccess, requireOrgPermission } = require('../middleware/workspaceMiddleware');
-const { authMiddleware } = require('../middleware/authMiddleware');
-const asyncHandler = require('../middleware/asyncHandler');
-const ResponseHandler = require('../utils/responseHandler');
+const { requireWorkspaceAccess, requireOrgPermission } = require('../../../middleware/workspaceMiddleware');
+const { authMiddleware } = require('../../../middleware/authMiddleware');
+const asyncHandler = require('../../../middleware/asyncHandler');
+const ResponseHandler = require('../../../utils/responseHandler');
 
 // Import centralized validators
 const {
@@ -15,10 +15,34 @@ const {
     addMemberSchema,
     updateMemberRoleSchema,
     workspaceInvitationSchema
-} = require('../validators/workspace.validator');
+} = require('../../../validators/workspace.validator');
 
 // APPLY AUTH MIDDLEWARE TO ALL ROUTES
 router.use(authMiddleware);
+
+// ─── Member Lookup (must be BEFORE /:id routes) ────────────────────────────
+const MemberLookupService = require('../services/memberLookup.service');
+const { memberLookupSchema } = require('../validators/memberLookup.validator');
+const { WorkspaceMembership, UserMetadata, Workspace } = require('../../../config/database');
+
+/**
+ * POST /api/workspaces/members/lookup
+ * Batch lookup: given user_ids and/or workspace_ids, return enriched
+ * member details (name, email) with their workspace memberships (id, name, role).
+ */
+router.post('/members/lookup', asyncHandler(async (req, res) => {
+    const { error, value } = memberLookupSchema.validate(req.body);
+    if (error) return ResponseHandler.error(res, error.details[0].message, 400);
+
+    const result = await MemberLookupService.lookup({
+        userIds: value.user_ids,
+        workspaceIds: value.workspace_ids,
+        userIdType: value.user_id_type,
+        models: { WorkspaceMembership, UserMetadata, Workspace }
+    });
+
+    return ResponseHandler.success(res, result);
+}));
 
 // --- Routes ---
 

@@ -14,12 +14,12 @@ import {
 } from '@mui/material';
 import { Save as SaveIcon } from '@mui/icons-material';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useSnackbar } from 'notistack';
+import { useToast } from '../../hooks/useToast';
 import api from '../../services/api';
 
 function SecuritySettings({ realm, realmName }) {
   const queryClient = useQueryClient();
-  const { enqueueSnackbar } = useSnackbar();
+  const { showSuccess, showError, showWarning, showInfo, enqueueSnackbar } = useToast();
   const [settings, setSettings] = useState({
     bruteForceProtected: false,
     permanentLockout: false,
@@ -48,11 +48,11 @@ function SecuritySettings({ realm, realmName }) {
     mutationFn: (updates) => api.patch(`/realms/${realmName}/settings`, updates),
     onSuccess: () => {
       queryClient.invalidateQueries(['realm', realmName]);
-      enqueueSnackbar('Security settings updated successfully', { variant: 'success' });
+      showSuccess('Security settings updated successfully');
     },
     onError: (error) => {
       const msg = error?.response?.data?.message || error.message;
-      enqueueSnackbar(`Failed to update settings: ${msg}`, { variant: 'error' });
+      showError(msg, 'Failed to update settings');
     },
   });
 

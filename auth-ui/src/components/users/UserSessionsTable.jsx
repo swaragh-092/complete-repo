@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useSnackbar } from 'notistack';
+import { useToast } from '../../hooks/useToast';
 import {
   Box,
   Typography,
@@ -17,7 +17,7 @@ import userService from '../../services/userService';
 
 function UserSessionsTable({ realmName, userId }) {
   const queryClient = useQueryClient();
-  const { enqueueSnackbar } = useSnackbar();
+  const { showSuccess, showError, showWarning, showInfo, enqueueSnackbar } = useToast();
 
   // Fetch sessions
   const { data: sessions = [], isLoading, error } = useQuery({
@@ -30,7 +30,7 @@ function UserSessionsTable({ realmName, userId }) {
     mutationFn: () => userService.logoutUser(realmName, userId),
     onSuccess: () => {
       queryClient.invalidateQueries(['user-sessions', realmName, userId]);
-      enqueueSnackbar('User logged out successfully', { variant: 'success' });
+      showSuccess('User logged out successfully');
     },
     onError: (err) => {
       enqueueSnackbar(err.message || 'Failed to logout user', { variant: 'error' });

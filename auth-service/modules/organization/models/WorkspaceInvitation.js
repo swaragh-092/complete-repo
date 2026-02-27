@@ -1,7 +1,7 @@
 'use strict';
 const { Model, DataTypes } = require('sequelize');
 const crypto = require('crypto');
-const { WORKSPACE_ROLES, INVITATION_STATUS } = require('../config/constants');
+const { WORKSPACE_ROLES, INVITATION_STATUS } = require('../../../config/constants');
 
 module.exports = (sequelize) => {
     class WorkspaceInvitation extends Model {

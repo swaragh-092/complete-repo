@@ -7,11 +7,11 @@ const {
     OrganizationMembership,
     UserMetadata,
     sequelize
-} = require('../config/database');
-const { WORKSPACE_ROLES, MEMBER_STATUS, SYSTEM_LIMITS, ROLES } = require('../config/constants');
-const { AppError } = require('../middleware/errorHandler');
-const logger = require('../utils/logger');
-const AuditLogService = require('./audit.service');
+} = require('../../../config/database');
+const { WORKSPACE_ROLES, MEMBER_STATUS, SYSTEM_LIMITS, ROLES } = require('../../../config/constants');
+const { AppError } = require('../../../middleware/errorHandler');
+const logger = require('../../../utils/logger');
+const AuditLogService = require('../../../services/audit.service');
 
 /**
  * Helper function to check if user is a super admin
@@ -30,7 +30,7 @@ class WorkspaceService {
      */
     async createWorkspace({ userId, orgId, name, description, slug, userRoles = [] }) {
         const transaction = await sequelize.transaction();
-        const { Role } = require('../config/database');
+        const { Role } = require('../../../config/database');
 
         try {
             // 1. Validate Organization Access
@@ -60,13 +60,19 @@ class WorkspaceService {
             }
 
             // 1.5 Check Max Workspaces Limit
+            const maxWorkspaces = await SettingsService.resolveSetting(
+                orgId,
+                'MAX_WORKSPACES_PER_ORG',
+                SYSTEM_LIMITS.MAX_WORKSPACES_PER_ORG
+            );
+
             const currentCount = await Workspace.count({
                 where: { org_id: orgId },
                 transaction
             });
 
-            if (currentCount >= SYSTEM_LIMITS.MAX_WORKSPACES_PER_ORG) {
-                throw new AppError(`Organization has reached the maximum limit of ${SYSTEM_LIMITS.MAX_WORKSPACES_PER_ORG} workspaces`, 400, 'MAX_WORKSPACES_REACHED');
+            if (currentCount >= maxWorkspaces) {
+                throw new AppError(`Organization has reached the maximum limit of ${maxWorkspaces} workspaces`, 400, 'MAX_WORKSPACES_REACHED');
             }
 
             // 2. Check Slug Uniqueness within Org
@@ -462,8 +468,8 @@ class WorkspaceService {
      * Send workspace invitation via email
      */
     async sendInvitation({ requesterId, workspaceId, email, role, message }) {
-        const { WorkspaceInvitation, Organization } = require('../config/database');
-        const emailModule = require('./email-client');
+        const { WorkspaceInvitation, Organization } = require('../../../config/database');
+        const emailModule = require('../../../services/email-client');
 
         const transaction = await sequelize.transaction();
         try {
@@ -547,7 +553,7 @@ class WorkspaceService {
      * Get pending invitations for a workspace
      */
     async getInvitations(workspaceId) {
-        const { WorkspaceInvitation } = require('../config/database');
+        const { WorkspaceInvitation } = require('../../../config/database');
         return await WorkspaceInvitation.findAll({
             where: { workspace_id: workspaceId, status: 'pending' },
             include: [{
@@ -563,7 +569,7 @@ class WorkspaceService {
      * Revoke a pending invitation
      */
     async revokeInvitation({ requesterId, workspaceId, invitationId }) {
-        const { WorkspaceInvitation } = require('../config/database');
+        const { WorkspaceInvitation } = require('../../../config/database');
         const transaction = await sequelize.transaction();
         try {
             // Verify admin
@@ -598,8 +604,8 @@ class WorkspaceService {
      * @param {string} userId - The authenticated user's ID
      */
     async acceptInvitation({ code, userId }) {
-        const { WorkspaceInvitation, Organization } = require('../config/database');
-        const { INVITATION_STATUS } = require('../config/constants');
+        const { WorkspaceInvitation, Organization } = require('../../../config/database');
+        const { INVITATION_STATUS } = require('../../../config/constants');
 
         const transaction = await sequelize.transaction();
         try {
@@ -701,8 +707,8 @@ class WorkspaceService {
      * Get invitation details by code (for preview before accepting)
      */
     async getInvitationByCode(code) {
-        const { WorkspaceInvitation, Organization } = require('../config/database');
-        const { INVITATION_STATUS } = require('../config/constants');
+        const { WorkspaceInvitation, Organization } = require('../../../config/database');
+        const { INVITATION_STATUS } = require('../../../config/constants');
 
         const codeHash = WorkspaceInvitation.hashCode(code);
         const invitation = await WorkspaceInvitation.findOne({

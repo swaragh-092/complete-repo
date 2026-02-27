@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useSnackbar } from 'notistack';
+import { useToast } from '../../hooks/useToast';
 import {
   Box,
   Paper,
@@ -36,7 +36,7 @@ function IdentityProvidersList() {
   const { realmName } = useParams();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { enqueueSnackbar } = useSnackbar();
+  const { showSuccess, showError, showWarning, showInfo, enqueueSnackbar } = useToast();
 
   const [createOpen, setCreateOpen] = useState(false);
   const [deleteData, setDeleteData] = useState(null);
@@ -68,7 +68,7 @@ function IdentityProvidersList() {
     mutationFn: (data) => idpService.createIdentityProvider(realmName, data),
     onSuccess: () => {
       queryClient.invalidateQueries(['identity-providers', realmName]);
-      enqueueSnackbar('Identity provider created successfully', { variant: 'success' });
+      showSuccess('Identity provider created successfully');
       setCreateOpen(false);
     },
     onError: (err) => {
@@ -81,7 +81,7 @@ function IdentityProvidersList() {
     mutationFn: (alias) => idpService.deleteIdentityProvider(realmName, alias),
     onSuccess: () => {
       queryClient.invalidateQueries(['identity-providers', realmName]);
-      enqueueSnackbar('Identity provider deleted successfully', { variant: 'success' });
+      showSuccess('Identity provider deleted successfully');
       setDeleteData(null);
     },
     onError: (err) => {

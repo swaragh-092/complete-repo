@@ -14,12 +14,12 @@ import {
 } from '@mui/material';
 import { Save as SaveIcon } from '@mui/icons-material';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useSnackbar } from 'notistack';
+import { useToast } from '../../hooks/useToast';
 import api from '../../services/api';
 
 function EmailSettings({ realm, realmName }) {
   const queryClient = useQueryClient();
-  const { enqueueSnackbar } = useSnackbar();
+  const { showSuccess, showError, showWarning, showInfo, enqueueSnackbar } = useToast();
   const [settings, setSettings] = useState({
     smtpServer: {
       host: '',
@@ -54,11 +54,11 @@ function EmailSettings({ realm, realmName }) {
     mutationFn: (updates) => api.patch(`/realms/${realmName}/settings`, updates),
     onSuccess: () => {
       queryClient.invalidateQueries(['realm', realmName]);
-      enqueueSnackbar('Email settings updated successfully', { variant: 'success' });
+      showSuccess('Email settings updated successfully');
     },
     onError: (error) => {
       const msg = error?.response?.data?.message || error.message;
-      enqueueSnackbar(`Failed to update settings: ${msg}`, { variant: 'error' });
+      showError(msg, 'Failed to update settings');
     },
   });
 

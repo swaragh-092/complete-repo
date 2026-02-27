@@ -1,16 +1,36 @@
-FROM node:20-alpine
+# ═══════════════════════════════════════════════════════
+# Multi-stage Dockerfile for Email Service
+# ═══════════════════════════════════════════════════════
+
+# Stage 1: Dependencies
+FROM node:20-alpine AS dependencies
+
+WORKDIR /app
+
+COPY package*.json ./
+
+RUN npm ci --only=production && npm cache clean --force
+
+# ───────────────────────────────────────────────────────
+# Stage 2: Production
+# ───────────────────────────────────────────────────────
+FROM node:20-alpine AS production
+
+ENV NODE_ENV=production
+
+WORKDIR /app
 
 # Security: run as non-root user
 RUN addgroup -g 1001 -S nodejs && adduser -S nodejs -u 1001
 
-WORKDIR /app
-
-# Install dependencies first (for layer caching)
-COPY package*.json ./
-RUN npm ci --only=production && npm cache clean --force
+# Copy only production dependencies from stage 1
+COPY --from=dependencies /app/node_modules ./node_modules
 
 # Copy source
 COPY --chown=nodejs:nodejs . .
+
+# Remove unnecessary files
+RUN rm -rf .git .env *.md logs/*.log
 
 # Switch to non-root user
 USER nodejs

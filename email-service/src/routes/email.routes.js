@@ -3,13 +3,13 @@
 const express = require('express');
 const router = express.Router();
 const emailService = require('../services/email.service');
-const authMiddleware = require('../middleware/auth.middleware');
+const { keycloakAuth } = require('../middleware/keycloak-auth.middleware');
 const ResponseHandler = require('../utils/response');
 const logger = require('../utils/logger');
 const { runCleanupNow } = require('../queue/cleanup.queue');
 
 // Apply auth middleware to all routes
-router.use(authMiddleware);
+router.use(keycloakAuth);
 
 const { schemas: validationSchemas, sendEmailSchema } = require('../utils/validation-schemas');
 

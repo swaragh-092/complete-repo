@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useSnackbar } from 'notistack';
+import { useToast } from '../hooks/useToast';
 import clientRequestService from '../services/clientRequestService';
 import {
   Box,
@@ -56,7 +56,7 @@ import SearchFilter from '../components/SearchFilter';
 
 export default function ClientRequests() {
   const theme = useTheme();
-  const { enqueueSnackbar } = useSnackbar();
+  const { showSuccess, showError, showWarning, showInfo, enqueueSnackbar } = useToast();
   const [requests, setRequests] = useState([]);
   const [filter, setFilter] = useState('pending');
   const [loading, setLoading] = useState(true);
@@ -81,7 +81,7 @@ export default function ClientRequests() {
       setRequests(data);
     } catch (err) {
       console.error('Failed to load requests:', err);
-      enqueueSnackbar('Failed to load requests', { variant: 'error' });
+      showError('Failed to load requests');
     } finally {
       setLoading(false);
     }
@@ -129,7 +129,7 @@ export default function ClientRequests() {
       setSelectedRequest(fullRequest);
       setShowViewModal(true);
     } catch {
-      enqueueSnackbar('Failed to load request details', { variant: 'error' });
+      showError('Failed to load request details');
     }
   };
 
@@ -174,7 +174,7 @@ export default function ClientRequests() {
       setSelectedRequest(null);
       loadRequests();
       loadStats();
-      enqueueSnackbar('Request approved successfully', { variant: 'success' });
+      showSuccess('Request approved successfully');
     } catch (error) {
       enqueueSnackbar(error.response?.data?.error || 'Failed to approve request', { variant: 'error' });
     } finally {
@@ -191,7 +191,7 @@ export default function ClientRequests() {
       setRejectionReason('');
       loadRequests();
       loadStats();
-      enqueueSnackbar('Request rejected', { variant: 'success' });
+      showSuccess('Request rejected');
     } catch (error) {
       enqueueSnackbar(error.response?.data?.error || 'Failed to reject request', { variant: 'error' });
     } finally {
@@ -207,7 +207,7 @@ export default function ClientRequests() {
       setSelectedRequest(null);
       setEditFormData({});
       loadRequests();
-      enqueueSnackbar('Request updated successfully', { variant: 'success' });
+      showSuccess('Request updated successfully');
     } catch (error) {
       enqueueSnackbar(error.response?.data?.error || 'Failed to update request', { variant: 'error' });
     } finally {
@@ -223,7 +223,7 @@ export default function ClientRequests() {
       setSelectedRequest(null);
       loadRequests();
       loadStats();
-      enqueueSnackbar('Request deleted successfully', { variant: 'success' });
+      showSuccess('Request deleted successfully');
     } catch (error) {
       enqueueSnackbar(error.response?.data?.error || 'Failed to delete request', { variant: 'error' });
     } finally {

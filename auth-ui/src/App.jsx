@@ -41,6 +41,7 @@ import Login from './pages/Login';
 import Callback from './pages/auth/Callback';
 
 import { AuthProvider, useAuth } from './context/AuthContext';
+import SessionDebug from './components/SessionDebug'; // ⚠️ Debug panel
 
 function AppContent() {
   const { loading } = useAuth();
@@ -120,6 +121,7 @@ function App() {
       <AuthProvider>
         <AppContent />
       </AuthProvider>
+      <SessionDebug /> {/* ⚠️ Debug panel - remove for production */}
     </ErrorBoundary>
   );
 }

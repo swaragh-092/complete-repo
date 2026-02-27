@@ -1,11 +1,14 @@
 // routes/organizations.route.js - Organizations CRUD
 
 const express = require('express');
-const logger = require('../../utils/logger');
+const logger = require('../../../utils/logger');
 const Joi = require('joi');
-const asyncHandler = require('../../middleware/asyncHandler');
-const { authMiddleware, requireSuperAdmin, requireRole } = require('../../middleware/authMiddleware');
-const { AppError } = require('../../middleware/errorHandler');
+const asyncHandler = require('../../../middleware/asyncHandler');
+const { authMiddleware, requireSuperAdmin, requireRole } = require('../../../middleware/authMiddleware');
+const { AppError } = require('../../../middleware/errorHandler');
+const { createOrganizationSchema, updateOrganizationSchema, createMembershipSchema, bulkAssignSchema } = require('../validators');
+const OrganizationService = require('../services/organization.service');
+const MembershipService = require('../services/membership.service');
 const {
   Organization,
   UserMetadata,
@@ -17,29 +20,17 @@ const {
   Sequelize
 
 
-} = require('../../config/database');
-const emailModule = require('../../services/email-client');
+} = require('../../../config/database');
+const emailModule = require('../../../services/email-client');
 
-const ResponseHandler = require('../../utils/responseHandler');
-const AuditService = require('../../services/audit.service');
+const ResponseHandler = require('../../../utils/responseHandler');
+const AuditService = require('../../../services/audit.service');
 
 const router = express.Router();
 
 // Apply authentication to all routes
 router.use(authMiddleware);
 
-/* --------- Validation Schemas --------- */
-const createOrganizationSchema = Joi.object({
-  name: Joi.string().min(2).max(255).required(),
-  tenant_id: Joi.string().max(50).optional(),
-  description: Joi.string().max(500).optional().allow(null, '')
-});
-
-const updateOrganizationSchema = Joi.object({
-  name: Joi.string().min(2).max(255).optional(),
-  tenant_id: Joi.string().max(50).optional(),
-  description: Joi.string().max(500).optional().allow(null, '')
-}).min(1);
 
 /* --------- ORGANIZATIONS CRUD ROUTES --------- */
 
@@ -127,18 +118,27 @@ router.get('/:id', asyncHandler(async (req, res) => {
     });
 
     // Identify current user's role
-    const currentUserId = req.user.id || req.user.sub || req.user.UserMetadata?.id;
-    const currentUserMembership = memberships.find(m => m.UserMetadata.id === currentUserId);
-    // If not found in memberships, check primary users if logic dictates (usually primary users are implicitly members/owners)
-    // For now assuming membership table holds the truth for roles.
+    // req.user.sub is the keycloak_id used in tokens
+    const currentUserMembership = memberships.find(m =>
+      m.UserMetadata.id === req.user.id ||
+      m.UserMetadata.keycloak_id === req.user.sub
+    );
+    const isPrimaryUser = primaryUsers.find(u =>
+      u.id === req.user.id ||
+      u.keycloak_id === req.user.sub
+    );
+
+    const currentUserRole = currentUserMembership?.Role?.name || (isPrimaryUser ? 'Owner' : null);
 
     const enrichedOrganization = {
       id: organization.id,
       name: organization.name,
+      description: organization.description,
+      status: organization.status,
       tenant_id: organization.tenant_id,
       created_at: organization.created_at,
       updated_at: organization.updated_at,
-      current_user_role: currentUserMembership ? currentUserMembership.Role.name : null, // Added for UI permission checks
+      current_user_role: currentUserRole, // Added for UI permission checks
       members: memberships.map(m => ({
         user_id: m.UserMetadata.id,
         email: m.UserMetadata.email,
@@ -166,7 +166,6 @@ router.get('/:id', asyncHandler(async (req, res) => {
     };
 
     logger.info('✅ Organization details retrieved');
-    logger.info('✅ Organization details retrieved');
     return ResponseHandler.success(res, enrichedOrganization, 'Organization details retrieved successfully');
   } catch (error) {
     if (error instanceof AppError) throw error;
@@ -175,348 +174,149 @@ router.get('/:id', asyncHandler(async (req, res) => {
   }
 }));
 
+/**
+ * PATCH /api/organizations/:id/settings
+ * Update settings (JSONB overrides) for a specific organization (Super Admin only)
+ */
+router.patch('/:id/settings', authMiddleware, requireSuperAdmin, asyncHandler(async (req, res) => {
+  const { updateOrgSettingsSchema } = require('../validators/settings.validator');
+  const SettingsService = require('../services/settings.service');
+
+  const { error, value } = updateOrgSettingsSchema.validate(req.body);
+  if (error) return ResponseHandler.error(res, error.details[0].message, 400);
+
+  const updatedOrg = await SettingsService.updateOrgSettings(req.params.id, value.settings);
+  logger.info(`✅ Settings updated for organization ${req.params.id}`);
+
+  return ResponseHandler.success(res, updatedOrg.settings, 'Organization settings updated successfully');
+}));
+
 // POST /api/organizations - Create new organization
 /**
  * POST /api/organizations
  * Create a new organization with full validation and membership assignment
  */
 router.post('/', asyncHandler(async (req, res) => {
-  const transaction = await sequelize.transaction();
+  logger.info('➕ Creating organization with data:', req.body);
 
-  try {
-    logger.info('➕ Creating organization with data:', req.body);
-
-    // ============================================================================
-    // STEP 1: Validate Input
-    // ============================================================================
-    const { error, value } = createOrganizationSchema.validate(req.body);
-    if (error) {
-      await transaction.rollback();
-      throw new AppError(error.details[0].message, 400, 'VALIDATION_ERROR');
-    }
-
-    const { name, tenant_id, description } = value;
-
-    // ============================================================================
-    // STEP 2: Get Authenticated User
-    // ============================================================================
-    // Use keycloak_id which is always set by authMiddleware, not sub which may be null
-    const keycloakId = req.user?.keycloak_id;
-    if (!keycloakId) {
-      await transaction.rollback();
-      throw new AppError('User authentication required', 401, 'UNAUTHORIZED');
-    }
-
-    const user = await UserMetadata.findOne({
-      where: { keycloak_id: keycloakId }
-    });
-
-    if (!user) {
-      await transaction.rollback();
-      throw new AppError('User profile not found', 404, 'NOT_FOUND');
-    }
-
-    logger.info('✓ User validated:', user.email);
-
-    // ============================================================================
-    // STEP 3: Check Organization Limits
-    // ============================================================================
-    // Get client configuration to check organization model
-    const clientId = req.user?.azp || req.user?.client_id;
-    const client = await Client.findOne({
-      where: { client_key: clientId }
-    });
-
-    if (client && client.organization_model === 'single') {
-      // Check if user already has an organization
-      const existingMembership = await OrganizationMembership.findOne({
-        where: {
-          user_id: user.id,
-          status: 'active'
-        }
-      });
-
-      if (existingMembership) {
-        await transaction.rollback();
-        throw new AppError('You can only belong to one organization at a time', 409, 'ORGANIZATION_LIMIT_REACHED');
-      }
-    }
-
-    // ============================================================================
-    // STEP 4: Check Email Domain (for company emails)
-    // ============================================================================
-    const emailDomain = user.email.split('@')[1];
-    const isCompanyEmail = !['gmail.com', 'yahoo.com', 'outlook.com', 'hotmail.com'].includes(emailDomain);
-
-    if (isCompanyEmail) {
-      // Check if organization with this domain already exists
-      const existingOrgWithDomain = await Organization.findOne({
-        where: {
-          name: {
-            [Sequelize.Op.iLike]: `%${emailDomain}%`
-          }
-        }
-      });
-
-      if (existingOrgWithDomain) {
-        logger.warn(`⚠️ User attempting to create duplicate org for domain: ${emailDomain}`);
-      }
-    }
-
-    // ============================================================================
-    // STEP 5: Check Organization Name Uniqueness
-    // ============================================================================
-    const existingOrg = await Organization.findOne({
-      where: {
-        name: {
-          [Sequelize.Op.iLike]: name  // Case-insensitive check
-        }
-      }
-    });
-
-    logger.info('✓ Organization name uniqueness checked', existingOrg);
-
-
-    if (existingOrg) {
-      await transaction.rollback();
-      throw new AppError(`Organization name '${name}' is already taken`, 409, 'CONFLICT');
-    }
-
-    // ============================================================================
-    // STEP 6: Generate Truly Unique tenant_id
-    // ============================================================================
-
-    const generateUniqueTenantId = async (orgName) => {
-      let attempts = 0;
-      const maxAttempts = 10;
-
-      while (attempts < maxAttempts) {
-        // Create a unique ID
-        const baseId = orgName.toLowerCase()
-          .replace(/[^a-z0-9]/g, '')
-          .substring(0, 15);  // Shorter base
-
-        const timestamp = Date.now().toString(36);  // Base-36 timestamp
-        const random = Math.random().toString(36).substring(2, 8);  // 6 random chars
-
-        const candidateTenantId = `${baseId}-${timestamp}-${random}`;
-
-        // ✅ CHECK if this tenant_id already exists
-        const existing = await Organization.findOne({
-          where: { tenant_id: candidateTenantId }
-        });
-
-        if (!existing) {
-          logger.info(`✓ Generated unique tenant_id: ${candidateTenantId}`);
-          return candidateTenantId;
-        }
-
-        logger.warn(`⚠️ tenant_id collision detected, retrying... (attempt ${attempts + 1})`);
-        attempts++;
-      }
-
-      // Fallback: use UUID if all attempts fail
-      const uuid = require('uuid').v4();
-      const fallbackId = `${orgName.toLowerCase().replace(/[^a-z0-9]/g, '').substring(0, 10)}-${uuid}`;
-      logger.info(`✓ Using fallback tenant_id: ${fallbackId}`);
-      return fallbackId;
-    };
-
-    // Generate the tenant_id
-    const generatedTenantId = await generateUniqueTenantId(name);
-
-
-    // ============================================================================
-    // ✅ STEP 6.5: CREATE THE ORGANIZATION (THIS WAS MISSING!)
-    // ============================================================================
-    logger.info('➕ Creating organization with:', {
-      name: name.trim(),
-      tenant_id: generatedTenantId,
-      description: description?.trim()
-    });
-
-    const newOrganization = await Organization.create({
-      name: name.trim(),
-      tenant_id: generatedTenantId,
-      description: description?.trim() || null,
-      status: 'active',
-      provisioned: false,
-      settings: {
-        created_by: user.id,
-        created_via: 'self_service',
-        email_domain: emailDomain,
-        initial_member_count: 1,
-        client_key: clientId
-      }
-    }, { transaction });
-
-    logger.info('✅ Organization created:', {
-      id: newOrganization.id,
-      name: newOrganization.name,
-      tenant_id: newOrganization.tenant_id
-    });
-
-    // ============================================================================
-    // STEP 7: Get or Create 'Owner' Role
-    // ============================================================================
-    let ownerRole = await Role.findOne({
-      where: { name: 'Owner' }
-    });
-
-    if (!ownerRole) {
-      ownerRole = await Role.create({
-        name: 'Owner',
-        description: 'Organization owner with full administrative rights',
-        permissions: JSON.stringify([
-          'org:delete',
-          'org:update',
-          'members:invite',
-          'members:remove',
-          'members:update_roles',
-          'settings:update',
-          'billing:manage'
-        ])
-      }, { transaction });
-      logger.info('✓ Owner role created');
-    }
-
-    // ============================================================================
-    // STEP 8: Create Organization Membership (User becomes Owner)
-    // ============================================================================
-    const membership = await OrganizationMembership.create({
-      user_id: user.id,
-      org_id: newOrganization.id,
-      role_id: ownerRole.id,
-      status: 'active',
-      is_primary: true,  // First org becomes primary
-      joined_at: new Date()
-    }, { transaction });
-
-    logger.info('✅ Membership created:', membership.id);
-
-    // ============================================================================
-    // STEP 9: Update User's Organization Reference
-    // ============================================================================
-    await user.update({
-      org_id: newOrganization.id,
-      primary_org_id: newOrganization.id
-    }, { transaction });
-
-    logger.info('✅ User updated with organization reference');
-
-    // ============================================================================
-    // STEP 10: Create Audit Log Entry
-    // ============================================================================
-    await AuditService.log({
-      action: 'ORGANIZATION_CREATED',
-      userId: user.id,
-      orgId: newOrganization.id,
-      sourceIP: req.ip,
-      userAgent: req.get('User-Agent'),
-      affectedEntityType: 'organization',
-      affectedEntityId: newOrganization.id,
-      metadata: {
-        organization_name: name,
-        created_via: 'self_service_onboarding',
-        client_id: clientId,
-        email_domain: emailDomain
-      }
-    });
-
-    // ============================================================================
-    // STEP 11: Commit Transaction
-    // ============================================================================
-    await transaction.commit();
-
-    logger.info('✅ Organization creation completed successfully');
-
-    // ============================================================================
-    // STEP 12: Send Welcome Email (async, don't wait) and Response
-    // ============================================================================
-    setImmediate(async () => {
-      try {
-        await emailModule.send({
-          type: emailModule.EMAIL_TYPES.ORGANIZATION_CREATED,
-          to: user.email,
-          data: {
-            userName: user.name || user.email,
-            organizationName: name,
-            role: 'Owner',
-            dashboardUrl: `${process.env.APP_URL}/dashboard`,
-            inviteUrl: `${process.env.APP_URL}/dashboard/invite`
-          }
-        });
-        logger.info('✓ Welcome email sent');
-      } catch (emailErr) {
-        logger.error('⚠️ Failed to send welcome email:', emailErr);
-      }
-    });
-
-    return ResponseHandler.created(res, {
-      message: 'Organization created successfully',
-      organization: {
-        id: newOrganization.id,
-        name: newOrganization.name,
-        tenant_id: newOrganization.tenant_id,
-        description: newOrganization.description,
-        status: newOrganization.status,
-        created_at: newOrganization.created_at,
-        role: ownerRole.name,
-        is_owner: true,
-        member_count: 1,
-        primary_user_count: 1,
-        total_users: 1,
-        settings: {
-          email_domain: emailDomain,
-          can_invite_members: true,
-          max_members: client?.organization_model === 'enterprise' ? null : 50
-        }
-      },
-      membership: {
-        id: membership.id,
-        role: ownerRole.name,
-        is_primary: true,
-        joined_at: membership.joined_at
-      },
-      next_steps: [
-        'Invite team members',
-        'Configure organization settings',
-        'Set up billing (if required)'
-      ]
-    }, 'Organization created successfully');
-
-  } catch (error) {
-    // Only rollback if the transaction hasn't already been committed or rolled back
-    if (!transaction.finished) {
-      await transaction.rollback();
-    }
-    logger.error('❌ Organization creation failed:', error);
-
-    // Handle specific errors
-    if (error.name === 'SequelizeUniqueConstraintError') {
-      throw new AppError('Organization name or tenant ID already exists', 409, 'CONFLICT');
-    }
-
-    if (error.name === 'SequelizeValidationError') {
-      throw new AppError(error.errors.map(e => e.message).join(', '), 400, 'VALIDATION_ERROR');
-    }
-
-    if (error instanceof AppError) throw error;
-    throw new AppError('An unexpected error occurred while creating the organization', 500, 'CREATION_FAILED');
+  const { error, value } = createOrganizationSchema.validate(req.body || {});
+  if (error) {
+    throw new AppError(error.details[0].message, 400, 'VALIDATION_ERROR');
   }
+
+  const { name, description } = value;
+
+  const keycloakId = req.user?.keycloak_id;
+  if (!keycloakId) {
+    throw new AppError('User authentication required', 401, 'UNAUTHORIZED');
+  }
+
+  const user = await UserMetadata.findOne({
+    where: { keycloak_id: keycloakId }
+  });
+
+  if (!user) {
+    throw new AppError('User profile not found', 404, 'NOT_FOUND');
+  }
+
+  // Get client configuration to check organization model
+  const clientId = req.user?.azp || req.user?.client_id;
+  const client = await Client.findOne({
+    where: { client_key: clientId }
+  });
+
+  if (client && client.organization_model === 'single') {
+    // Check if user already has an organization
+    const existingMembership = await OrganizationMembership.findOne({
+      where: {
+        user_id: user.id,
+        status: 'active'
+      }
+    });
+
+    if (existingMembership) {
+      throw new AppError('You can only belong to one organization at a time', 409, 'ORGANIZATION_LIMIT_REACHED');
+    }
+  }
+
+  // Delegate to business service
+  const result = await OrganizationService.createOrganization({
+    name,
+    description,
+    user: {
+      keycloak_id: keycloakId,
+      email: user.email
+    },
+    client_key: clientId,
+    isProvision: false,
+    req // pass request keycloakIdfor audit logs
+  });
+
+  // Audit trailing
+  await AuditService.log({
+    action: 'ORGANIZATION_CREATED',
+    userId: user.id,
+    orgId: result.organization.id,
+    sourceIP: req.ip,
+    userAgent: req.get('User-Agent'),
+    affectedEntityType: 'organization',
+    affectedEntityId: result.organization.id,
+    metadata: {
+      organization_name: name,
+      created_via: 'self_service_onboarding',
+      client_id: clientId,
+      email_domain: user.email.split('@')[1]
+    }
+  });
+
+  // Send Welcome Email (async, don't wait)
+  setImmediate(async () => {
+    try {
+      await emailModule.send({
+        type: emailModule.EMAIL_TYPES.ORGANIZATION_CREATED,
+        to: user.email,
+        data: {
+          userName: user.name || user.email,
+          organizationName: name,
+          role: 'Owner',
+          dashboardUrl: `${process.env.APP_URL}/dashboard`,
+          inviteUrl: `${process.env.APP_URL}/dashboard/invite`
+        }
+      });
+      logger.info('✓ Welcome email sent');
+    } catch (emailErr) {
+      logger.error('❌ Failed to send welcome email (organization was created though):', emailErr);
+    }
+  });
+
+  return ResponseHandler.created(res, {
+    message: 'Organization created successfully',
+    organization: {
+      id: result.organization.id,
+      name: result.organization.name,
+      tenant_id: result.organization.tenant_id,
+      status: result.organization.status,
+      created_at: result.organization.created_at
+    },
+    membership: {
+      id: result.membership.id,
+      role: result.ownerRole.name,
+      permissions: []
+    }
+  }, 'Organization created successfully');
 }));
 
 
 // PUT /api/organizations/:id - Update organization
 router.put('/:id', requireSuperAdmin(), asyncHandler(async (req, res) => {
-  const { error, value } = updateOrganizationSchema.validate(req.body);
+  const { error, value } = updateOrganizationSchema.validate(req.body || {});
 
   if (error) {
     throw new AppError(error.details[0].message, 400, 'VALIDATION_ERROR');
   }
 
   const { id } = req.params;
-  const { name, tenant_id } = value;
+  const { name, tenant_id, description, status, settings } = value;
 
   logger.info('✏️ Updating organization:', id);
 
@@ -545,6 +345,9 @@ router.put('/:id', requireSuperAdmin(), asyncHandler(async (req, res) => {
     const updateData = {};
     if (name) updateData.name = name;
     if (tenant_id !== undefined) updateData.tenant_id = tenant_id;
+    if (description !== undefined) updateData.description = description;
+    if (status !== undefined) updateData.status = status;
+    if (settings !== undefined) updateData.settings = settings;
 
     await organization.update(updateData);
 
@@ -556,6 +359,8 @@ router.put('/:id', requireSuperAdmin(), asyncHandler(async (req, res) => {
         id: organization.id,
         name: organization.name,
         tenant_id: organization.tenant_id,
+        description: organization.description,
+        status: organization.status,
         updated_at: organization.updated_at
       }
     }, 'Organization updated successfully');
@@ -791,6 +596,102 @@ router.get('/my/organizations', asyncHandler(async (req, res) => {
   } catch (error) {
     logger.error('❌ Failed to fetch user organizations:', error);
     throw new AppError('Failed to retrieve user organizations', 500, 'FETCH_FAILED', { originalError: error.message });
+  }
+}));
+
+// POST /api/organizations/:id/members - Add a user to an organization
+router.post('/:id/members', asyncHandler(async (req, res) => {
+  const { id } = req.params;
+
+  // Create schema where org_id is optional since we get it from URL
+  const { error, value } = createMembershipSchema.validate({ ...req.body, org_id: id });
+
+  if (error) {
+    throw new AppError(error.details[0].message, 400, 'VALIDATION_ERROR');
+  }
+
+  const { user_id, role_id } = value;
+
+  logger.info(`➕ Adding user ${user_id} to organization ${id} with role ${role_id}`);
+
+  try {
+    const clientOrgModel = req.body.organization_model || req.headers['x-organization-model'];
+
+    const membership = await MembershipService.createMembership({
+      userId: user_id,
+      orgId: id,
+      roleId: role_id,
+      clientOrgModel
+    });
+
+    return ResponseHandler.created(res, {
+      message: 'User added to organization successfully',
+      membership
+    }, 'User added to organization successfully');
+  } catch (error) {
+    if (error instanceof AppError) throw error;
+    logger.error('❌ Failed to add user to organization:', error);
+    throw new AppError('Failed to add user to organization', 500, 'CREATION_FAILED');
+  }
+}));
+
+// DELETE /api/organizations/:id/members/:membershipId - Remove a member
+router.delete('/:id/members/:membershipId', asyncHandler(async (req, res) => {
+  const { id, membershipId } = req.params;
+
+  logger.info(`🗑️ Removing membership ${membershipId} from organization ${id}`);
+
+  try {
+    // Ensure the membership actually belongs to this org before deleting
+    const membership = await OrganizationMembership.findOne({
+      where: { id: membershipId, org_id: id }
+    });
+
+    if (!membership) {
+      throw new AppError('Membership not found in this organization', 404, 'NOT_FOUND');
+    }
+
+    await MembershipService.deleteMembership(membershipId);
+
+    return ResponseHandler.success(res, {
+      message: 'Member removed successfully'
+    }, 'Member removed successfully');
+  } catch (error) {
+    if (error instanceof AppError) throw error;
+    logger.error('❌ Failed to remove member:', error);
+    throw new AppError('Failed to remove member', 500, 'DELETION_FAILED');
+  }
+}));
+
+// POST /api/organizations/:id/members/bulk-assign - Bulk assign users to organization
+router.post('/:id/members/bulk-assign', asyncHandler(async (req, res) => {
+  const { id } = req.params;
+
+  const { error, value } = bulkAssignSchema.validate({ ...req.body, org_id: id });
+
+  if (error) {
+    throw new AppError(error.details[0].message, 400, 'VALIDATION_ERROR');
+  }
+
+  const { user_ids, role_id } = value;
+
+  logger.info(`👥 Bulk assigning ${user_ids.length} users to organization ${id}`);
+
+  try {
+    const result = await MembershipService.bulkAssignMembers({
+      userIds: user_ids,
+      orgId: id,
+      roleId: role_id
+    });
+
+    return ResponseHandler.created(res, {
+      message: 'Bulk assignment processed',
+      ...result
+    }, 'Bulk assignment processed');
+  } catch (error) {
+    if (error instanceof AppError) throw error;
+    logger.error('❌ Bulk assignment failed:', error);
+    throw new AppError('Failed to bulk assign users', 500, 'BULK_ASSIGN_FAILED');
   }
 }));
 

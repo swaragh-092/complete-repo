@@ -24,13 +24,13 @@ import {
   PersonAdd as PersonAddIcon
 } from '@mui/icons-material';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useSnackbar } from 'notistack';
+import { useToast } from '../../../hooks/useToast';
 import workspaceService from '../../../services/workspaceService';
 import AddMemberModal from '../../../components/workspaces/AddMemberModal';
 
 export default function WorkspaceMembers({ workspace }) {
   const queryClient = useQueryClient();
-  const { enqueueSnackbar } = useSnackbar();
+  const { showSuccess, showError, showWarning, showInfo, enqueueSnackbar } = useToast();
   const [error, setError] = useState('');
   const [isAddMemberOpen, setIsAddMemberOpen] = useState(false);
 
@@ -47,7 +47,7 @@ export default function WorkspaceMembers({ workspace }) {
     onSuccess: () => {
       queryClient.invalidateQueries(['workspace-members', workspace.id]);
       queryClient.invalidateQueries(['workspace', workspace.id]); // Update counts
-      enqueueSnackbar('Member removed successfully', { variant: 'success' });
+      showSuccess('Member removed successfully');
     },
     onError: (err) => {
       const errorMessage = err.response?.data?.message || 'Failed to remove member';
@@ -60,7 +60,7 @@ export default function WorkspaceMembers({ workspace }) {
     mutationFn: ({ userId, role }) => workspaceService.updateMemberRole(workspace.id, userId, role),
     onSuccess: () => {
       queryClient.invalidateQueries(['workspace-members', workspace.id]);
-      enqueueSnackbar('Role updated successfully', { variant: 'success' });
+      showSuccess('Role updated successfully');
     },
     onError: (err) => {
       const errorMessage = err.response?.data?.message || 'Failed to update role';

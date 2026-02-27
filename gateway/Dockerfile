@@ -1,12 +1,11 @@
-# for nignx
+# ═══════════════════════════════════════════════════════
+# Dockerfile for Nginx Gateway
+# ═══════════════════════════════════════════════════════
 FROM nginx:alpine
 
 WORKDIR /etc/nginx
 
-# Install required tools
-RUN apk add --no-cache bash curl
-
-
+# Create log directory
 RUN mkdir -p /var/log/nginx
 
 # Copy configs
@@ -17,11 +16,8 @@ COPY snippets/ /etc/nginx/snippets/
 
 EXPOSE 80 443
 
-# if using openresty
-# CMD ["openresty", "-c", "/etc/nginx/nginx.conf", "-g", "daemon off;"]
-#     "openresty",            # Start OpenResty (NGINX + LuaJIT)
-#     "-c", "/etc/nginx/nginx.conf",  # Use custom NGINX configuration #This by commend helps to stop if there is error(so that we come to know error)
-#     "-g", "daemon off;"     # Keep NGINX in foreground for Docker
-
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD wget --no-verbose --tries=1 --spider http://localhost:80/ || exit 1
 
 CMD ["nginx", "-g", "daemon off;"]

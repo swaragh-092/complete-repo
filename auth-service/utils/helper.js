@@ -2,10 +2,22 @@ const logger = require('./logger');
 const { AppError } = require('../middleware/errorHandler');
 
 // Helper function to extract realm from JWT token
-function extractRealmFromToken(token) {
+function extractRealmFromToken(rawToken) {
   try {
+    if (!rawToken || typeof rawToken !== 'string') {
+      throw new AppError('Malformed token string', 400, 'INVALID_TOKEN_FORMAT');
+    }
+
+    const token = rawToken.replace(/^["']|["']$/g, '').trim();
+
+    if (token.split('.').length < 2) {
+      throw new AppError('Malformed token string', 400, 'INVALID_TOKEN_FORMAT');
+    }
+
     // Decode JWT payload without verification to get issuer
-    const payload = JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString());
+    const base64Payload = token.split('.')[1];
+    const payloadString = Buffer.from(base64Payload, 'base64').toString('utf-8');
+    const payload = JSON.parse(payloadString);
 
     if (payload.iss) {
       // Extract realm from issuer: http://localhost:8081/realms/server -> "server"
@@ -15,7 +27,7 @@ function extractRealmFromToken(token) {
       }
     }
 
-    throw new AppError('Could not extract realm from token', 400, 'INVALID_TOKEN');
+    throw new AppError('Could not extract realm from token issuer', 400, 'INVALID_TOKEN');
   } catch (error) {
     if (error instanceof AppError) throw error;
     logger.error('Error extracting realm from token:', error.message);

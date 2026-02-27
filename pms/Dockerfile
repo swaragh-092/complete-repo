@@ -1,13 +1,12 @@
-# Use lightweight Alpine-based Node.js image
-FROM node:20-alpine
+# ═══════════════════════════════════════════════════════
+# Multi-stage Dockerfile for PMS
+# ═══════════════════════════════════════════════════════
 
-# Set the working directory
+# Stage 1: Dependencies
+FROM node:20-alpine AS dependencies
+
 WORKDIR /app
 
-# Install only if we need native dependencies
-RUN apk add --no-cache wget
-
-# Copy package files first (for better layer caching)
 COPY package*.json ./
 
 # Install dependencies
@@ -15,7 +14,20 @@ COPY package*.json ./
 RUN npm install
 
 # Copy application code
-COPY . .
+COPY --chown=nodejs:nodejs . .
+
+# Remove unnecessary files
+RUN rm -rf .git .env *.md logs/*.log
+
+# Switch to non-root user
+USER nodejs
+
+# Expose port
+EXPOSE 3010
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+  CMD wget --no-verbose --tries=1 --spider http://127.0.0.1:3010/health || exit 1
 
 # Run the application
 CMD ["node", "server.js"]

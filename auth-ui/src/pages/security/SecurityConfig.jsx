@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm, FormProvider } from 'react-hook-form';
-import { useSnackbar } from 'notistack';
+import { useToast } from '../../hooks/useToast';
 import {
   Box,
   Paper,
@@ -48,7 +48,7 @@ function SecurityConfig() {
   const { realmName } = useParams();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { enqueueSnackbar } = useSnackbar();
+  const { showSuccess, showError, showWarning, showInfo, enqueueSnackbar } = useToast();
   const [activeTab, setActiveTab] = useState(0);
 
   // Fetch Realm Security Config
@@ -70,7 +70,7 @@ function SecurityConfig() {
     onSuccess: () => {
       queryClient.invalidateQueries(['realm-security', realmName]);
       queryClient.invalidateQueries(['realm', realmName]);
-      enqueueSnackbar('Security settings updated successfully', { variant: 'success' });
+      showSuccess('Security settings updated successfully');
     },
     onError: (err) => {
       enqueueSnackbar(err.message || 'Failed to update security settings', { variant: 'error' });

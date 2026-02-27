@@ -1,6 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useSnackbar } from 'notistack';
+import { useToast } from '../../hooks/useToast';
 import {
   Box,
   Paper,
@@ -20,7 +20,7 @@ function IdentityProviderDetail() {
   const { realmName, alias } = useParams();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { enqueueSnackbar } = useSnackbar();
+  const { showSuccess, showError, showWarning, showInfo, enqueueSnackbar } = useToast();
 
   // Fetch IdP Details
   const { data: idp, isLoading, error } = useQuery({
@@ -34,7 +34,7 @@ function IdentityProviderDetail() {
     onSuccess: () => {
       queryClient.invalidateQueries(['identity-provider', realmName, alias]);
       queryClient.invalidateQueries(['identity-providers', realmName]);
-      enqueueSnackbar('Identity provider updated successfully', { variant: 'success' });
+      showSuccess('Identity provider updated successfully');
     },
     onError: (err) => {
       enqueueSnackbar(err.message || 'Failed to update identity provider', { variant: 'error' });

@@ -39,7 +39,7 @@ import {
   Visibility as ViewIcon
 } from '@mui/icons-material';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useSnackbar } from 'notistack';
+import { useToast } from '../hooks/useToast';
 import { formatDistanceToNow } from 'date-fns';
 import api, { extractData } from '../services/api';
 import { useNavigate } from 'react-router-dom';
@@ -48,14 +48,15 @@ import SearchFilter from '../components/SearchFilter';
 function Organizations() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { enqueueSnackbar } = useSnackbar();
+  const { showSuccess, showError, showWarning, showInfo, enqueueSnackbar } = useToast();
   const [openCreate, setOpenCreate] = useState(false);
   const [openEdit, setOpenEdit] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedOrg, setSelectedOrg] = useState(null);
   const [formData, setFormData] = useState({
     name: '',
-    tenant_id: ''
+    description: '',
+    owner_email: ''
   });
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(0);
@@ -87,14 +88,19 @@ function Organizations() {
 
   // Create organization mutation
   const createMutation = useMutation({
-    mutationFn: (orgData) => api.post('/organizations', orgData),
+    mutationFn: (orgData) => api.post('/org-onboarding/admin/provision', {
+      org_name: orgData.name,
+      owner_email: orgData.owner_email,
+      description: orgData.description
+    }),
     onSuccess: () => {
       queryClient.invalidateQueries(['organizations']);
       setOpenCreate(false);
-      setFormData({ name: '', tenant_id: '' });
+      setFormData({ name: '', description: '', owner_email: '' });
+      showSuccess('Organization provisioned! Owner has been invited.');
     },
     onError: (error) => {
-      enqueueSnackbar(`Failed to create organization: ${error.response?.data?.message || error.message}`, { variant: 'error' });
+      showError(error, 'Failed to create organization');
     }
   });
 
@@ -105,9 +111,10 @@ function Organizations() {
       queryClient.invalidateQueries(['organizations']);
       setOpenEdit(false);
       setSelectedOrg(null);
+      showSuccess('Organization updated successfully');
     },
     onError: (error) => {
-      enqueueSnackbar(`Failed to update organization: ${error.response?.data?.message || error.message}`, { variant: 'error' });
+      showError(error, 'Failed to update organization');
     }
   });
 
@@ -120,13 +127,17 @@ function Organizations() {
       setSelectedOrg(null);
     },
     onError: (error) => {
-      enqueueSnackbar(`Failed to delete organization: ${error.response?.data?.message || error.message}`, { variant: 'error' });
+      showError(error, 'Failed to delete organization');
     }
   });
 
   const handleCreateOrg = () => {
     if (!formData.name) {
-      enqueueSnackbar('Organization name is required', { variant: 'warning' });
+      showWarning('Organization name is required');
+      return;
+    }
+    if (!formData.owner_email) {
+      showWarning('Owner email is required');
       return;
     }
     createMutation.mutate(formData);
@@ -134,10 +145,10 @@ function Organizations() {
 
   const handleEditOrg = () => {
     if (!formData.name) {
-      enqueueSnackbar('Organization name is required', { variant: 'warning' });
+      showWarning('Organization name is required');
       return;
     }
-    updateMutation.mutate({ id: selectedOrg.id, ...formData });
+    updateMutation.mutate({ id: formData.id, name: formData.name, description: formData.description, tenant_id: formData.tenant_id, status: formData.status || 'active' });
   };
 
   const handleMenuClick = (event, org) => {
@@ -152,11 +163,14 @@ function Organizations() {
 
   const handleEditClick = () => {
     setFormData({
+      id: selectedOrg.id,
       name: selectedOrg.name,
-      tenant_id: selectedOrg.tenant_id || ''
+      description: selectedOrg.description || '',
+      tenant_id: selectedOrg.tenant_id || '',
+      status: selectedOrg.status || 'active'
     });
     setOpenEdit(true);
-    handleMenuClose();
+    setAnchorEl(null); // Only close the menu, do not clear selectedOrg so we know what we are editing
   };
 
   const handleDeleteClick = () => {
@@ -311,13 +325,29 @@ function Organizations() {
           />
           <TextField
             margin="dense"
-            label="Tenant ID (Optional)"
+            label="Owner Email"
+            fullWidth
+            type="email"
+            variant="outlined"
+            value={formData.owner_email}
+            onChange={(e) => setFormData({ ...formData, owner_email: e.target.value })}
+            helperText="The designated owner will receive an email invitation"
+            sx={{ mb: 2 }}
+          />
+          <TextField
+            margin="dense"
+            label="Description (Optional)"
             fullWidth
             variant="outlined"
-            value={formData.tenant_id}
-            onChange={(e) => setFormData({ ...formData, tenant_id: e.target.value })}
-            helperText="Optional tenant identifier for multi-tenancy"
+            multiline
+            rows={3}
+            value={formData.description}
+            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+            helperText="A brief description of this organization"
           />
+          <Alert severity="info" sx={{ mt: 2 }}>
+            A unique Tenant ID will be auto-generated from the organization name.
+          </Alert>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setOpenCreate(false)}>Cancel</Button>
@@ -343,12 +373,24 @@ function Organizations() {
           />
           <TextField
             margin="dense"
-            label="Tenant ID (Optional)"
+            label="Description (Optional)"
+            fullWidth
+            variant="outlined"
+            multiline
+            rows={3}
+            value={formData.description || ''}
+            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+            helperText="A brief description of this organization"
+            sx={{ mb: 2 }}
+          />
+          <TextField
+            margin="dense"
+            label="Tenant ID"
             fullWidth
             variant="outlined"
             value={formData.tenant_id}
-            onChange={(e) => setFormData({ ...formData, tenant_id: e.target.value })}
-            helperText="Optional tenant identifier for multi-tenancy"
+            disabled
+            helperText="Tenant ID is auto-generated and cannot be changed"
           />
         </DialogContent>
         <DialogActions>

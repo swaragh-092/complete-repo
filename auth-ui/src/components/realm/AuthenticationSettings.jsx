@@ -15,7 +15,7 @@ import {
 } from '@mui/material';
 import { Save as SaveIcon } from '@mui/icons-material';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useSnackbar } from 'notistack';
+import { useToast } from '../../hooks/useToast';
 import api from '../../services/api';
 import PasswordPolicyManager from '../PasswordPolicyManager';
 
@@ -29,7 +29,7 @@ function TabPanel({ children, value, index }) {
 
 function AuthenticationSettings({ realm, realmName }) {
   const queryClient = useQueryClient();
-  const { enqueueSnackbar } = useSnackbar();
+  const { showSuccess, showError, showWarning, showInfo, enqueueSnackbar } = useToast();
   const [activeTab, setActiveTab] = useState(0);
   const [settings, setSettings] = useState({
     // Registration
@@ -68,11 +68,11 @@ function AuthenticationSettings({ realm, realmName }) {
     mutationFn: (updates) => api.patch(`/realms/${realmName}/settings`, updates),
     onSuccess: () => {
       queryClient.invalidateQueries(['realm', realmName]);
-      enqueueSnackbar('Authentication settings updated successfully', { variant: 'success' });
+      showSuccess('Authentication settings updated successfully');
     },
     onError: (error) => {
       const msg = error?.response?.data?.message || error.message;
-      enqueueSnackbar(`Failed to update settings: ${msg}`, { variant: 'error' });
+      showError(msg, 'Failed to update settings');
     },
   });
 

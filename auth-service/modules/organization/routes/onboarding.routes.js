@@ -4,82 +4,39 @@
 const express = require('express');
 const Joi = require('joi');
 const crypto = require('crypto');
-const asyncHandler = require('../../middleware/asyncHandler');
-const { authMiddleware, requireSuperAdmin } = require('../../middleware/authMiddleware');
-const { AppError } = require('../../middleware/errorHandler');
-const ResponseHandler = require('../../utils/responseHandler');
+const asyncHandler = require('../../../middleware/asyncHandler');
+const { authMiddleware, requireSuperAdmin } = require('../../../middleware/authMiddleware');
+const logger = require('../../../utils/logger');
+const { AppError } = require('../../../middleware/errorHandler');
+const { createOrgSchema, joinOrgSchema, createInvitationSchema, provisionOrgSchema } = require('../validators');
+const ResponseHandler = require('../../../utils/responseHandler');
 const {
   Organization,
   UserMetadata,
   OrganizationMembership,
-  TenantMapping,
-  Invitation,
-  PendingInvitation,
   Role,
+  RolePermission,
   Permission,
-  AuditLog,
-  sequelize
-} = require('../../config/database');
+  Workspace,
+  WorkspaceMembership,
+  sequelize,
+  Client
+} = require('../../../config/database');
 const { Op } = require('sequelize');
-const logger = require('../../utils/logger');
-const { loadClients } = require('../../config');
-const AuditService = require('../../services/audit.service');
-const emailModule = require('../../services/email-client');
+const { loadClients } = require('../../../config');
+const OrganizationService = require('../services/organization.service');
+const InvitationService = require('../services/invitation.service');
+const AuditService = require('../../../services/audit.service');
+const emailModule = require('../../../services/email-client');
 
 const router = express.Router();
 
 // Apply authentication to all routes
 router.use(authMiddleware);
 
-/* --------- VALIDATION SCHEMAS --------- */
 
-const createOrgSchema = Joi.object({
-  name: Joi.string().min(2).max(100).required(),
-  client_key: Joi.string().required(),
-  description: Joi.string().max(500).optional(),
-  settings: Joi.object().optional()
-});
-
-const joinOrgSchema = Joi.object({
-  invitation_code: Joi.string().required()
-});
-
-const createInvitationSchema = Joi.object({
-  org_id: Joi.string().uuid().required(),
-  invited_email: Joi.string().email().required(),
-  role_id: Joi.string().uuid().required(),
-  expires_in_days: Joi.number().min(1).max(30).optional().default(7),
-  message: Joi.string().max(500).optional()
-});
-
-const provisionOrgSchema = Joi.object({
-  org_name: Joi.string().min(2).max(100).required(),
-  owner_email: Joi.string().email().required(),
-  role_id: Joi.string().uuid().optional(), // defaults to owner role
-  description: Joi.string().max(500).optional()
-});
 
 /* --------- UTILITY FUNCTIONS --------- */
-
-async function generateTenantId(orgName) {
-  // Create URL-friendly tenant ID from org name
-  let baseId = orgName
-    .toLowerCase()
-    .replace(/[^a-z0-9]/g, '-')
-    .replace(/-+/g, '-')
-    .replace(/^-|-$/g, '');
-
-  // Ensure uniqueness
-  let tenantId = baseId;
-  let counter = 1;
-
-  while (await Organization.findOne({ where: { tenant_id: tenantId } })) {
-    tenantId = `${baseId}-${counter}`;
-    counter++;
-  }
-
-  return tenantId;
-}
 
 function generateInvitationCode() {
   return crypto.randomBytes(32).toString('hex');
@@ -89,14 +46,10 @@ function hashInvitationCode(code) {
   return crypto.createHash('sha256').update(code).digest('hex');
 }
 
-async function getOwnerRole() {
-  return await Role.findOne({ where: { name: 'owner' } });
-}
-
 /* --------- SELF-SERVICE ORG CREATION --------- */
 
 router.post('/create', asyncHandler(async (req, res) => {
-  const { error, value } = createOrgSchema.validate(req.body);
+  const { error, value } = createOrgSchema.validate(req.body || {});
   if (error) {
     throw new AppError(error.details[0].message, 400, 'VALIDATION_ERROR');
   }
@@ -120,140 +73,65 @@ router.post('/create', asyncHandler(async (req, res) => {
     throw new AppError('Client not found', 400, 'INVALID_CLIENT');
   }
 
-  const transaction = await sequelize.transaction();
-
   try {
-    // 1. Check if organization name already exists
-    const existingOrg = await Organization.findOne({
-      where: { name },
-      transaction
-    });
-
-    if (existingOrg) {
-      await transaction.rollback();
-      throw new AppError(`An organization with the name "${name}" already exists`, 409, 'ORGANIZATION_NAME_EXISTS');
-    }
-
-    // 2. Generate unique tenant ID
-    const tenantId = await generateTenantId(name);
-
-    // 3. Create organization
-    const organization = await Organization.create({
+    // Delegate to business service
+    const result = await OrganizationService.createOrganization({
       name,
-      tenant_id: tenantId,
-      status: 'active',
-      provisioned: false,
-      settings: settings || {}
-    }, { transaction });
-
-    logger.info('Organization created', {
-      orgId: organization.id,
-      orgName: name,
-      tenantId
-    });
-
-    // 4. Get owner role
-    const ownerRole = await getOwnerRole();
-    if (!ownerRole) {
-      throw new Error('Owner role not found in system');
-    }
-
-    // 5. Ensure user metadata exists
-    let userMetadata = await UserMetadata.findOne({
-      where: { keycloak_id: keycloakId },
-      transaction
-    });
-
-    if (!userMetadata) {
-      userMetadata = await UserMetadata.create({
+      description,
+      settings,
+      user: {
         keycloak_id: keycloakId,
-        email: userEmail,
-        is_active: true,
-        last_login: new Date()
-      }, { transaction });
-    }
-
-    // 6. Create organization membership (owner role)
-    const membership = await OrganizationMembership.create({
-      user_id: userMetadata.id,
-      org_id: organization.id,
-      role_id: ownerRole.id
-    }, { transaction });
-
-    logger.info('Organization membership created', {
-      membershipId: membership.id,
-      userId: userMetadata.id,
-      orgId: organization.id,
-      role: 'owner'
+        email: userEmail
+      },
+      client_key: client_key,
+      isProvision: false,
+      req // pass request for audit logs
     });
 
-    // 7. Create tenant mapping for multi-tenant support
-    const tenantMapping = await TenantMapping.upsert({
-      user_id: keycloakId,
-      tenant_id: tenantId,
-      client_key: client_key
-    }, { transaction });
-
-    logger.info('Tenant mapping created', {
-      keycloakId,
-      tenantId,
-      clientKey: client_key
-    });
-
-    // 8. Set as user's primary organization if they don't have one
-    if (!userMetadata.org_id) {
-      await userMetadata.update({
-        org_id: organization.id
-      }, { transaction });
-    }
-
-    // 9. Create audit log
+    // Create audit log
     await AuditService.log({
       action: 'ORG_CREATED_SELF_SERVICE',
-      userId: userMetadata.id,
-      orgId: organization.id,
+      userId: result.membership.user_id,
+      orgId: result.organization.id,
       clientId: client.client_id,
       metadata: {
         org_name: name,
-        tenant_id: tenantId,
+        tenant_id: result.tenantId,
         user_email: userEmail,
         client_key
       }
     });
 
-    await transaction.commit();
-
     logger.info('Self-service organization creation completed successfully', {
-      orgId: organization.id,
+      orgId: result.organization.id,
       orgName: name,
-      tenantId,
-      userId: userMetadata.id,
+      tenantId: result.tenantId,
+      userId: result.membership.user_id,
       userEmail
     });
 
     return ResponseHandler.created(res, {
       message: 'Organization created successfully',
       organization: {
-        id: organization.id,
-        name: organization.name,
-        tenant_id: organization.tenant_id,
-        status: organization.status,
-        created_at: organization.created_at
+        id: result.organization.id,
+        name: result.organization.name,
+        tenant_id: result.organization.tenant_id,
+        status: result.organization.status,
+        created_at: result.organization.created_at
       },
       membership: {
-        id: membership.id,
-        role: ownerRole.name,
+        id: result.membership.id,
+        role: result.ownerRole.name,
         permissions: [] // Could fetch role permissions here if needed
       },
       tenant_mapping: {
-        tenant_id: tenantId,
+        tenant_id: result.tenantId,
         client_key
       }
     }, 'Organization created successfully');
 
   } catch (error) {
-    await transaction.rollback();
-    logger.error('Self-service organization creation failed', {
+    logger.error('❌ Self-service organization creation failed', {
       error: error.message,
       stack: error.stack,
       userId,
@@ -269,20 +147,22 @@ router.post('/create', asyncHandler(async (req, res) => {
 /* --------- JOIN VIA INVITATION --------- */
 
 router.post('/join', asyncHandler(async (req, res) => {
-  const { error, value } = joinOrgSchema.validate(req.body);
+  const { error, value } = joinOrgSchema.validate(req.body || {});
   if (error) {
     throw new AppError(error.details[0].message, 400, 'VALIDATION_ERROR');
   }
 
   const { invitation_code } = value;
-  const userId = req.user.id;
-  const keycloakId = req.user.keycloak_id;
-  const userEmail = req.user.email;
+  const user = {
+    id: req.user.id,
+    keycloak_id: req.user.keycloak_id,
+    email: req.user.email
+  };
   const emailVerified = req.user.email_verified || false;
 
   logger.info('Organization join via invitation initiated', {
-    userId,
-    userEmail,
+    userId: user.id,
+    userEmail: user.email,
     emailVerified,
     invitationCode: invitation_code.substring(0, 8) + '...' // Log partial code for security
   });
@@ -292,162 +172,51 @@ router.post('/join', asyncHandler(async (req, res) => {
     throw new AppError('Your email address must be verified before joining an organization', 403, 'EMAIL_VERIFICATION_REQUIRED');
   }
 
-  const codeHash = hashInvitationCode(invitation_code);
-  const transaction = await sequelize.transaction();
-
   try {
-    // 1. Find valid invitation
-    const invitation = await Invitation.findOne({
-      where: {
-        code_hash: codeHash,
-        status: 'pending'
-      },
-      include: [
-        {
-          model: Organization,
-          attributes: ['id', 'name', 'tenant_id', 'status']
-        },
-        {
-          model: Role,
-          attributes: ['id', 'name', 'description']
-        }
-      ],
-      transaction
+    const result = await InvitationService.acceptOrganizationInvite({
+      invitation_code,
+      user
     });
 
-    if (!invitation) {
-      await transaction.rollback();
-      throw new AppError('Invitation code is invalid or has already been used', 404, 'INVALID_INVITATION');
-    }
-
-    // 2. Check invitation expiry
-    if (invitation.expires_at && new Date() > invitation.expires_at) {
-      await invitation.update({ status: 'expired' }, { transaction });
-      await transaction.rollback();
-      throw new AppError('This invitation has expired', 410, 'INVITATION_EXPIRED');
-    }
-
-    // 3. Verify email matches (security requirement)
-    if (invitation.invited_email !== userEmail) {
-      await transaction.rollback();
-      logger.warn('Email mismatch in invitation', {
-        invitedEmail: invitation.invited_email,
-        userEmail,
-        invitationId: invitation.id
-      });
-      throw new AppError('This invitation was sent to a different email address', 403, 'EMAIL_MISMATCH');
-    }
-
-    // 4. Ensure user metadata exists
-    let userMetadata = await UserMetadata.findOne({
-      where: { keycloak_id: keycloakId },
-      transaction
-    });
-
-    if (!userMetadata) {
-      userMetadata = await UserMetadata.create({
-        keycloak_id: keycloakId,
-        email: userEmail,
-        is_active: true,
-        last_login: new Date()
-      }, { transaction });
-    }
-
-    // 5. Check if user is already a member
-    const existingMembership = await OrganizationMembership.findOne({
-      where: {
-        user_id: userMetadata.id,
-        org_id: invitation.org_id
-      },
-      transaction
-    });
-
-    if (existingMembership) {
-      await invitation.update({
-        status: 'accepted',
-        accepted_by: userMetadata.id,
-        accepted_at: new Date()
-      }, { transaction });
-
-      await transaction.commit();
-
+    if (result.already_member) {
       return ResponseHandler.success(res, {
         message: 'You are already a member of this organization',
-        organization: invitation.Organization,
+        organization: result.organization,
         membership: {
-          id: existingMembership.id,
+          id: result.membership.id,
           already_member: true
         }
       }, 'You are already a member of this organization');
     }
 
-    // 6. Create organization membership
-    const membership = await OrganizationMembership.create({
-      user_id: userMetadata.id,
-      org_id: invitation.org_id,
-      role_id: invitation.role_id
-    }, { transaction });
-
-    logger.info('Organization membership created via invitation', {
-      membershipId: membership.id,
-      userId: userMetadata.id,
-      orgId: invitation.org_id,
-      roleId: invitation.role_id,
-      roleName: invitation.Role.name
-    });
-
-    // 7. Mark invitation as accepted
-    await invitation.update({
-      status: 'accepted',
-      accepted_by: userMetadata.id,
-      accepted_at: new Date()
-    }, { transaction });
-
-    // 8. Create audit log
-    await AuditService.log({
-      action: 'ORG_JOINED_VIA_INVITATION',
-      userId: userMetadata.id,
-      orgId: invitation.org_id,
-      metadata: {
-        org_name: invitation.Organization.name,
-        user_email: userEmail,
-        role_name: invitation.Role.name,
-        invitation_id: invitation.id,
-        invited_by: invitation.invited_by
-      }
-    });
-
-    await transaction.commit();
-
     logger.info('Organization join via invitation completed successfully', {
-      orgId: invitation.org_id,
-      orgName: invitation.Organization.name,
-      userId: userMetadata.id,
-      userEmail,
-      role: invitation.Role.name
+      orgId: result.organization.id,
+      orgName: result.organization.name,
+      userId: user.id,
+      userEmail: user.email,
+      role: result.role.name
     });
 
     return ResponseHandler.success(res, {
       message: 'Successfully joined organization',
       organization: {
-        id: invitation.Organization.id,
-        name: invitation.Organization.name,
-        tenant_id: invitation.Organization.tenant_id
+        id: result.organization.id,
+        name: result.organization.name,
+        tenant_id: result.organization.tenant_id
       },
       membership: {
-        id: membership.id,
-        role: invitation.Role.name,
-        joined_at: membership.created_at
+        id: result.membership.id,
+        role: result.role.name,
+        joined_at: result.membership.created_at
       }
     }, 'Successfully joined organization');
 
   } catch (error) {
-    await transaction.rollback();
-    logger.error('Organization join via invitation failed', {
+    logger.error('❌ Organization join via invitation failed', {
       error: error.message,
       stack: error.stack,
-      userId,
-      userEmail,
+      userId: user.id,
+      userEmail: user.email,
       invitationCode: invitation_code.substring(0, 8) + '...'
     });
 
@@ -669,7 +438,7 @@ router.get('/invitations', asyncHandler(async (req, res) => {
 /* --------- Create Invitations (Admin/Owner) --------- */
 
 router.post('/invitations', asyncHandler(async (req, res) => {
-  const { error, value } = createInvitationSchema.validate(req.body);
+  const { error, value } = createInvitationSchema.validate(req.body || {});
   if (error) {
     throw new AppError(error.details[0].message, 400, 'VALIDATION_ERROR');
   }
@@ -695,122 +464,36 @@ router.post('/invitations', asyncHandler(async (req, res) => {
     throw new AppError('You do not have permission to invite users to this organization', 403, 'PERMISSION_DENIED');
   }
 
-  const transaction = await sequelize.transaction();
-
   try {
-    // 1. Verify organization exists and is active
-    const organization = await Organization.findByPk(org_id, { transaction });
-    if (!organization) {
-      throw new AppError('The specified organization does not exist', 404, 'ORGANIZATION_NOT_FOUND');
-    }
-
-    // 2. Verify role exists
-    const role = await Role.findByPk(role_id, { transaction });
-    if (!role) {
-      throw new AppError('The specified role does not exist', 404, 'ROLE_NOT_FOUND');
-    }
-
-    // 3. Check for existing pending invitation
-    const existingInvitation = await Invitation.findOne({
-      where: {
-        org_id,
-        invited_email,
-        status: 'pending'
-      },
-      transaction
-    });
-
-    if (existingInvitation) {
-      throw new AppError(`A pending invitation for ${invited_email} already exists for this organization`, 409, 'INVITATION_ALREADY_EXISTS');
-    }
-
-    // 4. Generate invitation code
-    const invitationCode = generateInvitationCode();
-    const codeHash = hashInvitationCode(invitationCode);
-
-    // 5. Create invitation
-    const invitation = await Invitation.create({
+    const result = await InvitationService.sendOrganizationInvite({
       org_id,
       invited_email,
       role_id,
-      code_hash: codeHash,
-      invited_by: userId,
-      expires_at: new Date(Date.now() + expires_in_days * 24 * 60 * 60 * 1000),
-      status: 'pending'
-    }, { transaction });
-
-    // 6. Create audit log
-    await AuditService.log({
-      action: 'INVITATION_CREATED',
-      userId: userId,
-      orgId: org_id,
-      metadata: {
-        invitation_id: invitation.id,
-        invited_email,
-        role_name: role.name,
-        expires_at: invitation.expires_at,
-        created_by: userEmail
+      expires_in_days,
+      message,
+      user: {
+        id: userId,
+        email: userEmail,
+        name: req.user.name || req.user.firstName || userEmail
       }
     });
-
-    await transaction.commit();
-
-    // 7. Build invitation link
-    const baseUrl = process.env.ACCOUNT_UI_URL || process.env.FRONTEND_URL || 'https://account.local.test:5174';
-    const invitationLink = `${baseUrl}/join?code=${invitationCode}`;
-
-    logger.info('Invitation created successfully', {
-      invitationId: invitation.id,
-      orgId: org_id,
-      invitedEmail: invited_email,
-      createdBy: userId
-    });
-
-    // 8. Send invitation email (non-blocking - don't fail if email fails)
-    try {
-      await emailModule.send({
-        type: emailModule.EMAIL_TYPES.ORGANIZATION_INVITATION,
-        to: invited_email,
-        data: {
-          organizationName: organization.name,
-          inviterEmail: userEmail,
-          inviterName: req.user.name || req.user.firstName || userEmail,
-          roleName: role.name,
-          invitationLink: invitationLink,
-          expiresAt: invitation.expires_at,
-          message: message || null,
-          appName: process.env.APP_NAME || 'SSO Platform'
-        }
-      });
-      logger.info('📧 Invitation email sent successfully to:', invited_email);
-    } catch (emailError) {
-      // Log error but don't fail the invitation creation
-      logger.error('📧 Failed to send invitation email (invitation still created):', {
-        error: emailError.message,
-        invitedEmail: invited_email
-      });
-    }
 
     return ResponseHandler.created(res, {
       message: 'Invitation created successfully',
       invitation: {
-        id: invitation.id,
+        id: result.invitation.id,
         invited_email,
-        organization: organization.name,
-        role: role.name,
-        expires_at: invitation.expires_at,
-        status: invitation.status,
-        invitation_link: invitationLink,
-        created_at: invitation.created_at
+        organization: result.organization.name,
+        role: result.role.name,
+        expires_at: result.invitation.expires_at,
+        status: result.invitation.status,
+        invitation_link: result.invitationLink,
+        created_at: result.invitation.created_at
       }
     }, 'Invitation created successfully');
 
   } catch (error) {
-    // Only rollback if transaction is still active
-    if (transaction && !transaction.finished) {
-      await transaction.rollback();
-    }
-    logger.error('Invitation creation failed', {
+    logger.error('❌ Invitation creation failed', {
       error: error.message,
       stack: error.stack,
       orgId: org_id,
@@ -823,10 +506,11 @@ router.post('/invitations', asyncHandler(async (req, res) => {
   }
 }));
 
+
 /* --------- ADMIN PROVISIONED ORGANIZATION --------- */
 
 router.post('/admin/provision', requireSuperAdmin(), asyncHandler(async (req, res) => {
-  const { error, value } = provisionOrgSchema.validate(req.body);
+  const { error, value } = provisionOrgSchema.validate(req.body || {});
   if (error) {
     return res.status(400).json({
       error: 'Validation Error',
@@ -848,6 +532,10 @@ router.post('/admin/provision', requireSuperAdmin(), asyncHandler(async (req, re
   const transaction = await sequelize.transaction();
 
   try {
+    // We cannot use OrganizationService.createOrganization directly here
+    // because provisioning creates a PendingInvitation instead of a direct Membership.
+    // However, we CAN reuse the unique tenant generator to enforce single responsibility.
+
     // 1. Check if organization name already exists
     const existingOrg = await Organization.findOne({
       where: { name: org_name },
@@ -864,15 +552,15 @@ router.post('/admin/provision', requireSuperAdmin(), asyncHandler(async (req, re
     if (role_id) {
       ownerRole = await Role.findByPk(role_id, { transaction });
     } else {
-      ownerRole = await getOwnerRole();
+      ownerRole = await Role.findOne({ where: { name: 'Owner' }, transaction });
     }
 
     if (!ownerRole) {
       throw new Error('Owner role not found in system');
     }
 
-    // 3. Generate unique tenant ID
-    const tenantId = await generateTenantId(org_name);
+    // 3. Generate unique tenant ID (Delegating to shared service!)
+    const tenantId = await OrganizationService.generateUniqueTenantId(org_name);
 
     // 4. Create organization in pending state
     const organization = await Organization.create({
@@ -961,6 +649,54 @@ router.post('/admin/provision', requireSuperAdmin(), asyncHandler(async (req, re
 
     if (error instanceof AppError) throw error;
     throw new AppError('Failed to provision organization. Please try again.', 500, 'ORGANIZATION_PROVISIONING_FAILED');
+  }
+}));
+
+/* --------- REVOKE INVITATION --------- */
+
+router.delete('/invitations/:id', asyncHandler(async (req, res) => {
+  const invitationId = req.params.id;
+  const userId = req.user.id;
+  const userEmail = req.user.email;
+
+  logger.info('Invitation revocation requested', {
+    invitationId,
+    revokedBy: userId
+  });
+
+  // Check permission: only org owner/admin or superadmin can revoke
+  const canRevoke = req.user.hasAnyRole(['superadmin']) ||
+    req.user.hasRole('owner') ||
+    req.user.hasRole('admin');
+
+  if (!canRevoke) {
+    throw new AppError('You do not have permission to revoke invitations', 403, 'PERMISSION_DENIED');
+  }
+
+  try {
+    const result = await InvitationService.revokeInvitation({
+      invitationId,
+      user: {
+        id: userId,
+        email: userEmail
+      }
+    });
+
+    return ResponseHandler.success(res, {
+      message: 'Invitation revoked successfully',
+      invitation: result.invitation
+    }, 'Invitation revoked successfully');
+
+  } catch (error) {
+    logger.error('❌ Invitation revocation failed', {
+      error: error.message,
+      stack: error.stack,
+      invitationId,
+      revokedBy: userId
+    });
+
+    if (error instanceof AppError) throw error;
+    throw new AppError('Failed to revoke invitation. Please try again.', 500, 'INVITATION_REVOCATION_FAILED');
   }
 }));
 

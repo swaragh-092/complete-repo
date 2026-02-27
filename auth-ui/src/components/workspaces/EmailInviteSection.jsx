@@ -21,12 +21,12 @@ import {
 } from '@mui/material';
 import { Email as EmailIcon, Delete as DeleteIcon, Send as SendIcon } from '@mui/icons-material';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useSnackbar } from 'notistack';
+import { useToast } from '../../hooks/useToast';
 import workspaceService from '../../services/workspaceService';
 
 export default function EmailInviteSection({ workspaceId }) {
   const queryClient = useQueryClient();
-  const { enqueueSnackbar } = useSnackbar();
+  const { showSuccess, showError, showWarning, showInfo, enqueueSnackbar } = useToast();
   const [email, setEmail] = useState('');
   const [role, setRole] = useState('viewer');
   const [message, setMessage] = useState('');
@@ -46,7 +46,7 @@ export default function EmailInviteSection({ workspaceId }) {
       queryClient.invalidateQueries(['workspace-invitations', workspaceId]);
       setEmail('');
       setMessage('');
-      enqueueSnackbar('Invitation sent successfully!', { variant: 'success' });
+      showSuccess('Invitation sent successfully!');
     },
     onError: (err) => {
       const errorMessage = err.response?.data?.message || 'Failed to send invitation';
@@ -60,7 +60,7 @@ export default function EmailInviteSection({ workspaceId }) {
     mutationFn: (invitationId) => workspaceService.revokeInvitation(workspaceId, invitationId),
     onSuccess: () => {
       queryClient.invalidateQueries(['workspace-invitations', workspaceId]);
-      enqueueSnackbar('Invitation revoked', { variant: 'success' });
+      showSuccess('Invitation revoked');
     },
     onError: (err) => {
       const errorMessage = err.response?.data?.message || 'Failed to revoke invitation';

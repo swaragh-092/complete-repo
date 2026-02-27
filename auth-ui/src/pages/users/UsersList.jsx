@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useSnackbar } from 'notistack';
+import { useToast } from '../../hooks/useToast';
 import {
   Box,
   Paper,
@@ -40,7 +40,7 @@ function UsersList() {
   const { realmName } = useParams();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { enqueueSnackbar } = useSnackbar();
+  const { showSuccess, showError, showWarning, showInfo, enqueueSnackbar } = useToast();
 
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
@@ -68,7 +68,7 @@ function UsersList() {
     mutationFn: (data) => userService.createUser(realmName, data),
     onSuccess: () => {
       queryClient.invalidateQueries(['users', realmName]);
-      enqueueSnackbar('User created successfully', { variant: 'success' });
+      showSuccess('User created successfully');
       setCreateOpen(false);
     },
     onError: (err) => {
@@ -81,7 +81,7 @@ function UsersList() {
     mutationFn: (userId) => userService.deleteUser(realmName, userId),
     onSuccess: () => {
       queryClient.invalidateQueries(['users', realmName]);
-      enqueueSnackbar('User deleted successfully', { variant: 'success' });
+      showSuccess('User deleted successfully');
       setDeleteData(null);
     },
     onError: (err) => {

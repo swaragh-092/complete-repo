@@ -47,7 +47,7 @@ import {
   Assignment as AssignIcon
 } from '@mui/icons-material';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useSnackbar } from 'notistack';
+import { useToast } from '../hooks/useToast';
 import { formatDistanceToNow } from 'date-fns';
 import databaseRoleService from '../services/databaseRoleService';
 import SearchFilter from '../components/SearchFilter';
@@ -62,7 +62,7 @@ function TabPanel({ children, value, index }) {
 
 function DatabaseRoles() {
   const queryClient = useQueryClient();
-  const { enqueueSnackbar } = useSnackbar();
+  const { showSuccess, showError, showWarning, showInfo, enqueueSnackbar } = useToast();
   const [tabValue, setTabValue] = useState(0);
   const [openCreate, setOpenCreate] = useState(false);
   const [openEdit, setOpenEdit] = useState(false);
@@ -129,7 +129,7 @@ function DatabaseRoles() {
       setFormData({ name: '', description: '', permissions: [] });
     },
     onError: (error) => {
-      enqueueSnackbar(`Failed to create role: ${error.response?.data?.message || error.message}`, { variant: 'error' });
+      showError(error, 'Failed to create role');
     }
   });
 
@@ -142,7 +142,7 @@ function DatabaseRoles() {
       setSelectedRole(null);
     },
     onError: (error) => {
-      enqueueSnackbar(`Failed to update role: ${error.response?.data?.message || error.message}`, { variant: 'error' });
+      showError(error, 'Failed to update role');
     }
   });
 
@@ -155,7 +155,7 @@ function DatabaseRoles() {
       setSelectedRole(null);
     },
     onError: (error) => {
-      enqueueSnackbar(`Failed to delete role: ${error.response?.data?.message || error.message}`, { variant: 'error' });
+      showError(error, 'Failed to delete role');
     }
   });
 
@@ -168,13 +168,13 @@ function DatabaseRoles() {
       setAssignData({ user_id: '', org_id: '' });
     },
     onError: (error) => {
-      enqueueSnackbar(`Failed to assign role: ${error.response?.data?.message || error.message}`, { variant: 'error' });
+      showError(error, 'Failed to assign role');
     }
   });
 
   const handleCreateRole = () => {
     if (!formData.name) {
-      enqueueSnackbar('Role name is required', { variant: 'warning' });
+      showWarning('Role name is required');
       return;
     }
     createMutation.mutate(formData);
@@ -182,7 +182,7 @@ function DatabaseRoles() {
 
   const handleEditRole = () => {
     if (!formData.name) {
-      enqueueSnackbar('Role name is required', { variant: 'warning' });
+      showWarning('Role name is required');
       return;
     }
     updateMutation.mutate({ id: selectedRole.id, ...formData });
@@ -190,7 +190,7 @@ function DatabaseRoles() {
 
   const handleAssignRole = () => {
     if (!assignData.user_id || !assignData.org_id) {
-      enqueueSnackbar('User and organization are required', { variant: 'warning' });
+      showWarning('User and organization are required');
       return;
     }
     assignMutation.mutate({ roleId: selectedRole.id, ...assignData });

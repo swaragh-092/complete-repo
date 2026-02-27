@@ -49,14 +49,14 @@ import {
   GroupAdd as BulkAssignIcon
 } from '@mui/icons-material';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useSnackbar } from 'notistack';
+import { useToast } from '../hooks/useToast';
 // Removed unused import: formatDistanceToNow
 import api, { extractData } from '../services/api';
 import SearchFilter from '../components/SearchFilter';
 
 function OrganizationMemberships() {
   const queryClient = useQueryClient();
-  const { enqueueSnackbar } = useSnackbar();
+  const { showSuccess, showError, showWarning, showInfo, enqueueSnackbar } = useToast();
   const [openCreate, setOpenCreate] = useState(false);
   const [openBulkAssign, setOpenBulkAssign] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
@@ -131,7 +131,7 @@ function OrganizationMemberships() {
       setFormData({ user_id: '', org_id: '', role_id: '' });
     },
     onError: (error) => {
-      enqueueSnackbar(`Failed to create membership: ${error.response?.data?.message || error.message}`, { variant: 'error' });
+      showError(error, 'Failed to create membership');
     }
   });
 
@@ -143,10 +143,10 @@ function OrganizationMemberships() {
       queryClient.invalidateQueries(['membership-stats']);
       setOpenBulkAssign(false);
       setBulkFormData({ user_ids: [], org_id: '', role_id: '' });
-      enqueueSnackbar(`Assigned ${response.data.created} memberships. ${response.data.errors} errors.`, { variant: 'success' });
+      showSuccess(`Assigned ${response.data.created} memberships. ${response.data.errors} errors.`);
     },
     onError: (error) => {
-      enqueueSnackbar(`Failed to bulk assign: ${error.response?.data?.message || error.message}`, { variant: 'error' });
+      showError(error, 'Failed to bulk assign');
     }
   });
 
@@ -159,7 +159,7 @@ function OrganizationMemberships() {
       setSelectedMembership(null);
     },
     onError: (error) => {
-      enqueueSnackbar(`Failed to update membership: ${error.response?.data?.message || error.message}`, { variant: 'error' });
+      showError(error, 'Failed to update membership');
     }
   });
 
@@ -173,13 +173,13 @@ function OrganizationMemberships() {
       setSelectedMembership(null);
     },
     onError: (error) => {
-      enqueueSnackbar(`Failed to delete membership: ${error.response?.data?.message || error.message}`, { variant: 'error' });
+      showError(error, 'Failed to delete membership');
     }
   });
 
   const handleCreateMembership = () => {
     if (!formData.user_id || !formData.org_id || !formData.role_id) {
-      enqueueSnackbar('User, organization, and role are required', { variant: 'warning' });
+      showWarning('User, organization, and role are required');
       return;
     }
     createMutation.mutate(formData);
@@ -187,7 +187,7 @@ function OrganizationMemberships() {
 
   const handleBulkAssign = () => {
     if (!bulkFormData.user_ids.length || !bulkFormData.org_id || !bulkFormData.role_id) {
-      enqueueSnackbar('Users, organization, and role are required', { variant: 'warning' });
+      showWarning('Users, organization, and role are required');
       return;
     }
     bulkAssignMutation.mutate(bulkFormData);

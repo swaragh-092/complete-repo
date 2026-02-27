@@ -20,6 +20,7 @@ FROM node:20-alpine AS production
 
 # Set environment variables
 ENV NODE_ENV=production
+ENV NODE_OPTIONS="--max-old-space-size=256"
 
 WORKDIR /app
 

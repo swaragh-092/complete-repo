@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useSnackbar } from 'notistack';
+import { useToast } from '../../hooks/useToast';
 import {
   Box,
   Typography,
@@ -23,7 +23,7 @@ import userService from '../../services/userService';
 
 function UserRoleMapper({ realmName, userId }) {
   const queryClient = useQueryClient();
-  const { enqueueSnackbar } = useSnackbar();
+  const { showSuccess, showError, showWarning, showInfo, enqueueSnackbar } = useToast();
   const [open, setOpen] = useState(false);
   const [selectedRoles, setSelectedRoles] = useState([]);
 
@@ -49,7 +49,7 @@ function UserRoleMapper({ realmName, userId }) {
     mutationFn: (roles) => userService.assignRealmRoles(userId, roles, realmName),
     onSuccess: () => {
       queryClient.invalidateQueries(['user-roles', realmName, userId]);
-      enqueueSnackbar('Roles assigned successfully', { variant: 'success' });
+      showSuccess('Roles assigned successfully');
       setOpen(false);
       setSelectedRoles([]);
     },
@@ -63,7 +63,7 @@ function UserRoleMapper({ realmName, userId }) {
     mutationFn: (roles) => userService.removeRealmRoles(userId, roles, realmName),
     onSuccess: () => {
       queryClient.invalidateQueries(['user-roles', realmName, userId]);
-      enqueueSnackbar('Role removed successfully', { variant: 'success' });
+      showSuccess('Role removed successfully');
     },
     onError: (err) => {
       enqueueSnackbar(err.message || 'Failed to remove role', { variant: 'error' });

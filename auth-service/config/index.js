@@ -17,7 +17,28 @@ if (!KEYCLOAK_ACCOUNT_UI_CLIENT_SECRET) {
   // Allow startup to continue for development, but log a warning
 }
 
+/* --------- CLIENT CACHE (TTL-based) --------- */
+
+let _clientCache = null;
+let _clientCacheTimestamp = 0;
+const CLIENT_CACHE_TTL_MS = parseInt(process.env.CLIENT_CACHE_TTL_MS, 10) || 5 * 60 * 1000; // default 5 min
+
+/**
+ * Invalidate the client cache so the next loadClients() call fetches from DB.
+ */
+function invalidateClientCache() {
+  _clientCache = null;
+  _clientCacheTimestamp = 0;
+}
+
 async function loadClients() {
+  const now = Date.now();
+
+  // Return cached value if still fresh
+  if (_clientCache && (now - _clientCacheTimestamp) < CLIENT_CACHE_TTL_MS) {
+    return _clientCache;
+  }
+
   const clients = await Client.findAll({
     include: [{
       model: Realm,
@@ -25,8 +46,7 @@ async function loadClients() {
     }]
   });
 
-  // console.log('Loaded clients:', JSON.stringify(clients, null, 2));
-  return clients.reduce((acc, client) => {
+  const result = clients.reduce((acc, client) => {
     if (!client.Realm) {
       console.warn(`Client ${client.client_key} has no associated Realm, skipping`);
       return acc;
@@ -45,7 +65,20 @@ async function loadClients() {
       Realm: client.Realm,
     };
     return acc;
-  }, {});
+  }, {
+    // Manually inject 'auth-service' using dedicated service account credentials
+    'auth-service': {
+      realm: process.env.KEYCLOAK_REALM || 'my-projects',
+      client_id: process.env.AUTH_SERVICE_CLIENT_ID || 'auth-service',
+      client_secret: process.env.AUTH_SERVICE_CLIENT_SECRET, // Requires AUTH_SERVICE_CLIENT_SECRET in env
+    }
+  });
+
+  // Cache the result
+  _clientCache = result;
+  _clientCacheTimestamp = now;
+
+  return result;
 }
 
 // Centralized URL Configuration
@@ -109,6 +142,7 @@ module.exports = {
   KEYCLOAK_ADMIN_USERNAME,
   KEYCLOAK_ADMIN_PASSWORD,
   loadClients,
+  invalidateClientCache,
   KEYCLOAK_ACCOUNT_UI_CLIENT_SECRET,
   FRONTEND_URL,
   ACCOUNT_UI_URL,
