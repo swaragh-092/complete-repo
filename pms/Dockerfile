@@ -14,13 +14,13 @@ COPY package*.json ./
 RUN npm install
 
 # Copy application code
-COPY --chown=nodejs:nodejs . .
+COPY --chown=node:node . .
 
 # Remove unnecessary files
 RUN rm -rf .git .env *.md logs/*.log
 
 # Switch to non-root user
-USER nodejs
+USER node
 
 # Expose port
 EXPOSE 3010

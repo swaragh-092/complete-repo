@@ -12,6 +12,8 @@ const dataValidation = async (req, res, next) => {
   try {
     // validation logic will come here.
 
+    
+
     // const authenticate = await fetch(`${domain.auth}/api/auth/validate-token`);
 
     const authenticate = {

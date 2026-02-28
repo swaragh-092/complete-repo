@@ -3,14 +3,19 @@
 // Description: task related service logics.
 // Version: 1.0.0
 // Modified:
-// 
+//
 
 const { Op, Sequelize } = require("sequelize");
-const { withContext, giveValicationErrorFormal, paginateHelperFunction, auditLogUpdateHelperFunction } = require("../../util/helper");
+const {
+  withContext,
+  giveValicationErrorFormal,
+  paginateHelperFunction,
+  auditLogUpdateHelperFunction,
+} = require("../../util/helper");
+const { DOMAIN } = require("../../config/config");
 
 const { createNotification } = require("../notification/notification.service");
 const { queryWithLogAudit } = require("../auditLog.service");
-
 
 class TaskService {
   /**
@@ -21,7 +26,7 @@ class TaskService {
    * @returns {Promise<Object>}
    */
   async createTask(req, data) {
-    const {Task, ProjectMember} = req.db;
+    const { Task, ProjectMember } = req.db;
 
     try {
       const assignedMember = await ProjectMember.findByPk(
@@ -29,11 +34,11 @@ class TaskService {
         {
           include: [
             {
-              association: "project", 
-              required: true, 
+              association: "project",
+              required: true,
             },
           ],
-        }
+        },
       );
 
       if (!assignedMember)
@@ -51,15 +56,41 @@ class TaskService {
       ) {
         parentTask = await Task.findByPk(data.parent_task_id);
 
-        if (!parentTask) return { success: false, status: 404, message: "Parent Task not found!..", };
-        if (data.create_helper_task && assignedMember.id === parentTask.assigned_to ) return {success: false, status: 401, message : "Helper task cant assigned to same person"};
-        if ( data.create_helper_task && ( parentTask.status !== "in_progress" && parentTask.status !== "approved") ) return {success: false, status: 409, message : "Cannot ask help for completed Task!.."}  
+        if (!parentTask)
+          return {
+            success: false,
+            status: 404,
+            message: "Parent Task not found!..",
+          };
+        if (
+          data.create_helper_task &&
+          assignedMember.id === parentTask.assigned_to
+        )
+          return {
+            success: false,
+            status: 401,
+            message: "Helper task cant assigned to same person",
+          };
+        if (
+          data.create_helper_task &&
+          parentTask.status !== "in_progress" &&
+          parentTask.status !== "approved"
+        )
+          return {
+            success: false,
+            status: 409,
+            message: "Cannot ask help for completed Task!..",
+          };
       }
 
       const project = assignedMember.project;
 
-
-      if ( parentTask && (project.id !== parentTask.project_id) )  return {success: false, status: 401, message : "Other project task cannot be assigned"};
+      if (parentTask && project.id !== parentTask.project_id)
+        return {
+          success: false,
+          status: 401,
+          message: "Other project task cannot be assigned",
+        };
 
       const user = req.user;
 
@@ -102,7 +133,7 @@ class TaskService {
       // TODO: add hierarchy logic → check if `creator` has permission to assign or create for others
       // (e.g., compare `creator.role_level` vs `assignee.role_level` if your system tracks hierarchy)
 
-      if (parentTask && data.create_helper_task){
+      if (parentTask && data.create_helper_task) {
         finalData.helped_for = parentTask.id;
         finalData.status = "accept_pending";
         finalData.task_for = "help";
@@ -120,12 +151,18 @@ class TaskService {
       }
 
       const result = await queryWithLogAudit({
-        action : "create",
+        action: "create",
         req,
         queryCallBack: async (t) => {
-          const task = await Task.create(finalData, {...withContext(req), transaction: t});
+          const task = await Task.create(finalData, {
+            ...withContext(req),
+            transaction: t,
+          });
           if (parentTask && data.create_dependency_task)
-            await parentTask.addDependencyTask(Task.id, {...withContext(req), transaction: t});
+            await parentTask.addDependencyTask(Task.id, {
+              ...withContext(req),
+              transaction: t,
+            });
           const notificationData = {
             scope: "individual",
             title: `Task is added`,
@@ -137,17 +174,20 @@ class TaskService {
           };
 
           const projectUpdates = {};
-          
+
           if (project.is_completed) {
             projectUpdates.is_completed = false;
           }
-          
+
           if (!project.start_date) {
             projectUpdates.start_date = new Date();
           }
-          
+
           if (Object.keys(projectUpdates).length > 0) {
-            await project.update(projectUpdates, {...withContext(req),transaction: t,});
+            await project.update(projectUpdates, {
+              ...withContext(req),
+              transaction: t,
+            });
           }
 
           const notificationResult = await createNotification(
@@ -156,9 +196,8 @@ class TaskService {
           );
 
           return task;
-
         },
-        updated_columns : Object.keys(finalData),
+        updated_columns: Object.keys(finalData),
       });
 
       return { success: true, status: 201, data: result };
@@ -183,7 +222,7 @@ class TaskService {
    * @param {Object} options - Optional ({ req })
    */
   async addTaskDependency(req, { dependency_task_id, parent_task_id }) {
-    const {Task, TaskDependency} = req.db;
+    const { Task, TaskDependency } = req.db;
 
     if (dependency_task_id === parent_task_id) {
       return {
@@ -232,16 +271,18 @@ class TaskService {
     }
 
     await queryWithLogAudit({
-      action : "update",
+      action: "update",
       req,
-      updated_columns : ["dependency_task_id", "parent_task_id "],
+      updated_columns: ["dependency_task_id", "parent_task_id "],
       remarks: "Adding dependency task (many to many relation)",
       queryCallBack: async (t) => {
-        return await dependencyTask.addParentTask(parentTask, {transaction: t, ...withContext(req)});
-      }
+        return await dependencyTask.addParentTask(parentTask, {
+          transaction: t,
+          ...withContext(req),
+        });
+      },
     });
 
-    
     return {
       success: true,
       status: 200,
@@ -250,7 +291,7 @@ class TaskService {
   }
 
   async removeTaskDependency(req, { dependency_task_id, parent_task_id }) {
-    const {Task, TaskDependency} = req.db;
+    const { Task, TaskDependency } = req.db;
 
     if (dependency_task_id === parent_task_id) {
       return {
@@ -296,16 +337,18 @@ class TaskService {
     }
 
     await queryWithLogAudit({
-      action : "update",
+      action: "update",
       req,
-      updated_columns : ["dependency_task_id", "parent_task_id "],
+      updated_columns: ["dependency_task_id", "parent_task_id "],
       remarks: "Removed dependency task (many to many relation)",
       queryCallBack: async (t) => {
-        return await dependencyTask.removeParentTask(parentTask, {transaction: t, ...withContext(req)});
+        return await dependencyTask.removeParentTask(parentTask, {
+          transaction: t,
+          ...withContext(req),
+        });
       },
-      model: TaskDependency
+      model: TaskDependency,
     });
-
 
     return {
       success: true,
@@ -317,21 +360,38 @@ class TaskService {
   /**
    * Get all tasks for a project (optionally filter by department, status, assignee)
    */
-  async getTasks(req, { project_id, department_id, onlyUser, statusFilter = null }, { query = {} }) {
-    const {Task, Project} = req.db;
+  async getTasks(
+    req,
+    { project_id, department_id, onlyUser, statusFilter = null },
+    { query = {} },
+  ) {
+    const { Task, Project } = req.db;
 
     const filter = {};
     if (project_id) {
       const project = await Project.findByPk(project_id);
-  
+
       if (!project)
-        return { status: 404, success: false, message: "Project not found!.. " };
-      
+        return {
+          status: 404,
+          success: false,
+          message: "Project not found!.. ",
+        };
+
       filter.project_id = project_id;
     }
 
-
-    const STATUS_VALUES = ['approve_pending', "approved", 'in_progress', 'completed', 'blocked', "assign_pending", "checklist_removed", "accept_pending", "reject"];
+    const STATUS_VALUES = [
+      "approve_pending",
+      "approved",
+      "in_progress",
+      "completed",
+      "blocked",
+      "assign_pending",
+      "checklist_removed",
+      "accept_pending",
+      "reject",
+    ];
     const TASK_FOR_VALUES = ["normal", "issue", "checklist", "help"];
 
     if (STATUS_VALUES.includes(statusFilter)) {
@@ -348,30 +408,144 @@ class TaskService {
       filter.status = { [Op.in]: ["approved", "in_progress"] };
     }
 
-
     const extrasInQuery = {
-      include : [
-        { association : "project", required : true },
+      include: [
+        { association: "project", required: true },
         {
           association: "assigned",
-          ...(onlyUser ? { where: { user_id: req.user.id }, required: true } : {}),
+          ...(onlyUser
+            ? { where: { user_id: req.user.id }, required: true }
+            : {}),
         },
-        { association : "helperTasks", attributes: ["id"]  },
-        { association : "dependencyTasks", attributes: ["id"]  },
-        { association : "parentTasks", attributes: ["id"]  },
-
-      ]
+        { association: "creator" },
+        { association: "approver" },
+        { association: "helperTasks", attributes: ["id"] },
+        { association: "dependencyTasks", attributes: ["id"] },
+        { association: "parentTasks", attributes: ["id"] },
+      ],
     };
 
+    const result = await paginateHelperFunction({
+      model: Task,
+      whereFilters: filter,
+      query,
+      extrasInQuery,
+    });
 
-    const result = await paginateHelperFunction({model: Task, whereFilters : filter, query, extrasInQuery });
-    
+    // Batch-fetch user + department (workspace) details from auth-service in
+    // ONE call so the frontend gets names/emails instead of raw IDs.
+    // department_id in PMS == workspace_id in auth-service.
+    if (result.data && result.data.length > 0) {
+      const uniqueUserIds = [
+        ...new Set(
+          result.data
+            .flatMap((task) => [
+              task.assigned?.user_id,
+              task.creator?.user_id,
+              task.approver?.user_id,
+            ])
+            .filter(Boolean),
+        ),
+      ];
+
+      const uniqueDepartmentIds = [
+        ...new Set(
+          result.data.map((task) => task.department_id).filter(Boolean),
+        ),
+      ];
+
+      if (uniqueUserIds.length > 0) {
+        try {
+          const authResponse = await fetch(
+            `${DOMAIN.auth}/auth/workspaces/members/lookup`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: req.headers.authorization || "",
+              },
+              body: JSON.stringify({
+                user_ids: uniqueUserIds,
+                workspace_ids: uniqueDepartmentIds, // departments = workspaces
+                user_id_type: "id", // PMS stores UserMetadata.id
+              }),
+            },
+          );
+
+          console.log(`[getTasks] Auth-service lookup response:`, {
+            status: authResponse.status,
+            ok: authResponse.ok,
+            full: authResponse
+          });
+
+          if (authResponse.ok) {
+            const authData = await authResponse.json();
+            const members = authData?.data?.members || [];
+
+            // Build map: UserMetadata.id → { id, name, email }
+            const userDetailsMap = {};
+            // Build map: workspace(department) id → { id, name }
+            const departmentDetailsMap = {};
+
+            for (const member of members) {
+              if (member.user?.id) {
+                userDetailsMap[member.user.id] = {
+                  id: member.user.id,
+                  name: member.user.name,
+                  email: member.user.email,
+                };
+              }
+              // Each member carries the workspaces (departments) they belong to;
+              // collect every unique workspace we haven't seen yet.
+              for (const ws of member.workspaces ?? []) {
+                if (ws.id && !departmentDetailsMap[ws.id]) {
+                  departmentDetailsMap[ws.id] = {
+                    id: ws.id,
+                    name: ws.name,
+                  };
+                }
+              }
+            }
+
+            // Attach user_details + department_details to each task
+            result.data = result.data.map((task) => {
+              const plain = task.toJSON ? task.toJSON() : { ...task };
+              if (plain.assigned?.user_id) {
+                plain.assigned.user_details =
+                  userDetailsMap[plain.assigned.user_id] ?? null;
+              }
+              if (plain.creator?.user_id) {
+                plain.creator.user_details =
+                  userDetailsMap[plain.creator.user_id] ?? null;
+              }
+              if (plain.approver?.user_id) {
+                plain.approver.user_details =
+                  userDetailsMap[plain.approver.user_id] ?? null;
+              }
+              plain.department_details =
+                departmentDetailsMap[plain.department_id] ?? null;
+              return plain;
+            });
+          }
+        } catch (authErr) {
+          // Non-critical — tasks are still returned without enriched details
+          // if auth-service is temporarily unreachable.
+          console.warn(
+            "[getTasks] Failed to fetch details from auth-service:",
+            authErr.message,
+          );
+        }
+      }
+    }
+
+    console.log("Fetched tasks with filter:", result, "Result count:", result.data.length);
+
     return { success: true, status: 200, data: result };
   }
 
-  async getTasksForDailyLog(req, { query = {} }) { 
-    const {Task, DailyLog} = req.db;
-  
+  async getTasksForDailyLog(req, { query = {} }) {
+    const { Task, DailyLog } = req.db;
+
     const today = new Date().toISOString().split("T")[0];
 
     // Find all task_ids already logged TODAY by THIS USER
@@ -379,62 +553,64 @@ class TaskService {
       attributes: ["task_id"],
       where: {
         date: today,
-        user_id: req.user.id,       // <<=== Filter for logged-in user
-        deleted_at: null
+        user_id: req.user.id, // <<=== Filter for logged-in user
+        deleted_at: null,
       },
-      raw: true
-    }).then(rows => rows.map(r => r.task_id));
-
+      raw: true,
+    }).then((rows) => rows.map((r) => r.task_id));
 
     //  Main task filter
     const filter = {
       status: { [Op.in]: ["in_progress", "approved"] },
-      id: { [Op.notIn]: loggedTaskIds },   // exclude tasks logged today by this user
+      id: { [Op.notIn]: loggedTaskIds }, // exclude tasks logged today by this user
     };
 
     const extrasInQuery = {
-      include : [
-        { association : "project", required : true },
+      include: [
+        { association: "project", required: true },
         {
           association: "assigned",
           required: true,
-          where: { user_id: req.user.id },   // user assigned filter
-        }
-      ]
+          where: { user_id: req.user.id }, // user assigned filter
+        },
+      ],
     };
 
     const result = await paginateHelperFunction({
       model: Task,
       whereFilters: filter,
       query,
-      extrasInQuery
+      extrasInQuery,
     });
 
     return { success: true, status: 200, data: result };
   }
 
-
-
-
-
   /**
    * Soft delete a task
    */
   async deleteTask(req, taskId) {
-    const {Task} = req.db;
+    const { Task } = req.db;
 
-    const task = await Task.findByPk(taskId, {include : [{association: "assigned"}]});
+    const task = await Task.findByPk(taskId, {
+      include: [{ association: "assigned" }],
+    });
     if (!task) {
       return { success: false, status: 404, message: "Task not found" };
     }
 
-    const allowedDeleteStatus = ["approve_pending", "approved", "assign_pending", "accept_pending"];
+    const allowedDeleteStatus = [
+      "approve_pending",
+      "approved",
+      "assign_pending",
+      "accept_pending",
+    ];
 
     if (!allowedDeleteStatus.includes(task.status)) {
       return {
         success: false,
         status: 409,
-        message: `Task cannot be deleted because it is in '${task.status}' state.`
+        message: `Task cannot be deleted because it is in '${task.status}' state.`,
       };
     }
 
@@ -451,68 +627,79 @@ class TaskService {
     await queryWithLogAudit({
       action: "delete",
       req,
-      queryCallBack : async (t) => {
-        const taskDeleted = await task.destroy({...withContext(req), transaction: t});
-        
-        if (task?.assigned?.user_id) await createNotification(req, notificationData);
+      queryCallBack: async (t) => {
+        const taskDeleted = await task.destroy({
+          ...withContext(req),
+          transaction: t,
+        });
+
+        if (task?.assigned?.user_id)
+          await createNotification(req, notificationData);
 
         return taskDeleted;
-
       },
     });
-    
+
     return { success: true, status: 200, message: "Task deleted successfully" };
   }
 
   async getDependencyTask(req, { task_id }) {
-    const {Task} = req.db;
+    const { Task } = req.db;
 
     const task = await Task.findByPk(task_id, {
-      include: [{ association: "dependencyTasks", attributes: ["id"], through: { attributes: [] }, }],
+      include: [
+        {
+          association: "dependencyTasks",
+          attributes: ["id"],
+          through: { attributes: [] },
+        },
+      ],
     });
 
     if (!task) {
       return { success: false, status: 404, message: "Task not found" };
     }
 
-    const taskIds = task.dependencyTasks.map(t => t.id);
+    const taskIds = task.dependencyTasks.map((t) => t.id);
 
     const dependencyTasks = await paginateHelperFunction({
       model: Task,
       query: req.query,
-      whereFilters: { id: { [Op.in]: taskIds } }
+      whereFilters: { id: { [Op.in]: taskIds } },
     });
-
-
 
     return { success: true, status: 200, data: dependencyTasks };
   }
   async getParentTasks(req, { task_id }) {
-    const {Task} = req.db;
+    const { Task } = req.db;
 
     const task = await Task.findByPk(task_id, {
-      include: [{ association: "parentTasks", attributes: ["id"], through: { attributes: [] }, }],
+      include: [
+        {
+          association: "parentTasks",
+          attributes: ["id"],
+          through: { attributes: [] },
+        },
+      ],
     });
 
     if (!task) {
       return { success: false, status: 404, message: "Task not found" };
     }
 
-    const taskIds = task.parentTasks.map(t => t.id);
+    const taskIds = task.parentTasks.map((t) => t.id);
 
     const parentTasks = await paginateHelperFunction({
       model: Task,
       query: req.query,
-      whereFilters: { id: { [Op.in]: taskIds } }
+      whereFilters: { id: { [Op.in]: taskIds } },
     });
-
-
 
     return { success: true, status: 200, data: parentTasks };
   }
 
   async addTaskHelper(req, { task_id, helper_task_id }) {
-    const {Task} = req.db;
+    const { Task } = req.db;
 
     if (task_id === helper_task_id) {
       return {
@@ -545,39 +732,61 @@ class TaskService {
 
     const [task, helperTask] = await Task.findAll({
       where: { id: taskIds },
-      include : [{association: "assigned"}],
+      include: [{ association: "assigned" }],
     }).then((tasks) => {
       const main = tasks.find((t) => t.id === task_id) || null;
       const helper = tasks.find((t) => t.id === helper_task_id) || null;
       return [main, helper];
     });
 
-    if (!task) return { success: false, status: 404, message: "Task not found" };
-    if (!helperTask) return { success: false, status: 404, message: "Helper Task not found" };
-    if (req.user.id !== helperTask.assigned?.user_id ) return {success: false, status: 401, };
-    if (task.assigned_to === helperTask.assigned_to) return {success: false, status: 401, message : "Helper task cant assigned to same person"};
-    if (task.project_id !== helperTask.project_id) return {success: false, status: 401, message : "Other project task cannot be assigned"};
+    if (!task)
+      return { success: false, status: 404, message: "Task not found" };
+    if (!helperTask)
+      return { success: false, status: 404, message: "Helper Task not found" };
+    if (req.user.id !== helperTask.assigned?.user_id)
+      return { success: false, status: 401 };
+    if (task.assigned_to === helperTask.assigned_to)
+      return {
+        success: false,
+        status: 401,
+        message: "Helper task cant assigned to same person",
+      };
+    if (task.project_id !== helperTask.project_id)
+      return {
+        success: false,
+        status: 401,
+        message: "Other project task cannot be assigned",
+      };
 
-    await auditLogUpdateHelperFunction({model:helperTask, data: {helped_for: task.id, task_for: "help"}, req });
+    await auditLogUpdateHelperFunction({
+      model: helperTask,
+      data: { helped_for: task.id, task_for: "help" },
+      req,
+    });
 
     return { success: true, status: 201, data: helperTask };
   }
 
   async removeTaskHelper(req, { parent_task_id, helper_task_id }) {
-    const {Task} = req.db;
+    const { Task } = req.db;
 
     const existingHelper = await Task.findOne({
       where: { helped_for: parent_task_id, id: helper_task_id },
-      include : [{association: "assigned"}],
+      include: [{ association: "assigned" }],
     });
 
     if (!existingHelper) {
       return { success: false, status: 404, message: "Task helper not found" };
     }
 
-    if (existingHelper.assigned?.user_id !== req.user.id) return {success: false, status: 401, }; 
-     
-    await auditLogUpdateHelperFunction({model:existingHelper, data: { helped_for: null, task_for: "normal" }, req });
+    if (existingHelper.assigned?.user_id !== req.user.id)
+      return { success: false, status: 401 };
+
+    await auditLogUpdateHelperFunction({
+      model: existingHelper,
+      data: { helped_for: null, task_for: "normal" },
+      req,
+    });
 
     return {
       success: true,
@@ -587,26 +796,31 @@ class TaskService {
   }
 
   async getAcceptableTask(req) {
-    const {Task} = req.db;
+    const { Task } = req.db;
 
-    const extrasInQuery = {include: [
-        {association: "assigned", where : {user_id: req.user.id}, required : true },
-        {association: "helpedTask", include : [{association: "assigned"}] },
-
-      ], }
+    const extrasInQuery = {
+      include: [
+        {
+          association: "assigned",
+          where: { user_id: req.user.id },
+          required: true,
+        },
+        { association: "helpedTask", include: [{ association: "assigned" }] },
+      ],
+    };
 
     const helpingTasks = await paginateHelperFunction({
-      model : Task,
+      model: Task,
       extrasInQuery,
-      whereFilters: { task_for: "help", status : "accept_pending" },
-      query: req.query
+      whereFilters: { task_for: "help", status: "accept_pending" },
+      query: req.query,
     });
 
     return { success: true, status: 200, data: helpingTasks };
   }
 
   async assignChecklistTask(req, data) {
-    const {Task, ProjectMember} = req.db;
+    const { Task, ProjectMember } = req.db;
     try {
       const task = await Task.findOne({
         where: {
@@ -628,7 +842,7 @@ class TaskService {
               required: true, // ensures INNER JOIN (will return null if no project)
             },
           ],
-        }
+        },
       );
 
       if (!assignedMember)
@@ -679,14 +893,16 @@ class TaskService {
       // TODO: add hierarchy logic → check if `creator` has permission to assign or create for others
       // (e.g., compare `creator.role_level` vs `assignee.role_level` if your system tracks hierarchy)
 
-
       await queryWithLogAudit({
-        action : "update",
-        req, 
+        action: "update",
+        req,
         updated_columns: Object.keys(finalData),
         remarks: "assign member to checklist task",
-        queryCallBack : async (t) => {
-          const updatedTast = await task.update(finalData, {transaction: t, ...withContext(req)});
+        queryCallBack: async (t) => {
+          const updatedTast = await task.update(finalData, {
+            transaction: t,
+            ...withContext(req),
+          });
 
           const notificationData = {
             scope: "individual",
@@ -704,10 +920,8 @@ class TaskService {
           );
 
           return updatedTast;
-        }
-
+        },
       });
-      
 
       return { success: true, status: 201, data: task };
     } catch (err) {
@@ -724,23 +938,41 @@ class TaskService {
     }
   }
 
-
-  async updateTask (req, data) {
-    const {Task} = req.db;
+  async updateTask(req, data) {
+    const { Task } = req.db;
 
     try {
-      const task = await Task.findByPk(data.task_id, { include : [ {association : "assigned", require: true} ] });
+      const task = await Task.findByPk(data.task_id, {
+        include: [{ association: "assigned", require: true }],
+      });
 
-      if (!task) return {success: false, message: "Task not found!.", status: 404};
+      if (!task)
+        return { success: false, message: "Task not found!.", status: 404 };
 
-      if (task.live_status === "running") return {success : false, message : "Please stop the task!.", status: 409}; 
+      if (task.live_status === "running")
+        return {
+          success: false,
+          message: "Please stop the task!.",
+          status: 409,
+        };
 
-      if (data.status === "completed" && task.status === "completed") return {success: false, message: "Task is already completed", status : 409}; 
-      if (data.status === "completed" && task.status !== "in_progress") return {success: false, message: "Task can be completed only if in progress state", status : 409}; 
+      if (data.status === "completed" && task.status === "completed")
+        return {
+          success: false,
+          message: "Task is already completed",
+          status: 409,
+        };
+      if (data.status === "completed" && task.status !== "in_progress")
+        return {
+          success: false,
+          message: "Task can be completed only if in progress state",
+          status: 409,
+        };
 
-      if (task.assigned?.user_id !== req.user.id) return {success: false, message : "Not autorized", status : 401};
+      if (task.assigned?.user_id !== req.user.id)
+        return { success: false, message: "Not autorized", status: 401 };
 
-      await auditLogUpdateHelperFunction({model: task, data, req});
+      await auditLogUpdateHelperFunction({ model: task, data, req });
 
       return { success: true, status: 201, data: task };
     } catch (err) {
@@ -757,44 +989,59 @@ class TaskService {
     }
   }
 
-  async getAssistedTasks (req, taskId) {
-    const {Task} = req.db;
+  async getAssistedTasks(req, taskId) {
+    const { Task } = req.db;
 
     const task = await Task.findByPk(taskId, {
-      include : [
-        {association: "assigned"}
+      include: [{ association: "assigned" }],
+    });
+
+    if (!task)
+      return { message: "Task not found!...", status: 404, success: false };
+
+    if (task.assigned?.user_id !== req.user.id)
+      return { status: 401, success: false };
+
+    const assistedTasks = await paginateHelperFunction({
+      model: Task,
+      whereFilters: { helped_for: task.id },
+      query: req.query,
+    });
+
+    return { success: true, data: assistedTasks, status: 200 };
+  }
+
+  async helperAcceptOrReject(req, { status, taskId }) {
+    const { Task } = req.db;
+
+    const task = await Task.findByPk(taskId, {
+      where: { task_for: "help", status: "accept_pending" },
+      include: [
+        {
+          association: "assigned",
+          where: { user_id: req.user.id },
+          required: true,
+        },
       ],
     });
 
-    if (!task) return {message : "Task not found!...", status: 404, success: false};
-    
-    if ( task.assigned?.user_id !== req.user.id )  return { status: 401, success: false};
+    if (!task)
+      return { message: "Task not found!...", status: 404, success: false };
+    const updateStatus = status === "accept" ? "in_progress" : "reject";
 
-    const assistedTasks = await paginateHelperFunction({ model: Task, whereFilters:{ helped_for: task.id,  }, query: req.query });
-
-    return {success: true, data : assistedTasks, status:200};
-  }
-  
-  async helperAcceptOrReject (req, {status, taskId}) {
-    const {Task} = req.db;
-
-    const task = await Task.findByPk(taskId, {
-      where : { task_for: "help", status : "accept_pending" },
-      include : [
-        {association: "assigned", where : {user_id : req.user.id}, required: true},
-      ],
+    await auditLogUpdateHelperFunction({
+      model: task,
+      data: { status: updateStatus },
+      req,
     });
 
-    if (!task) return {message : "Task not found!...", status: 404, success: false};
-    const updateStatus = (status === "accept") ? "in_progress" : "reject"; 
-
-    await auditLogUpdateHelperFunction({model: task, data: {status : updateStatus}, req});
-
-
-    return {success: true, data : task, status:200, message: "Task " + status + "ed successfully!.."};
+    return {
+      success: true,
+      data: task,
+      status: 200,
+      message: "Task " + status + "ed successfully!..",
+    };
   }
-
-
 }
 
 module.exports = new TaskService();
