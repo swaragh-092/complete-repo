@@ -35,6 +35,7 @@ import DatabaseRoles from './pages/DatabaseRoles';
 import Permissions from './pages/Permissions';
 import OrganizationMemberships from './pages/OrganizationMemberships';
 import AccountManagement from './pages/AccountManagement';
+import EmailDashboard from './pages/EmailDashboard';
 import OnboardMangement from  './components/onboarding/OrganizationOnboarding';
 import Login from './pages/Login';
 
@@ -101,6 +102,9 @@ function AppContent() {
             {/* Account Management */}
             <Route path="account" element={<AccountManagement />} />
            
+            {/* Services */}
+            <Route path="email/dashboard" element={<EmailDashboard />} />
+
             {/* 404 Route */}
             <Route path="*" element={
               <div>

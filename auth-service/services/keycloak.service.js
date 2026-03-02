@@ -18,7 +18,6 @@ const {
   KEYCLOAK_ADMIN_USERNAME,
   KEYCLOAK_ADMIN_PASSWORD,
   KEYCLOAK_ACCOUNT_UI_CLIENT_SECRET,
-  loadClients,
 } = require("../config");
 const logger = require("../utils/logger");
 const { AppError } = require("../middleware/errorHandler");
@@ -27,11 +26,7 @@ const { log } = require('console');
 // Custom HTTPS agent to accept self-signed certificates (legacy fallback)
 const httpsAgent = new https.Agent({ rejectUnauthorized: false });
 
-console.log(KEYCLOAK_URL,
-  KEYCLOAK_ADMIN_CLIENT_ID,
-  KEYCLOAK_ADMIN_USERNAME,
-  KEYCLOAK_ADMIN_PASSWORD,
-  KEYCLOAK_ACCOUNT_UI_CLIENT_SECRET,);
+
 
 
 class KeycloakService {
@@ -134,34 +129,7 @@ class KeycloakService {
     }, 'createRealm');
   }
 
-  async getServiceAccessToken(clientKey) {
-    const clients = await loadClients();
-    const client = clients[clientKey];
 
-    if (!client) throw new AppError(`Invalid client: ${clientKey}`);
-
-    const params = new URLSearchParams({
-      grant_type: "client_credentials",
-      client_id: client.client_id,
-      client_secret: client.client_secret,
-    });
-
-    const response = await fetch(
-      `${KEYCLOAK_URL}/realms/${client.realm}/protocol/openid-connect/token`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: params.toString(),
-      }
-    );
-
-    if (!response.ok) {
-      throw new AppError(`Keycloak token request failed: ${response.statusText}`);
-    }
-
-    const { access_token } = await response.json();
-    return access_token;
-  }
 
   async createUser({ username, email, firstName, lastName, password, org_id }) {
     return this.withReauth(async () => {

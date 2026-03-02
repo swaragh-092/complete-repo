@@ -112,6 +112,9 @@ router.use('/auth/trusted-devices', require('./trusted-devices.route'));
 router.use('/auth/workspaces', organizationModule.workspaces); // For auth-client compatibility
 router.use('/workspaces', organizationModule.workspaces); // For auth-ui compatibility
 
+// Internal Service APIs (Protected by x-service-secret)
+router.use('/api/internal', require('./internal.routes'));
+
 // Organization Settings (Global)
 router.use('/api/organizations/settings', organizationModule.settings);
 router.use('/auth/api/organizations/settings', organizationModule.settings); // For auth-client compatibility

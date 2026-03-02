@@ -43,6 +43,13 @@ module.exports = {
     // Issuer URL for token validation (should match what browser/client sees or internal if configured that way)
     KEYCLOAK_ISSUER_URL: process.env.KEYCLOAK_ISSUER_URL || process.env.KEYCLOAK_URL || 'http://keycloak:8080',
 
+    // Service Identity (Keycloak Client Credentials for service-to-service calls)
+    EMAIL_SERVICE_CLIENT_ID: process.env.EMAIL_SERVICE_CLIENT_ID || 'email-service',
+    EMAIL_SERVICE_CLIENT_SECRET: process.env.EMAIL_SERVICE_CLIENT_SECRET,
+
+    // Auth Service URL (for fetching org settings)
+    AUTH_SERVICE_URL: process.env.AUTH_SERVICE_URL || 'http://auth-service:4000',
+
     // SMTP Pool
     MAXCONNECTIONS: parseInt(process.env.MAXCONNECTIONS, 10) || 5,
     MAXMESSAGES: parseInt(process.env.MAXMESSAGES, 10) || 100,

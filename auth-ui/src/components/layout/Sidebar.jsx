@@ -28,6 +28,7 @@ import {
   ExpandMore,
   Storage as DatabaseIcon,
   Widgets as AppsIcon,
+  Email as EmailIcon
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import WorkspaceSwitcher from '../workspaces/WorkspaceSwitcher';
@@ -55,6 +56,10 @@ const databaseItems = [
   { text: 'Onboarding', icon: <MembershipIcon />, path: '/onboarding' }
 ];
 
+const serviceItems = [
+  { text: 'Email Dashboard', icon: <EmailIcon />, path: '/email/dashboard' }
+];
+
 export default function Sidebar({ mobileOpen, handleDrawerToggle, error, onCloseError }) {
   const theme = useTheme();
   const navigate = useNavigate();
@@ -63,6 +68,7 @@ export default function Sidebar({ mobileOpen, handleDrawerToggle, error, onClose
   
   const [keycloakMenuOpen, setKeycloakMenuOpen] = useState(false);
   const [databaseMenuOpen, setDatabaseMenuOpen] = useState(false);
+  const [servicesMenuOpen, setServicesMenuOpen] = useState(false);
 
   // Auto-expand menus based on active route
   useEffect(() => {
@@ -72,6 +78,9 @@ export default function Sidebar({ mobileOpen, handleDrawerToggle, error, onClose
     }
     if (databaseItems.some(item => path.startsWith(item.path))) {
       setDatabaseMenuOpen(true);
+    }
+    if (serviceItems.some(item => path.startsWith(item.path))) {
+      setServicesMenuOpen(true);
     }
   }, [location.pathname]);
 
@@ -186,6 +195,48 @@ export default function Sidebar({ mobileOpen, handleDrawerToggle, error, onClose
             <Collapse in={databaseMenuOpen} timeout="auto" unmountOnExit>
               <List component="div" disablePadding sx={{ pl: 1 }}>
                 {databaseItems.map((item) => (
+                  <ListItem
+                    button
+                    key={item.text}
+                    onClick={() => handleNavigate(item.path)}
+                    selected={isActive(item.path)}
+                    sx={{
+                      py: 0.75, pl: 3, borderRadius: 2, mb: 0.25, transition: 'all 0.2s',
+                      '&.Mui-selected': {
+                        background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+                        color: 'white',
+                        boxShadow: '0 2px 8px rgba(99, 102, 241, 0.25)',
+                        '&:hover': { background: 'linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)' },
+                        '& .MuiListItemIcon-root': { color: 'white' },
+                      },
+                      '&:not(.Mui-selected):hover': { bgcolor: theme.palette.action.hover }
+                    }}
+                  >
+                    <ListItemIcon sx={{ minWidth: 32, color: isActive(item.path) ? 'inherit' : theme.palette.text.secondary }}>
+                      {React.cloneElement(item.icon, { fontSize: 'small' })}
+                    </ListItemIcon>
+                    <ListItemText primary={item.text} primaryTypographyProps={{ fontWeight: isActive(item.path) ? 600 : 400, fontSize: '0.8rem' }} />
+                  </ListItem>
+                ))}
+              </List>
+            </Collapse>
+          </List>
+        </Box>
+
+        {/* Services Section */}
+        <Box sx={{ mt: 2 }}>
+          <Typography variant="caption" sx={{ px: 1.5, py: 1, display: 'block', color: theme.palette.text.secondary, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.7rem' }}>
+            Services
+          </Typography>
+          <List sx={{ p: 0 }}>
+            <ListItem button onClick={() => setServicesMenuOpen(!servicesMenuOpen)} sx={{ borderRadius: 2, mb: 0.5, py: 1, '&:hover': { bgcolor: theme.palette.action.hover } }}>
+              <ListItemIcon sx={{ minWidth: 36, color: theme.palette.text.secondary }}><EmailIcon fontSize="small" /></ListItemIcon>
+              <ListItemText primary="Email System" primaryTypographyProps={{ fontWeight: 500, fontSize: '0.875rem' }} />
+              {servicesMenuOpen ? <ExpandLess fontSize="small" /> : <ExpandMore fontSize="small" />}
+            </ListItem>
+            <Collapse in={servicesMenuOpen} timeout="auto" unmountOnExit>
+              <List component="div" disablePadding sx={{ pl: 1 }}>
+                {serviceItems.map((item) => (
                   <ListItem
                     button
                     key={item.text}

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Box, Typography, Button, Container, Alert } from '@mui/material';
+import { Box, Typography, Button, Container } from '@mui/material';
 import { Refresh } from '@mui/icons-material';
 import { useToast } from '../hooks/useToast';
 import { emailService } from '../services/emailService';
@@ -11,7 +11,9 @@ const EmailDashboard = () => {
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [orgId, setOrgId] = useState(null); // Set this if filtering by org (e.g. from context)
-    const { showSuccess, showError, showWarning, showInfo, enqueueSnackbar } = useToast();
+    const [status, setStatus] = useState('');
+    const [type, setType] = useState('');
+    const { showSuccess, showError, enqueueSnackbar } = useToast();
     const queryClient = useQueryClient();
 
     // Fetch Stats
@@ -22,11 +24,13 @@ const EmailDashboard = () => {
 
     // Fetch History
     const { data: historyData, isLoading: historyLoading } = useQuery({
-        queryKey: ['emailHistory', orgId, page, rowsPerPage],
+        queryKey: ['emailHistory', orgId, page, rowsPerPage, status, type],
         queryFn: () => emailService.getHistory({ 
             org_id: orgId, 
             page: page + 1, // API is 1-indexed
-            limit: rowsPerPage 
+            limit: rowsPerPage,
+            status: status || undefined,
+            type: type || undefined
         })
     });
 
@@ -35,8 +39,8 @@ const EmailDashboard = () => {
         mutationFn: emailService.resend,
         onSuccess: () => {
             showSuccess('Email resent successfully');
-            queryClient.invalidateQueries(['emailHistory']);
-            queryClient.invalidateQueries(['emailStats']);
+            queryClient.invalidateQueries({ queryKey: ['emailHistory'] });
+            queryClient.invalidateQueries({ queryKey: ['emailStats'] });
         },
         onError: (err) => {
             showError('Failed to resend email');
@@ -58,8 +62,8 @@ const EmailDashboard = () => {
                 <Button 
                     startIcon={<Refresh />} 
                     onClick={() => {
-                        queryClient.invalidateQueries(['emailStats']);
-                        queryClient.invalidateQueries(['emailHistory']);
+                        queryClient.invalidateQueries({ queryKey: ['emailStats'] });
+                        queryClient.invalidateQueries({ queryKey: ['emailHistory'] });
                     }}
                 >
                     Refresh
@@ -78,6 +82,10 @@ const EmailDashboard = () => {
                     page={page}
                     rowsPerPage={rowsPerPage}
                     loading={historyLoading}
+                    status={status}
+                    type={type}
+                    onStatusChange={(e) => { setStatus(e.target.value); setPage(0); }}
+                    onTypeChange={(e) => { setType(e.target.value); setPage(0); }}
                     onPageChange={handlePageChange}
                     onRowsPerPageChange={handleRowsPerPageChange}
                     onResend={(id) => resendMutation.mutate(id)}

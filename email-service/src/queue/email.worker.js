@@ -7,6 +7,7 @@ const { EmailLog } = require('../models');
 const logger = require('../utils/logger');
 const { QUEUE_NAME, connection } = require('./email.queue');
 const { escapeData } = require('../utils/html-escaper');
+const authClient = require('../services/auth-service.client');
 
 /**
  * Email Worker
@@ -40,17 +41,52 @@ function startWorker() {
 
         const safeData = escapeData(data);
 
-        const subject = typeof template.subject === 'function'
-            ? template.subject(safeData)
-            : template.subject;
+        // --- DYNAMIC ORG SETTINGS FETCH ---
+        let customConfig = null;
+        let customTemplate = null;
 
-        const html = template.render(safeData);
+        if (emailLog.org_id) {
+            try {
+                const orgSettings = await authClient.getOrganizationSettings(emailLog.org_id);
+                // Extract SMTP overrides
+                if (orgSettings.email_provider_config && orgSettings.email_provider_config.isEnabled) {
+                    customConfig = orgSettings.email_provider_config;
+                }
+                // Extract Template overrides
+                if (orgSettings.email_templates && orgSettings.email_templates[type]) {
+                    customTemplate = orgSettings.email_templates[type];
+                }
+            } catch (err) {
+                logger.warn(`Failed to fetch org settings for ${emailLog.org_id}, falling back to defaults`, { error: err.message });
+            }
+        }
+
+        // --- SUBJECT & HTML RESOLUTION ---
+        let subject = '';
+        let html = '';
+
+        if (customTemplate && customTemplate.subject && customTemplate.htmlContent) {
+            // Very simple replacement engine for custom templates (could use Handlebars for advanced logic)
+            subject = customTemplate.subject;
+            html = customTemplate.htmlContent;
+
+            // Loop through saferData keys to replace {{key}} with values
+            Object.keys(safeData).forEach(key => {
+                const regex = new RegExp(`{{s*${key}s*}}`, 'gi');
+                subject = subject.replace(regex, safeData[key]);
+                html = html.replace(regex, safeData[key]);
+            });
+        } else {
+            // Fall back to system default definition
+            subject = typeof template.subject === 'function' ? template.subject(safeData) : template.subject;
+            html = template.render(safeData);
+        }
 
         // 3. Update subject in log
         await emailLog.update({ subject });
 
-        // 4. Send via SMTP
-        const result = await provider.sendHtml(to, subject, html);
+        // 4. Send via SMTP (pass custom config if available)
+        const result = await provider.sendHtml(to, subject, html, customConfig);
 
         // 5. Mark as sent
         await emailLog.update({

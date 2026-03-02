@@ -4,7 +4,7 @@ const express = require('express');
 const router = express.Router();
 const WorkspaceService = require('../services/workspace.service');
 const { requireWorkspaceAccess, requireOrgPermission } = require('../../../middleware/workspaceMiddleware');
-const { authMiddleware } = require('../../../middleware/authMiddleware');
+const { hybridAuthMiddleware } = require('../../../middleware/hybridAuthMiddleware');
 const asyncHandler = require('../../../middleware/asyncHandler');
 const ResponseHandler = require('../../../utils/responseHandler');
 
@@ -17,8 +17,9 @@ const {
     workspaceInvitationSchema
 } = require('../../../validators/workspace.validator');
 
-// APPLY AUTH MIDDLEWARE TO ALL ROUTES
-router.use(authMiddleware);
+// APPLY HYBRID AUTH MIDDLEWARE TO ALL ROUTES
+// Supports both user JWTs (browser) and service JWTs (Client Credentials)
+router.use(hybridAuthMiddleware);
 
 // ─── Member Lookup (must be BEFORE /:id routes) ────────────────────────────
 const MemberLookupService = require('../services/memberLookup.service');

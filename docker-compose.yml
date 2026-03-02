@@ -165,6 +165,13 @@ services:
 
       # Security
       SERVICE_SECRET: ${SERVICE_SECRET:?SERVICE_SECRET is required}
+
+      # Service Identity (Keycloak Client Credentials for calling auth-service)
+      EMAIL_SERVICE_CLIENT_ID: ${EMAIL_SERVICE_CLIENT_ID:-email-service}
+      EMAIL_SERVICE_CLIENT_SECRET: ${EMAIL_SERVICE_CLIENT_SECRET:-}
+
+      # Auth Service URL (internal Docker network)
+      AUTH_SERVICE_URL: http://auth-service:4000
     ports:
       - "${EMAIL_SERVICE_PORT:-4011}:4011"
     depends_on:
@@ -366,7 +373,7 @@ services:
       dockerfile: infrastructure/Dockerfile
       args:
         VITE_CLIENT_KEY: ${VITE_LOGIN_CLIENT_KEY:-account-ui}
-        VITE_AUTH_BASE_URL: ${VITE_LOGIN_AUTH_BASE_URL:-https://auth.local.test}
+        VITE_AUTH_BASE_URL: ${VITE_LOGIN_AUTH_BASE_URL:-https://account.local.test/api/auth}
         VITE_ACCOUNT_UI_URL: ${VITE_LOGIN_ACCOUNT_UI_URL:-https://account.local.test}
         VITE_REDIRECT_URI: ${VITE_LOGIN_REDIRECT_URI:-https://account.local.test/callback}
     container_name: sso-centralized-login
@@ -418,6 +425,15 @@ services:
       DB_NAME: one
       REDIS_HOST: redis
       REDIS_PORT: 6379
+
+      # Keycloak Client Credentials (service-to-service auth)
+      KEYCLOAK_URL: http://keycloak:8080
+      KEYCLOAK_REALM: my-projects
+      SERVICE_CLIENT_ID: pms-service
+      SERVICE_CLIENT_SECRET: VBEIFnak29KKCr7vWS03pEtJDdp973PB
+
+      # Auth Service URL
+      AUTH_SERVICE_URL: http://auth-service:4000
     networks:
       - auth-network
     command: [ "server.js" ]

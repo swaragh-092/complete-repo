@@ -21,7 +21,8 @@ import {
   Workspaces as WorkspacesIcon,
   People as MembersIcon,
   Settings as SettingsIcon,
-  Dashboard as OverviewIcon
+  Dashboard as OverviewIcon,
+  Email as EmailIcon
 } from '@mui/icons-material';
 import api, { extractData } from '../services/api';
 
@@ -30,6 +31,7 @@ import OrganizationOverview from '../components/organizations/OrganizationOvervi
 import OrganizationWorkspaces from '../components/organizations/OrganizationWorkspaces';
 import OrganizationMembers from '../components/organizations/OrganizationMembers';
 import OrganizationSettings from '../components/organizations/OrganizationSettings';
+import OrganizationEmailIntegration from '../components/organizations/OrganizationEmailIntegration';
 
 function TabPanel({ children, value, index, ...other }) {
   return (
@@ -127,6 +129,7 @@ export default function OrganizationDetail() {
           <Tab icon={<WorkspacesIcon />} iconPosition="start" label="Workspaces" />
           <Tab icon={<MembersIcon />} iconPosition="start" label="Members" />
           <Tab icon={<SettingsIcon />} iconPosition="start" label="Settings" />
+          <Tab icon={<EmailIcon />} iconPosition="start" label="Email Setup" />
         </Tabs>
       </Paper>
 
@@ -152,6 +155,9 @@ export default function OrganizationDetail() {
         <OrganizationSettings 
           organization={organization}
         />
+      </TabPanel>
+      <TabPanel value={tabIndex} index={4}>
+        <OrganizationEmailIntegration orgId={id} />
       </TabPanel>
     </Box>
   );

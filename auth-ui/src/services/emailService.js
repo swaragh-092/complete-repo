@@ -17,7 +17,7 @@ export const emailService = {
         const params = { page, limit, org_id, status, type };
         // Clean undefined params
         Object.keys(params).forEach(key => params[key] === undefined && delete params[key]);
-        
+
         const res = await api.get(`${BASE_URL}/history`, { params });
         return extractPaginatedData(res);
     },
@@ -44,6 +44,22 @@ export const emailService = {
      */
     cleanup: async () => {
         const res = await api.post(`${BASE_URL}/cleanup`);
+        return extractData(res);
+    },
+
+    /**
+     * Get organization settings (Auth-Service integration)
+     */
+    getOrgSettings: async (orgId) => {
+        const res = await api.get(`/organizations/${orgId}`);
+        return extractData(res)?.settings || {};
+    },
+
+    /**
+     * Update organization settings (Auth-Service integration)
+     */
+    updateOrgSettings: async (orgId, settings) => {
+        const res = await api.patch(`/organizations/${orgId}/settings`, { settings });
         return extractData(res);
     }
 };

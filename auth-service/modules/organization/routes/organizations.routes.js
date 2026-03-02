@@ -136,6 +136,7 @@ router.get('/:id', asyncHandler(async (req, res) => {
       description: organization.description,
       status: organization.status,
       tenant_id: organization.tenant_id,
+      settings: organization.settings || {},
       created_at: organization.created_at,
       updated_at: organization.updated_at,
       current_user_role: currentUserRole, // Added for UI permission checks
@@ -178,7 +179,7 @@ router.get('/:id', asyncHandler(async (req, res) => {
  * PATCH /api/organizations/:id/settings
  * Update settings (JSONB overrides) for a specific organization (Super Admin only)
  */
-router.patch('/:id/settings', authMiddleware, requireSuperAdmin, asyncHandler(async (req, res) => {
+router.patch('/:id/settings', requireSuperAdmin(), asyncHandler(async (req, res) => {
   const { updateOrgSettingsSchema } = require('../validators/settings.validator');
   const SettingsService = require('../services/settings.service');
 

@@ -60,7 +60,7 @@ const db = {
   Workspace: require('../modules/organization/models/Workspace')(sequelize),
   WorkspaceMembership: require('../modules/organization/models/WorkspaceMembership')(sequelize),
   GlobalSetting: require('../modules/organization/models/GlobalSetting')(sequelize),
-  OrganizationRequest: require('../modules/organization/models/OrganizationRequest')(sequelize),
+  OrganizationRequest: require('../modules/organization/models/OrganizationRequest')(sequelize, Sequelize.DataTypes),
   WorkspaceInvitation: require('../modules/organization/models/WorkspaceInvitation')(sequelize)
 };
 

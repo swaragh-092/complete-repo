@@ -13,6 +13,7 @@ const {
   auditLogUpdateHelperFunction,
 } = require("../../util/helper");
 const { DOMAIN } = require("../../config/config");
+const { authClient } = require('../serviceClients');
 
 const { createNotification } = require("../notification/notification.service");
 const { queryWithLogAudit } = require("../auditLog.service");
@@ -456,31 +457,24 @@ class TaskService {
 
       if (uniqueUserIds.length > 0) {
         try {
-          const authResponse = await fetch(
+          // Use service-to-service auth (Client Credentials) instead of
+          // forwarding the user's browser JWT.
+          const authServiceClient = authClient();
+          const authResponse = await authServiceClient.post(
             `${DOMAIN.auth}/auth/workspaces/members/lookup`,
             {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: req.headers.authorization || "",
-              },
-              body: JSON.stringify({
-                user_ids: uniqueUserIds,
-                workspace_ids: uniqueDepartmentIds, // departments = workspaces
-                user_id_type: "id", // PMS stores UserMetadata.id
-              }),
+              user_ids: uniqueUserIds,
+              workspace_ids: uniqueDepartmentIds, // departments = workspaces
+              user_id_type: "id", // PMS stores UserMetadata.id
             },
           );
 
           console.log(`[getTasks] Auth-service lookup response:`, {
             status: authResponse.status,
-            ok: authResponse.ok,
-            full: authResponse
           });
 
-          if (authResponse.ok) {
-            const authData = await authResponse.json();
-            const members = authData?.data?.members || [];
+          if (authResponse.data) {
+            const members = authResponse.data?.data?.members || [];
 
             // Build map: UserMetadata.id → { id, name, email }
             const userDetailsMap = {};

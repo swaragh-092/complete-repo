@@ -106,9 +106,15 @@ class EmailProvider {
 
     /**
      * Send HTML email with automatic failover
-     * Tries primary first, falls back to backup if primary fails
+     * Tries primary first, falls back to backup if primary fails.
+     * Optionally accepts a custom provider config (used for per-org overrides).
+     * 
+     * @param {string} to 
+     * @param {string} subject 
+     * @param {string} html 
+     * @param {object} [customConfig] { isEnabled, host, port, user, password }
      */
-    async sendHtml(to, subject, html) {
+    async sendHtml(to, subject, html, customConfig = null) {
         const mailOptions = {
             from: `"${this.appName}" <${this.fromEmail}>`,
             to,
@@ -116,7 +122,27 @@ class EmailProvider {
             html,
         };
 
-        // Try primary
+        // 1. Try Custom Config First (if enabled)
+        if (customConfig && customConfig.isEnabled && customConfig.host) {
+            try {
+                const customTransporter = this._createTransporter(
+                    customConfig.host,
+                    parseInt(customConfig.port) || 587,
+                    customConfig.user,
+                    customConfig.password
+                );
+                const info = await customTransporter.sendMail(mailOptions);
+                logger.info(`✅ Email sent via CUSTOM ORG SMTP to ${to}`, { messageId: info.messageId });
+                return { ...info, provider: 'custom_org' };
+            } catch (customError) {
+                logger.error(`❌ Custom Org SMTP failed for ${to}`, { error: customError.message });
+                // We do NOT fallback to system if custom failed, because they explicitly wanted to use theirs.
+                // Or maybe we should? Usually it's better to fail so they know their credentials are bad.
+                throw customError;
+            }
+        }
+
+        // 2. Try default primary
         try {
             const primary = this._getPrimary();
             const info = await primary.sendMail(mailOptions);

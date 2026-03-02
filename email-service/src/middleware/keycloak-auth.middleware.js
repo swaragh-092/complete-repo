@@ -21,7 +21,7 @@ const client = jwksClient({
  * Fetch signing key from Keycloak
  */
 function getKey(header, callback) {
-    client.getSigningKey(header.kid, function(err, key) {
+    client.getSigningKey(header.kid, function (err, key) {
         if (err) {
             logger.error('Error fetching signing key', { error: err.message });
             return callback(err, null);
@@ -41,13 +41,15 @@ const keycloakAuth = (req, res, next) => {
         const authHeader = req.headers.authorization;
 
         if (!authHeader || !authHeader.startsWith('Bearer ')) {
-            // For backward compatibility during migration, check legacy secret
-            // TODO: Remove this after all callers are migrated
-            if (req.headers['x-service-secret'] === config.SERVICE_SECRET) {
-                req.user = { 
-                    sub: 'legacy-service', 
-                    is_service: true, 
-                    roles: ['legacy-admin'] 
+            // ── Legacy: x-service-secret fallback (togglable) ───────────
+            const LEGACY_AUTH_ENABLED = process.env.LEGACY_AUTH_ENABLED !== 'false';
+
+            if (LEGACY_AUTH_ENABLED && req.headers['x-service-secret'] === config.SERVICE_SECRET) {
+                logger.warn('[keycloak-auth] ⚠️ DEPRECATED: Request authenticated via x-service-secret. Migrate to JWT.');
+                req.user = {
+                    sub: 'legacy-service',
+                    is_service: true,
+                    roles: ['legacy-admin']
                 };
                 return next();
             }
@@ -72,13 +74,13 @@ const keycloakAuth = (req, res, next) => {
             req.user = {
                 sub: decoded.sub,                   // User ID or Service Client ID
                 email: decoded.email,               // Present for users, missing for services
-                
+
                 // Roles can be in realm_access or resource_access depending on config
                 roles: decoded.realm_access?.roles || [],
-                
+
                 client_id: decoded.azp,             // Authorized party (client_id)
                 is_service: !decoded.email,         // Services typically don't have email
-                
+
                 // Organization context (if present in custom claims)
                 org_id: decoded.org_id || decoded.tenant_id
             };
@@ -108,16 +110,16 @@ const requireRole = (role) => {
 
         // Check if user has the required role
         const hasRole = req.user.roles.includes(role);
-        
+
         // Legacy bypass
         if (req.user.sub === 'legacy-service') {
             return next();
         }
 
         if (!hasRole) {
-            logger.warn('Access denied: missing role', { 
-                required: role, 
-                user: req.user.sub 
+            logger.warn('Access denied: missing role', {
+                required: role,
+                user: req.user.sub
             });
             return next(AppError.forbidden(`Requires role: ${role}`));
         }
