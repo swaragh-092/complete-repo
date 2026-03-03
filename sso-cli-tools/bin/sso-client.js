@@ -450,7 +450,7 @@ async function createViteFiles(answers) {
       APP_NAME: answers.appName,
       CLIENT_KEY: answers.clientKey,
       AUTH_BASE_URL: dockerAuthUrl,
-      API_URL: `${dockerAuthUrl}/api/admin`,
+      API_URL: `${dockerAuthUrl}/admin`,
       AUTH_URL: `${dockerAuthUrl}/auth`,
       ACCOUNT_UI_URL: dockerAccountUrl,
       CALLBACK_URL: dockerCallbackUrl
@@ -465,7 +465,7 @@ async function createViteFiles(answers) {
       DIRECTORY_NAME: answers.clientKey,
       CLIENT_KEY: answers.clientKey,
       AUTH_BASE_URL: dockerAuthUrl,
-      API_URL: `${dockerAuthUrl}/api/admin`,
+      API_URL: `${dockerAuthUrl}/admin`,
       AUTH_URL: `${dockerAuthUrl}/auth`,
       ACCOUNT_UI_URL: dockerAccountUrl,
       CALLBACK_URL: dockerCallbackUrl

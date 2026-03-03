@@ -13,7 +13,7 @@ class IdpService {
      */
     async getIdentityProviders(realm) {
         try {
-            const res = await api.get(`/api/admin/${realm}/identity-provider`);
+            const res = await api.get(`/admin/${realm}/identity-provider`);
             return extractData(res);
         } catch (error) {
             console.error(`Failed to fetch identity providers for ${realm}:`, error);
@@ -29,7 +29,7 @@ class IdpService {
      */
     async getIdentityProvider(realm, alias) {
         try {
-            const res = await api.get(`/api/admin/${realm}/identity-provider/${alias}`);
+            const res = await api.get(`/admin/${realm}/identity-provider/${alias}`);
             return extractData(res);
         } catch (error) {
             console.error(`Failed to fetch identity provider ${alias}:`, error);
@@ -45,7 +45,7 @@ class IdpService {
      */
     async createIdentityProvider(realm, idpData) {
         try {
-            const res = await api.post(`/api/admin/${realm}/identity-provider`, idpData);
+            const res = await api.post(`/admin/${realm}/identity-provider`, idpData);
             return extractData(res);
         } catch (error) {
             console.error('Failed to create identity provider:', error);
@@ -62,7 +62,7 @@ class IdpService {
      */
     async updateIdentityProvider(realm, alias, idpData) {
         try {
-            const res = await api.put(`/api/admin/${realm}/identity-provider/${alias}`, idpData);
+            const res = await api.put(`/admin/${realm}/identity-provider/${alias}`, idpData);
             return extractData(res);
         } catch (error) {
             console.error(`Failed to update identity provider ${alias}:`, error);
@@ -78,7 +78,7 @@ class IdpService {
      */
     async deleteIdentityProvider(realm, alias) {
         try {
-            await api.delete(`/api/admin/${realm}/identity-provider/${alias}`);
+            await api.delete(`/admin/${realm}/identity-provider/${alias}`);
         } catch (error) {
             console.error(`Failed to delete identity provider ${alias}:`, error);
             throw error;

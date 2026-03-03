@@ -1,20 +1,24 @@
 /**
  * routes/index.js - Central Router Entry Point
  * 
- * This file aggregates all domain routers and mounts them at their respective paths.
- * It serves as the single entry point for all route definitions.
+ * ALL routes are mounted under the /auth prefix.
+ * This is the single entry point for all route definitions.
  * 
- * IMPORTANT: All external URLs remain unchanged from the original implementation.
- * Only the internal code organization has been improved.
+ * URL Pattern: https://auth.local.test/auth/...
  * 
  * Domain Groups:
- * - auth: Core authentication (login, logout, callback, token refresh)
- * - account: User account management (sessions, 2FA, security settings)
- * - admin: Keycloak Admin API (realms, clients, users, roles)
- * - organizations: Organization CRUD, memberships, and onboarding
- * - permissions: Database RBAC (permissions and db-roles)
- * - clients: Client registration requests workflow
- * - audit: Audit logging and history
+ * - /auth/login, /auth/callback, /auth/logout, /auth/refresh  → Core auth flows
+ * - /auth/account/...       → User account management (profile, sessions, security)
+ * - /auth/admin/...         → Keycloak Admin API (realms, clients, users)
+ * - /auth/organizations/... → Organization CRUD, memberships, settings, requests
+ * - /auth/workspaces/...    → Workspace management
+ * - /auth/permissions/...   → RBAC (permissions, db-roles)
+ * - /auth/roles/...         → Keycloak roles
+ * - /auth/clients/...       → Client management + registration
+ * - /auth/audit/...         → Audit logging
+ * - /auth/trusted-devices/... → Trusted device management
+ * - /auth/authz/...         → Enterprise Authorization (policies, relationships)
+ * - /auth/internal/...      → Internal service APIs
  */
 
 const express = require('express');
@@ -24,110 +28,59 @@ const router = express.Router();
 // Domain Router Imports
 // ============================================================================
 
-// Auth domain - core authentication and account management
 const authRouter = require('./auth');
-
-// Admin domain - Keycloak Admin API operations
 const adminRouter = require('./admin');
-
-// Organizations domain - org CRUD, memberships, onboarding
-// (Delegated to Authorization Module)
-
-// Permissions domain - RBAC (permissions and database roles)
 const permissionsRouter = require('./permissions');
-
-// Clients domain - client registration requests
 const clientsRouter = require('./clients');
-
-// Audit domain - audit logging
 const auditRouter = require('./audit');
-
-// Authorization Module - Enterprise Authorization Management
-const authorizationModule = require('../modules/authorization');
 const authorizationManagementRouter = require('../modules/authorization/routes/management.routes');
+const organizationModule = require('../modules/organization');
+const orgRolesRouter = require('./roles');
 
 // ============================================================================
-// Mount Domain Routers
-// IMPORTANT: External URLs remain unchanged
+// Mount All Routes Under /auth
 // ============================================================================
 
-// Client registration routes (mounted first to prevent shadowing by authRouter)
+// --- Core Auth (login, callback, logout, refresh, client-requests) ---
 router.use('/auth', clientsRouter);
-
-// Auth routes: /auth/*
 router.use('/auth', authRouter);
 
-// Admin API routes: /api/admin/*
-router.use('/api/admin', adminRouter);
+// --- Admin API (Keycloak Admin operations) ---
+router.use('/auth/admin', adminRouter);
 
-// Realms routes: /realms/* (backward compatibility - duplicate mount)
-// NOTE: Realms are also accessible via /api/admin/realms
-router.use('/realms', require('./admin/realms.routes'));
-
-// Roles routes: /roles/* (backward compatibility)
-router.use('/roles', require('./admin/roles.routes'));
-router.use('/auth/roles', require('./admin/roles.routes')); // For auth-client compatibility
-
-// Users routes: /users/* (backward compatibility)
-router.use('/users', require('./admin/users.routes'));
-
-// Clients routes: /clients/* (backward compatibility for admin client routes)
-// Note: Client registration requests are mounted separately
-router.use('/clients', require('./admin/clients.routes'));
-
-// Organization routes
-const organizationModule = require('../modules/organization');
+// --- Organizations ---
 router.use('/auth/organizations', organizationModule.crud);
-router.use('/organizations', organizationModule.crud); // Frontend compatibility
-router.use('/organization-memberships', organizationModule.memberships);
-router.use('/org-onboarding', organizationModule.onboarding);
-router.use('/auth/org-onboarding', organizationModule.onboarding); // For auth-client compatibility
+router.use('/auth/organization-memberships', organizationModule.memberships);
+router.use('/auth/org-onboarding', organizationModule.onboarding);
+router.use('/auth/organizations/settings', organizationModule.settings);
+router.use('/auth/organizations/requests', organizationModule.requests);
+router.use('/auth/organizations', organizationModule.requests); // For /:id/requests
 
-// Permissions routes
-router.use('/permissions', permissionsRouter.permissions);
-router.use('/auth/permissions', permissionsRouter.permissions); // For auth-client compatibility
-router.use('/db-roles', permissionsRouter.dbRoles);
-router.use('/auth/db-roles', permissionsRouter.dbRoles); // For auth-client compatibility
+// --- RBAC ---
+router.use('/auth/roles', require('./admin/roles.routes'));
+router.use('/auth/permissions', permissionsRouter.permissions);
+router.use('/auth/db-roles', permissionsRouter.dbRoles);
+router.use('/auth/org-roles', orgRolesRouter);
 
-// Client registration routes (different from admin client routes)
-router.use('/auth', clientsRouter);
+// --- Users, Clients, Realms ---
+router.use('/auth/users', require('./admin/users.routes'));
+router.use('/auth/clients', require('./admin/clients.routes'));
+router.use('/auth/realms', require('./admin/realms.routes'));
 
-// Audit routes
+// --- Workspaces ---
+router.use('/auth/workspaces', organizationModule.workspaces);
+
+// --- Security & Audit ---
+router.use('/auth/trusted-devices', require('./trusted-devices.route'));
 router.use('/auth/audit', auditRouter);
 
-// Authorization Management API (Enterprise)
-// Exposed under /api/v1/authz for policy and relationship management
-// Protected by RBAC (policy:read, etc.) within the routes themselves
-router.use('/api/v1/authz', authorizationManagementRouter);
+// --- Enterprise Authorization (policies, relationships) ---
+router.use('/auth/authz', authorizationManagementRouter);
 
-// RBAC Org-Scoped Roles API (custom roles per organization)
-const orgRolesRouter = require('./roles');
-router.use('/api/org-roles', orgRolesRouter);
-router.use('/auth/api/org-roles', orgRolesRouter); // For auth-client compatibility
+// --- Internal Service APIs ---
+router.use('/auth/internal', require('./internal.routes'));
 
-// Trusted devices routes
-router.use('/auth/trusted-devices', require('./trusted-devices.route'));
-
-// Workspace routes
-router.use('/auth/workspaces', organizationModule.workspaces); // For auth-client compatibility
-router.use('/workspaces', organizationModule.workspaces); // For auth-ui compatibility
-
-// Internal Service APIs (Protected by x-service-secret)
-router.use('/api/internal', require('./internal.routes'));
-
-// Organization Settings (Global)
-router.use('/api/organizations/settings', organizationModule.settings);
-router.use('/auth/api/organizations/settings', organizationModule.settings); // For auth-client compatibility
-
-// Organization Requests (Limit increases, features, etc)
-router.use('/api/organizations/requests', organizationModule.requests); // For GET /requests
-router.use('/api/organizations', organizationModule.requests); // For GET /:id/requests
-router.use('/auth/api/organizations', organizationModule.requests); // For auth-client compatibility
-router.use('/auth/api/organizations/requests', organizationModule.requests);
-
-// Test auth routes (development only)
-router.use('/test-auth', require('./test-auth-routes'));
-
-
+// --- Test routes (development only) ---
+router.use('/auth/test-auth', require('./test-auth-routes'));
 
 module.exports = router;

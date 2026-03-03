@@ -1,19 +1,26 @@
-# Use the official Keycloak image
+# ═══════════════════════════════════════════════════════
+# Dockerfile for Keycloak (Production Build)
+# ═══════════════════════════════════════════════════════
+FROM quay.io/keycloak/keycloak:latest AS builder
+
+# Build an optimized Keycloak distribution
+ENV KC_DB=postgres
+RUN /opt/keycloak/bin/kc.sh build
+
+# ───────────────────────────────────────────────────────
+# Production Stage
+# ───────────────────────────────────────────────────────
 FROM quay.io/keycloak/keycloak:latest
 
-# Set environment variables
-ENV KEYCLOAK_ADMIN=admin
-ENV KEYCLOAK_ADMIN_PASSWORD=admin123
+# Copy optimized build from builder stage
+COPY --from=builder /opt/keycloak/ /opt/keycloak/
 
-# Set the database info (you can override using Render's environment settings)
-ENV KC_DB=postgres
-ENV KC_DB_URL=jdbc:postgresql://dpg-d1rra3be5dus73c4aje0-a:5432/keycloak_osu4
-ENV KC_DB_USERNAME=keycloak
-ENV KC_DB_PASSWORD=jxr0uz7EAo3JQDY5z5reWFLWWaiTK5Hf
+# All sensitive config via env vars at runtime — NO hardcoded secrets
+# Set these in docker-compose.yml or deployment platform:
+#   KC_DB_URL, KC_DB_USERNAME, KC_DB_PASSWORD
+#   KEYCLOAK_ADMIN, KEYCLOAK_ADMIN_PASSWORD
 
-# Expose port
-EXPOSE 8080
+EXPOSE 8080 8443
 
-# Run Keycloak in development mode (or remove --dev for production)
 ENTRYPOINT ["/opt/keycloak/bin/kc.sh"]
 CMD ["start", "--optimized"]

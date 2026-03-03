@@ -6,8 +6,13 @@ import EmailTemplates from '../../pages/email/EmailTemplates';
 
 function TabPanel({ children, value, index, ...other }) {
   return (
-    <div role="tabpanel" hidden={value !== index} {...other}>
-      {value === index && <Box sx={{ py: 3 }}>{children}</Box>}
+    <div
+      role="tabpanel"
+      hidden={value !== index}
+      style={{ display: value !== index ? 'none' : undefined }}
+      {...other}
+    >
+      <Box sx={{ py: 3 }}>{children}</Box>
     </div>
   );
 }

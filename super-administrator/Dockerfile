@@ -17,6 +17,7 @@ RUN npm ci --only=production && npm cache clean --force
 FROM node:20-alpine AS production
 
 ENV NODE_ENV=production
+ENV NODE_OPTIONS="--max-old-space-size=192"
 
 WORKDIR /app
 

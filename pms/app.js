@@ -70,84 +70,88 @@ app.get("/health", (req, res) => {
 
 
 if (process.env.NODE_ENV !== 'production') {
-  const swaggerUi = require('swagger-ui-express');
-  const swaggerJsdoc = require('swagger-jsdoc');
-  const options = {
-    definition: {
-      openapi: '3.0.0',
-      info: {
-        title: 'PMS API',
-        version: '1.0.0',
-        description: 'Project Management System API',
+  try {
+    const swaggerUi = require('swagger-ui-express');
+    const swaggerJsdoc = require('swagger-jsdoc');
+    const options = {
+      definition: {
+        openapi: '3.0.0',
+        info: {
+          title: 'PMS API',
+          version: '1.0.0',
+          description: 'Project Management System API',
+        },
+        servers: [
+          {
+            url: 'http://localhost:3015',
+            description: 'Local Development Server',
+          },
+          {
+            url: 'https://pms.local.test',
+            description: 'Production Server',
+          }
+        ],
+        tags: [
+          {
+            name: 'Log',
+            description: 'Standup and daily logs related endpoints'
+          },
+          {
+            name: 'Project',
+            description: 'Project related endpoints'
+          },
+          {
+            name: 'Feature',
+            description: 'Feature related endpoints'
+          },
+          {
+            name: 'Issue',
+            description: 'Issue related endpoints'
+          },
+          {
+            name: 'Notification',
+            description: 'Notification related endpoints'
+          },
+          {
+            name: 'Task',
+            description: 'Task related endpoints'
+          },
+        ]
       },
-      servers: [
-        {
-          url: 'http://localhost:3015',
-          description: 'Local Development Server',
-        },
-        {
-          url: 'https://pms.local.test',
-          description: 'Production Server',
-        }
-      ],
-      tags: [
-        {
-          name: 'Log',
-          description: 'Standup and daily logs related endpoints'
-        },
-        {
-          name: 'Project',
-          description: 'Project related endpoints'
-        },
-        {
-          name: 'Feature',
-          description: 'Feature related endpoints'
-        },
-        {
-          name: 'Issue',
-          description: 'Issue related endpoints'
-        },
-        {
-          name: 'Notification',
-          description: 'Notification related endpoints'
-        },
-        {
-          name: 'Task',
-          description: 'Task related endpoints'
-        },
-      ]
-    },
-    apis: ['./routes/**/*.js', './app.js'], 
-  };
+      apis: ['./routes/**/*.js', './app.js'],
+    };
 
 
-  const swaggerSpec = swaggerJsdoc(options);
+    const swaggerSpec = swaggerJsdoc(options);
 
-   // Replace {moduleCode} in paths with actual MODULE_CODE
-  swaggerSpec.paths = Object.fromEntries(
-    Object.entries(swaggerSpec.paths).map(([path, val]) => [
-      path.replace("{moduleCode}", config.MODULE_CODE),
-      val,
-    ])
-  );
+    // Replace {moduleCode} in paths with actual MODULE_CODE
+    swaggerSpec.paths = Object.fromEntries(
+      Object.entries(swaggerSpec.paths).map(([path, val]) => [
+        path.replace("{moduleCode}", config.MODULE_CODE),
+        val,
+      ])
+    );
 
-  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+    app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+  } catch (e) {
+    console.log('ℹ️  Swagger not available (devDependency not installed)');
+  }
 }
 
 
 // routers 
 app.use(require("./middleware/dataValidation.middleware"));
-app.use(require("./middleware/dbConnection.middleware").getTenantDB); 
+app.use(require("./middleware/dbConnection.middleware").getTenantDB);
 
 
-app.use("/"+ require('./config/config').MODULE_CODE, require("./routes"));
+app.use("/" + require('./config/config').MODULE_CODE, require("./routes"));
 
 // 404 response for invalid routes
 app.use((req, res,) => {
   console.log("Invalid URL accessed:", req.path);
   res.status(404).json({ message: "Invalid URL Accessed: " + req.path });
 });
- 
+
 // 500 response for server errors
 app.use((error, req, res) => {
   // console.log(error);

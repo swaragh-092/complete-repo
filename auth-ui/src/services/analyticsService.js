@@ -13,7 +13,7 @@ class AnalyticsService {
      */
     async getSessionStats(realm) {
         try {
-            const res = await api.get(`/api/admin/${realm}/analytics/session-stats`);
+            const res = await api.get(`/admin/${realm}/analytics/session-stats`);
             return extractData(res);
         } catch (error) {
             console.error(`Failed to fetch session stats for ${realm}:`, error);
@@ -40,7 +40,7 @@ class AnalyticsService {
                 to: endDate.toISOString().split('T')[0]
             };
 
-            const res = await api.get(`/api/admin/${realm}/analytics/login-stats`, { params });
+            const res = await api.get(`/admin/${realm}/analytics/login-stats`, { params });
             return extractData(res);
         } catch (error) {
             console.error(`Failed to fetch login stats for ${realm}:`, error);

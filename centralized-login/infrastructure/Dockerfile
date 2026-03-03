@@ -36,11 +36,21 @@ RUN npm run build
 # ───────────────────────────────────────────────────────
 FROM nginx:alpine AS production
 
+# Remove default nginx config
+RUN rm -rf /etc/nginx/conf.d/default.conf
+
 # Copy custom nginx config
 COPY infrastructure/nginx.conf /etc/nginx/conf.d/default.conf
 
 # Copy built assets from build stage
 COPY --from=build /app/dist /usr/share/nginx/html
+
+# Ensure nginx can write to temp and cache directories
+RUN chown -R nginx:nginx /var/cache/nginx /var/log/nginx /run && \
+    chmod -R 755 /var/cache/nginx /var/log/nginx /run
+
+# Run as non-root
+USER nginx
 
 # Expose port 80
 EXPOSE 80

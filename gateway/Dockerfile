@@ -14,6 +14,9 @@ COPY conf.d/ /etc/nginx/conf.d/
 COPY certs/ /etc/nginx/certs/
 COPY snippets/ /etc/nginx/snippets/
 
+# Set proper permissions on certs (read-only for safety)
+RUN chmod 600 /etc/nginx/certs/*.pem
+
 EXPOSE 80 443
 
 # Health check

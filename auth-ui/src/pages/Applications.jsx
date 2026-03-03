@@ -35,7 +35,7 @@ function Applications() {
   // Fetch applications
   const { data: response, isLoading, error } = useQuery({
     queryKey: ['applications', search],
-    queryFn: () => api.get('/api/admin/applications').then(extractData)
+    queryFn: () => api.get('/admin/applications').then(extractData)
   });
 
   const applications = response || [];

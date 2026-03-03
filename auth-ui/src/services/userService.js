@@ -20,7 +20,7 @@ class UserService {
    * @returns {Promise<Object>} Paginated user data
    */
   async getAllUsers({ realm, page = 1, limit = 10, search = '' } = {}) {
-    const res = await api.get(`/api/admin/${realm}/users`, {
+    const res = await api.get(`/admin/${realm}/users`, {
       params: { page, limit, search }
     });
     return extractPaginatedData(res);
@@ -33,7 +33,7 @@ class UserService {
    * @returns {Promise<Object>} User details
    */
   async getUser(userId, realm) {
-    const res = await api.get(`/api/admin/${realm}/users/${userId}`);
+    const res = await api.get(`/admin/${realm}/users/${userId}`);
     return extractData(res);
   }
 
@@ -44,7 +44,7 @@ class UserService {
    * @returns {Promise<Object>} Created user data
    */
   async createUser(realm, userData) {
-    const res = await api.post(`/api/admin/${realm}/users`, userData);
+    const res = await api.post(`/admin/${realm}/users`, userData);
     return extractData(res);
   }
 
@@ -56,7 +56,7 @@ class UserService {
    * @returns {Promise<Object>} Updated user data
    */
   async updateUser(userId, updates, realm) {
-    const res = await api.patch(`/api/admin/${realm}/users/${userId}`, updates);
+    const res = await api.patch(`/admin/${realm}/users/${userId}`, updates);
     return extractData(res);
   }
 
@@ -67,7 +67,7 @@ class UserService {
    * @returns {Promise<void>}
    */
   async deleteUser(realm, userId) {
-    await api.delete(`/api/admin/${realm}/users/${userId}`);
+    await api.delete(`/admin/${realm}/users/${userId}`);
   }
 
   /**
@@ -78,7 +78,7 @@ class UserService {
    * @returns {Promise<Object>} Updated user data
    */
   async toggleUserStatus(userId, enabled, realm) {
-    const res = await api.patch(`/api/admin/${realm}/users/${userId}/enabled`, { enabled });
+    const res = await api.patch(`/admin/${realm}/users/${userId}/enabled`, { enabled });
     return extractData(res);
   }
 
@@ -90,7 +90,7 @@ class UserService {
    * @returns {Promise<Object>} Response data
    */
   async resetPassword(userId, passwordData, realm) {
-    const res = await api.post(`/api/admin/${realm}/users/${userId}/password/reset`, passwordData);
+    const res = await api.post(`/admin/${realm}/users/${userId}/password/reset`, passwordData);
     return extractData(res);
   }
 
@@ -101,7 +101,7 @@ class UserService {
    * @returns {Promise<Object>} Response data
    */
   async sendPasswordResetEmail(userId, realm) {
-    const res = await api.post(`/api/admin/${realm}/users/${userId}/send-password-reset`, {});
+    const res = await api.post(`/admin/${realm}/users/${userId}/send-password-reset`, {});
     return extractData(res);
   }
 
@@ -112,7 +112,7 @@ class UserService {
    * @returns {Promise<Array>} User sessions
    */
   async getUserSessions(userId, realm) {
-    const res = await api.get(`/api/admin/${realm}/users/${userId}/sessions`);
+    const res = await api.get(`/admin/${realm}/users/${userId}/sessions`);
     return extractData(res);
   }
 
@@ -123,7 +123,7 @@ class UserService {
    * @returns {Promise<void>}
    */
   async logoutAllSessions(userId, realm) {
-    await api.post(`/api/admin/${realm}/users/${userId}/logout`, {});
+    await api.post(`/admin/${realm}/users/${userId}/logout`, {});
   }
 
   /**
@@ -133,7 +133,7 @@ class UserService {
    * @returns {Promise<Array>} User realm roles
    */
   async getUserRealmRoles(userId, realm) {
-    const res = await api.get(`/api/admin/${realm}/users/${userId}/roles/realm`);
+    const res = await api.get(`/admin/${realm}/users/${userId}/roles/realm`);
     return extractData(res);
   }
 
@@ -145,7 +145,7 @@ class UserService {
    * @returns {Promise<Object>} Response data
    */
   async assignRealmRoles(userId, roles, realm) {
-    const res = await api.post(`/api/admin/${realm}/users/${userId}/roles/realm/assign`, { roles });
+    const res = await api.post(`/admin/${realm}/users/${userId}/roles/realm/assign`, { roles });
     return extractData(res);
   }
 
@@ -157,7 +157,7 @@ class UserService {
    * @returns {Promise<void>}
    */
   async removeRealmRoles(userId, roles, realm) {
-    await api.post(`/api/admin/${realm}/users/${userId}/roles/realm/remove`, { roles });
+    await api.post(`/admin/${realm}/users/${userId}/roles/realm/remove`, { roles });
   }
 
   /**
@@ -168,7 +168,7 @@ class UserService {
    * @returns {Promise<Array>} User client roles
    */
   async getUserClientRoles(userId, clientId, realm) {
-    const res = await api.get(`/api/admin/${realm}/users/${userId}/roles/client/${clientId}`);
+    const res = await api.get(`/admin/${realm}/users/${userId}/roles/client/${clientId}`);
     return extractData(res);
   }
 
@@ -181,7 +181,7 @@ class UserService {
    * @returns {Promise<Object>} Response data
    */
   async assignClientRoles(userId, clientId, roles, realm) {
-    const res = await api.post(`/api/admin/${realm}/users/${userId}/roles/client/${clientId}`, { roles });
+    const res = await api.post(`/admin/${realm}/users/${userId}/roles/client/${clientId}`, { roles });
     return extractData(res);
   }
 
@@ -194,7 +194,7 @@ class UserService {
    * @returns {Promise<void>}
    */
   async removeClientRoles(userId, clientId, roles, realm) {
-    await api.delete(`/api/admin/${realm}/users/${userId}/roles/client/${clientId}`, { data: { roles } });
+    await api.delete(`/admin/${realm}/users/${userId}/roles/client/${clientId}`, { data: { roles } });
   }
 
   /**
@@ -204,7 +204,7 @@ class UserService {
    * @returns {Promise<Array>} User groups
    */
   async getUserGroups(userId, realm) {
-    const res = await api.get(`/api/admin/${realm}/users/${userId}/groups`);
+    const res = await api.get(`/admin/${realm}/users/${userId}/groups`);
     return extractData(res);
   }
 
@@ -216,7 +216,7 @@ class UserService {
    * @returns {Promise<void>}
    */
   async addToGroup(userId, groupId, realm) {
-    await api.put(`/api/admin/${realm}/users/${userId}/groups/${groupId}`, {});
+    await api.put(`/admin/${realm}/users/${userId}/groups/${groupId}`, {});
   }
 
   /**
@@ -227,7 +227,7 @@ class UserService {
    * @returns {Promise<void>}
    */
   async removeFromGroup(userId, groupId, realm) {
-    await api.delete(`/api/admin/${realm}/users/${userId}/groups/${groupId}`);
+    await api.delete(`/admin/${realm}/users/${userId}/groups/${groupId}`);
   }
 
   /**
@@ -237,7 +237,7 @@ class UserService {
    * @returns {Promise<Object>} Response data
    */
   async verifyEmail(userId, realm) {
-    const res = await api.post(`/api/admin/${realm}/users/${userId}/email/verify`, {});
+    const res = await api.post(`/admin/${realm}/users/${userId}/email/verify`, {});
     return extractData(res);
   }
 
@@ -252,7 +252,7 @@ class UserService {
     // but assuming it follows the pattern if it exists.
     // Based on provided routes, verifyEmail exists but sendVerificationEmail might be different.
     // Keeping it consistent with previous implementation but updating path.
-    const res = await api.post(`/api/admin/${realm}/users/${userId}/send-verify-email`, {});
+    const res = await api.post(`/admin/${realm}/users/${userId}/send-verify-email`, {});
     return extractData(res);
   }
 
@@ -263,7 +263,7 @@ class UserService {
    * @returns {Promise<Array>} User credentials
    */
   async getUserCredentials(userId, realm) {
-    const res = await api.get(`/api/admin/${realm}/users/${userId}/credentials`);
+    const res = await api.get(`/admin/${realm}/users/${userId}/credentials`);
     return extractData(res);
   }
 
@@ -275,7 +275,7 @@ class UserService {
    * @returns {Promise<void>}
    */
   async deleteCredential(userId, credentialId, realm) {
-    await api.delete(`/api/admin/${realm}/users/${userId}/credentials/${credentialId}`);
+    await api.delete(`/admin/${realm}/users/${userId}/credentials/${credentialId}`);
   }
 
   /**
@@ -289,7 +289,7 @@ class UserService {
     // If there is a specific GET /attributes route, use it. Otherwise, this might be redundant if getUser returns attributes.
     // Assuming GET /attributes exists or falling back to getUser.
     // Based on routes: PATCH /:userId/attributes exists. GET is not explicitly shown but likely standard.
-    const res = await api.get(`/api/admin/${realm}/users/${userId}/attributes`);
+    const res = await api.get(`/admin/${realm}/users/${userId}/attributes`);
     return extractData(res);
   }
 
@@ -301,7 +301,7 @@ class UserService {
    * @returns {Promise<Object>} Response data
    */
   async updateUserAttributes(userId, attributes, realm) {
-    const res = await api.patch(`/api/admin/${realm}/users/${userId}/attributes`, attributes);
+    const res = await api.patch(`/admin/${realm}/users/${userId}/attributes`, attributes);
     return extractData(res);
   }
 
@@ -312,7 +312,7 @@ class UserService {
    * @returns {Promise<Array>} Matching users
    */
   async searchUsers(searchParams, realm) {
-    const res = await api.get(`/api/admin/${realm}/users/search`, { params: searchParams });
+    const res = await api.get(`/admin/${realm}/users/search`, { params: searchParams });
     return extractData(res);
   }
 
@@ -322,7 +322,7 @@ class UserService {
    * @returns {Promise<number>} User count
    */
   async countUsers(realm) {
-    const res = await api.get(`/api/admin/${realm}/users/count`);
+    const res = await api.get(`/admin/${realm}/users/count`);
     const data = extractData(res);
     return data?.count ?? data;
   }
@@ -334,7 +334,7 @@ class UserService {
    * @returns {Promise<Array>} User events
    */
   async getUserEvents(userId, realm) {
-    const res = await api.get(`/api/admin/${realm}/users/${userId}/events`);
+    const res = await api.get(`/admin/${realm}/users/${userId}/events`);
     return extractData(res);
   }
 }

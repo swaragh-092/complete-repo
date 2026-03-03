@@ -22,7 +22,7 @@ class ClientService {
    * @returns {Promise<Object>} Paginated client data
    */
   async getAllClients({ page = 1, limit = 10, search = '', sortBy = 'clientId', sortOrder = 'asc', realm = '' } = {}) {
-    const endpoint = realm ? `/api/admin/${realm}/clients` : '/api/admin/clients';
+    const endpoint = realm ? `/admin/${realm}/clients` : '/admin/clients';
     const res = await api.get(endpoint, {
       params: { page, limit, search, sortBy, sortOrder }
     });
@@ -42,7 +42,7 @@ class ClientService {
    * @returns {Promise<Object>} Client details
    */
   async getClient(clientId, realm) {
-    const res = await api.get(`/api/admin/${realm}/clients/${clientId}`);
+    const res = await api.get(`/admin/${realm}/clients/${clientId}`);
     return extractData(res);
   }
 
@@ -54,7 +54,7 @@ class ClientService {
    */
   async createClient(clientData) {
     const realm = clientData.realm || 'master';
-    const res = await api.post(`/api/admin/${realm}/clients`, clientData);
+    const res = await api.post(`/admin/${realm}/clients`, clientData);
     return extractData(res);
   }
 
@@ -66,7 +66,7 @@ class ClientService {
    * @returns {Promise<Object>} Updated client data
    */
   async updateClient(clientId, updates, realm) {
-    const res = await api.patch(`/api/admin/${realm}/clients/${clientId}`, updates);
+    const res = await api.patch(`/admin/${realm}/clients/${clientId}`, updates);
     return extractData(res);
   }
 
@@ -77,7 +77,7 @@ class ClientService {
    * @returns {Promise<void>}
    */
   async deleteClient(clientId, realm) {
-    await api.delete(`/api/admin/${realm}/clients/${clientId}`);
+    await api.delete(`/admin/${realm}/clients/${clientId}`);
   }
 
   /**
@@ -98,7 +98,7 @@ class ClientService {
    * @returns {Promise<Object>} Client secret data
    */
   async getClientSecret(clientId, realm) {
-    const res = await api.get(`/api/admin/${realm}/clients/${clientId}/secret`);
+    const res = await api.get(`/admin/${realm}/clients/${clientId}/secret`);
     return extractData(res);
   }
 
@@ -109,7 +109,7 @@ class ClientService {
    * @returns {Promise<Object>} New client secret
    */
   async regenerateClientSecret(clientId, realm) {
-    const res = await api.post(`/api/admin/${realm}/clients/${clientId}/secret/regenerate`, {});
+    const res = await api.post(`/admin/${realm}/clients/${clientId}/secret/regenerate`, {});
     return extractData(res);
   }
 
@@ -120,7 +120,7 @@ class ClientService {
    * @returns {Promise<Array>} Client roles
    */
   async getClientRoles(clientId, realm) {
-    const res = await api.get(`/api/admin/${realm}/clients/${clientId}/roles`);
+    const res = await api.get(`/admin/${realm}/clients/${clientId}/roles`);
     return extractData(res);
   }
 
@@ -132,7 +132,7 @@ class ClientService {
    */
   async getProtocolMappers(realm, clientId) {
     try {
-      const res = await api.get(`/api/admin/${realm}/clients/${clientId}/mappers`);
+      const res = await api.get(`/admin/${realm}/clients/${clientId}/mappers`);
       return extractData(res);
     } catch (error) {
       console.error(`Failed to fetch mappers for client ${clientId}:`, error);
@@ -149,7 +149,7 @@ class ClientService {
    */
   async createProtocolMapper(realm, clientId, mapperData) {
     try {
-      const res = await api.post(`/api/admin/${realm}/clients/${clientId}/mappers`, mapperData);
+      const res = await api.post(`/admin/${realm}/clients/${clientId}/mappers`, mapperData);
       return extractData(res);
     } catch (error) {
       console.error(`Failed to create mapper for client ${clientId}:`, error);
@@ -167,7 +167,7 @@ class ClientService {
    */
   async updateProtocolMapper(realm, clientId, mapperId, mapperData) {
     try {
-      const res = await api.put(`/api/admin/${realm}/clients/${clientId}/mappers/${mapperId}`, mapperData);
+      const res = await api.put(`/admin/${realm}/clients/${clientId}/mappers/${mapperId}`, mapperData);
       return extractData(res);
     } catch (error) {
       console.error(`Failed to update mapper ${mapperId}:`, error);
@@ -184,7 +184,7 @@ class ClientService {
    */
   async deleteProtocolMapper(realm, clientId, mapperId) {
     try {
-      await api.delete(`/api/admin/${realm}/clients/${clientId}/mappers/${mapperId}`);
+      await api.delete(`/admin/${realm}/clients/${clientId}/mappers/${mapperId}`);
     } catch (error) {
       console.error(`Failed to delete mapper ${mapperId}:`, error);
       throw error;

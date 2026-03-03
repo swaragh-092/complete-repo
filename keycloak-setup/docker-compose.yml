@@ -1,12 +1,14 @@
-#version: '3.8'
+# ══════════════════════════════════════════════════════════════════════════════
+# Keycloak Setup - Docker Compose
+# ══════════════════════════════════════════════════════════════════════════════
 
 services:
   postgres:
-    image: postgres:15
+    image: postgres:15-alpine
     environment:
       POSTGRES_DB: keycloak
       POSTGRES_USER: keycloak
-      POSTGRES_PASSWORD: keycloak123 # Change to a secure password in production
+      POSTGRES_PASSWORD: keycloak123
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./init-keycloak-db.sql:/docker-entrypoint-initdb.d/init.sql
@@ -14,6 +16,24 @@ services:
       - auth-network
     ports:
       - "5433:5432"
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 512M
+        reservations:
+          memory: 128M
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    tmpfs:
+      - /tmp
+      - /run/postgresql
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U keycloak" ]
       interval: 10s
@@ -32,7 +52,7 @@ services:
       KC_BOOTSTRAP_ADMIN_PASSWORD: admin123
       KC_LOG_LEVEL: org.keycloak.sessions:DEBUG,org.keycloak.authentication:DEBUG,org.keycloak.events:DEBUG
       # ═══════════════════════════════════════════════════════════════════
-      # HTTPS Configuration - Added to fix session cookie issue
+      # HTTPS Configuration
       # ═══════════════════════════════════════════════════════════════════
       KC_HTTPS_CERTIFICATE_FILE: /opt/keycloak/conf/cert.pem
       KC_HTTPS_CERTIFICATE_KEY_FILE: /opt/keycloak/conf/key.pem
@@ -50,27 +70,54 @@ services:
     networks:
       - auth-network
     volumes:
-      # Mount TLS certificates (create these with mkcert)
       - ./cert.pem:/opt/keycloak/conf/cert.pem:ro
       - ./key.pem:/opt/keycloak/conf/key.pem:ro
+    deploy:
+      resources:
+        limits:
+          cpus: '1.00'
+          memory: 768M
+        reservations:
+          memory: 256M
+    security_opt:
+      - no-new-privileges:true
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:8080/health" ]
       interval: 15s
       timeout: 10s
       retries: 5
 
-  pgadmin:
-    image: dpage/pgadmin4
-    container_name: pgadmin
-    environment:
-      PGADMIN_DEFAULT_EMAIL: admin@local.com
-      PGADMIN_DEFAULT_PASSWORD: admin
-    ports:
-      - "5050:80"
-    depends_on:
-      - postgres
-    networks:
-      - auth-network
+  # pgadmin:
+  #   image: dpage/pgadmin4
+  #   container_name: pgadmin
+  #   environment:
+  #     PGADMIN_DEFAULT_EMAIL: admin@local.com
+  #     PGADMIN_DEFAULT_PASSWORD: admin
+  #   ports:
+  #     - "5050:80"
+  #   depends_on:
+  #     - postgres
+  #   networks:
+  #     - auth-network
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         cpus: '0.25'
+  #         memory: 256M
+  #       reservations:
+  #         memory: 64M
+  #   security_opt:
+  #     - no-new-privileges:true
+  #   logging:
+  #     driver: json-file
+  #     options:
+  #       max-size: "10m"
+  #       max-file: "3"
 
 volumes:
   postgres_data:

@@ -34,7 +34,7 @@ class RealmService {
    */
   async getAllRealms() {
     try {
-      const res = await api.get('/api/admin/realms');
+      const res = await api.get('/admin/realms');
       const data = extractData(res);
 
       let realmsArray = [];
@@ -61,7 +61,7 @@ class RealmService {
    */
   async getRealmSettings(realmName) {
     try {
-      const res = await api.get(`/api/admin/realms/${realmName}`);
+      const res = await api.get(`/admin/realms/${realmName}`);
       const realmData = extractData(res);
       return this._normalizeRealm(realmData);
     } catch (error) {
@@ -77,7 +77,7 @@ class RealmService {
    */
   async createRealm(realmData) {
     try {
-      const res = await api.post('/api/admin/realms', {
+      const res = await api.post('/admin/realms', {
         realm_name: realmData.realm_name,
         display_name: realmData.display_name
       });
@@ -96,7 +96,7 @@ class RealmService {
    */
   async updateRealmSettings(realmName, settings) {
     try {
-      const res = await api.patch(`/api/admin/realms/${realmName}`, settings);
+      const res = await api.patch(`/admin/realms/${realmName}`, settings);
       return extractData(res);
     } catch (error) {
       console.error(`Failed to update realm ${realmName}:`, error);
@@ -112,7 +112,7 @@ class RealmService {
    */
   async toggleRealmStatus(realmName, enabled) {
     try {
-      const res = await api.patch(`/api/admin/realms/${realmName}/enabled`, { enabled });
+      const res = await api.patch(`/admin/realms/${realmName}/enabled`, { enabled });
       return extractData(res);
     } catch (error) {
       console.error(`Failed to toggle realm ${realmName}:`, error);
@@ -127,7 +127,7 @@ class RealmService {
    */
   async deleteRealm(realmName) {
     try {
-      await api.delete(`/api/admin/realms/${realmName}`);
+      await api.delete(`/admin/realms/${realmName}`);
     } catch (error) {
       console.error(`Failed to delete realm ${realmName}:`, error);
       throw error;
@@ -136,7 +136,7 @@ class RealmService {
 
   async getRealmUsers(realmName) {
     try {
-      const res = await api.get(`/api/admin/${realmName}/users`);
+      const res = await api.get(`/admin/${realmName}/users`);
       return extractData(res);
     } catch (error) {
       console.error(`Failed to fetch users for ${realmName}:`, error);
@@ -151,7 +151,7 @@ class RealmService {
    */
   async getRealmClients(realmName) {
     try {
-      const res = await api.get(`/api/admin/${realmName}/clients`);
+      const res = await api.get(`/admin/${realmName}/clients`);
       return extractData(res);
     } catch (error) {
       console.error(`Failed to fetch clients for ${realmName}:`, error);
@@ -167,7 +167,7 @@ class RealmService {
    */
   async cloneRealm(sourceRealm, newRealmName) {
     try {
-      const res = await api.post(`/api/admin/realms/${sourceRealm}/clone`, { newRealmName: newRealmName });
+      const res = await api.post(`/admin/realms/${sourceRealm}/clone`, { newRealmName: newRealmName });
       return extractData(res);
     } catch (error) {
       console.error(`Failed to clone realm ${sourceRealm}:`, error);

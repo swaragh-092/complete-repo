@@ -56,7 +56,7 @@ class AuthServiceClient {
 
         try {
             const client = this._getClient();
-            const { data } = await client.get(`/api/internal/organizations/${orgId}/settings`);
+            const { data } = await client.get(`/auth/internal/organizations/${orgId}/settings`);
             return data?.data || {};
         } catch (error) {
             if (error.details?.status === 404) {

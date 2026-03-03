@@ -13,7 +13,7 @@ class ThemeService {
      */
     async getThemeConfig(realm) {
         try {
-            const res = await api.get(`/api/admin/${realm}/themes`);
+            const res = await api.get(`/admin/${realm}/themes`);
             return extractData(res);
         } catch (error) {
             console.error(`Failed to fetch theme config for ${realm}:`, error);
@@ -29,7 +29,7 @@ class ThemeService {
      */
     async updateThemeConfig(realm, themeData) {
         try {
-            const res = await api.put(`/api/admin/${realm}/themes`, themeData);
+            const res = await api.put(`/admin/${realm}/themes`, themeData);
             return extractData(res);
         } catch (error) {
             console.error(`Failed to update theme config for ${realm}:`, error);

@@ -23,6 +23,20 @@ services:
       - "80:80"
     networks:
       - auth-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 128M
+        reservations:
+          memory: 64M
+    security_opt:
+      - no-new-privileges:true
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
     depends_on:
       auth-service:
         condition: service_healthy
@@ -57,6 +71,24 @@ services:
       - ./auth-service/infrastructure/init-auth-db.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
       - auth-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 512M
+        reservations:
+          memory: 128M
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    tmpfs:
+      - /tmp
+      - /run/postgresql
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U ${AUTH_DB_USER:-postgres} -d ${AUTH_DB_NAME:-authzotion_db}" ]
       interval: 10s
@@ -81,6 +113,24 @@ services:
       - ./init-multiple-db.sql:/docker-entrypoint-initdb.d/init-multiple-db.sql
     networks:
       - auth-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 256M
+        reservations:
+          memory: 64M
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    tmpfs:
+      - /tmp
+      - /run/postgresql
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U ${PMS_DB_USER:-postgres}" ]
       interval: 10s
@@ -103,6 +153,24 @@ services:
       - postgres-email-data:/var/lib/postgresql/data
     networks:
       - auth-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 256M
+        reservations:
+          memory: 64M
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    tmpfs:
+      - /tmp
+      - /run/postgresql
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U postgres" ]
       interval: 10s
@@ -181,6 +249,20 @@ services:
         condition: service_healthy
     networks:
       - auth-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 256M
+        reservations:
+          memory: 64M
+    security_opt:
+      - no-new-privileges:true
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
     healthcheck:
       test: [ "CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:4011/health" ]
       interval: 30s
@@ -205,6 +287,24 @@ services:
       - ./init-multiple-db.sql:/docker-entrypoint-initdb.d/init-multiple-db.sql
     networks:
       - auth-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 256M
+        reservations:
+          memory: 64M
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    tmpfs:
+      - /tmp
+      - /run/postgresql
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U ${PMS_DB_USER:-postgres}" ]
       interval: 10s
@@ -217,16 +317,33 @@ services:
 
   # ─────────────────────────────────────────────────────────────────────────────
   redis:
-    image: redis:7
+    image: redis:7-alpine
     container_name: redis
     restart: unless-stopped
     ports:
       - "6379:6379"
     volumes:
       - redis-data:/data
-    command: redis-server --appendonly yes
+    command: redis-server --appendonly yes --maxmemory 200mb --maxmemory-policy allkeys-lru
     networks:
       - auth-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 256M
+        reservations:
+          memory: 64M
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    tmpfs:
+      - /tmp
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
     healthcheck:
       test: [ "CMD", "redis-cli", "ping" ]
       interval: 5s
@@ -269,7 +386,6 @@ services:
       KEYCLOAK_ACCOUNT_UI_CLIENT_SECRET: ${KEYCLOAK_ACCOUNT_UI_CLIENT_SECRET:-}
 
       # URLs
-      # URLs
       FRONTEND_URL: ${FRONTEND_URL:-https://admin.local.test}
       ACCOUNT_UI_URL: ${ACCOUNT_UI_URL:-https://client.local.test}
       AUTH_SERVICE_URL: ${AUTH_SERVICE_URL:-https://auth.local.test}
@@ -295,13 +411,6 @@ services:
       TRUST_PROXY: ${TRUST_PROXY:-true}
       CORS_FALLBACK_ORIGINS: ${CORS_FALLBACK_ORIGINS:-}
 
-      # SMTP
-      # SMTP_HOST: ${SMTP_HOST:-}
-      # SMTP_PORT: ${SMTP_PORT:-587}
-      # SMTP_USER: ${SMTP_USER:-}
-      # SMTP_PASS: ${SMTP_PASS:-}
-      # FROM_EMAIL: ${FROM_EMAIL:-noreply@example.com}
-
       # Email Service (Microservice)
       EMAIL_SERVICE_URL: http://email-service:4011
       SERVICE_SECRET: ${SERVICE_SECRET:?SERVICE_SECRET is required}
@@ -322,6 +431,20 @@ services:
         condition: service_healthy
     networks:
       - auth-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 512M
+        reservations:
+          memory: 128M
+    security_opt:
+      - no-new-privileges:true
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
     healthcheck:
       test: [ "CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:4000/health" ]
       interval: 30s
@@ -357,6 +480,25 @@ services:
         condition: service_healthy
     networks:
       - auth-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.10'
+          memory: 64M
+        reservations:
+          memory: 32M
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    tmpfs:
+      - /tmp
+      - /var/cache/nginx
+      - /run
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
     healthcheck:
       test: [ "CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:80/" ]
       interval: 30s
@@ -373,7 +515,7 @@ services:
       dockerfile: infrastructure/Dockerfile
       args:
         VITE_CLIENT_KEY: ${VITE_LOGIN_CLIENT_KEY:-account-ui}
-        VITE_AUTH_BASE_URL: ${VITE_LOGIN_AUTH_BASE_URL:-https://account.local.test/api/auth}
+        VITE_AUTH_BASE_URL: ${VITE_LOGIN_AUTH_BASE_URL:-https://auth.local.test/auth}
         VITE_ACCOUNT_UI_URL: ${VITE_LOGIN_ACCOUNT_UI_URL:-https://account.local.test}
         VITE_REDIRECT_URI: ${VITE_LOGIN_REDIRECT_URI:-https://account.local.test/callback}
     container_name: sso-centralized-login
@@ -386,6 +528,25 @@ services:
         condition: service_healthy
     networks:
       - auth-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.10'
+          memory: 64M
+        reservations:
+          memory: 32M
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    tmpfs:
+      - /tmp
+      - /var/cache/nginx
+      - /run
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
     healthcheck:
       test: [ "CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:80/" ]
       interval: 30s
@@ -430,12 +591,26 @@ services:
       KEYCLOAK_URL: http://keycloak:8080
       KEYCLOAK_REALM: my-projects
       SERVICE_CLIENT_ID: pms-service
-      SERVICE_CLIENT_SECRET: VBEIFnak29KKCr7vWS03pEtJDdp973PB
+      SERVICE_CLIENT_SECRET: ${PMS_SERVICE_CLIENT_SECRET:?PMS_SERVICE_CLIENT_SECRET is required}
 
       # Auth Service URL
       AUTH_SERVICE_URL: http://auth-service:4000
     networks:
       - auth-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 256M
+        reservations:
+          memory: 64M
+    security_opt:
+      - no-new-privileges:true
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
     command: [ "server.js" ]
     healthcheck:
       test: [ "CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3010/health" ]
@@ -494,7 +669,20 @@ services:
       - auth-network
     ports:
       - 4010:4010
-
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 256M
+        reservations:
+          memory: 64M
+    security_opt:
+      - no-new-privileges:true
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
     command: [ "server.js" ]
     healthcheck:
       test: [ "CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:4010/health" ]

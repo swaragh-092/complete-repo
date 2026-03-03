@@ -16,7 +16,7 @@ class RoleService {
    * @returns {Promise<Array>} List of realm roles
    */
   async getRealmRoles(realm) {
-    const res = await api.get(`/api/admin/${realm}/roles`);
+    const res = await api.get(`/admin/${realm}/roles`);
     return extractData(res);
   }
 
@@ -27,7 +27,7 @@ class RoleService {
    * @returns {Promise<Object>} Role details
    */
   async getRealmRole(roleName, realm) {
-    const res = await api.get(`/api/admin/${realm}/roles/${roleName}`);
+    const res = await api.get(`/admin/${realm}/roles/${roleName}`);
     return extractData(res);
   }
 
@@ -40,7 +40,7 @@ class RoleService {
    * @returns {Promise<Object>} Created role data
    */
   async createRealmRole(roleData, realm) {
-    const res = await api.post(`/api/admin/${realm}/roles`, roleData);
+    const res = await api.post(`/admin/${realm}/roles`, roleData);
     return extractData(res);
   }
 
@@ -52,7 +52,7 @@ class RoleService {
    * @returns {Promise<Object>} Updated role data
    */
   async updateRealmRole(roleName, updates, realm) {
-    const res = await api.patch(`/api/admin/${realm}/roles/${roleName}`, updates);
+    const res = await api.patch(`/admin/${realm}/roles/${roleName}`, updates);
     return extractData(res);
   }
 
@@ -63,7 +63,7 @@ class RoleService {
    * @returns {Promise<void>}
    */
   async deleteRealmRole(roleName, realm) {
-    await api.delete(`/api/admin/${realm}/roles/${roleName}`);
+    await api.delete(`/admin/${realm}/roles/${roleName}`);
   }
 
   /**
@@ -74,8 +74,8 @@ class RoleService {
    */
   async getClientRoles(clientId, realm) {
     // Note: Client roles are usually accessed via client endpoint or roles endpoint depending on backend structure
-    // Assuming /api/admin/:realm/clients/:clientId/roles based on clients.routes.js
-    const res = await api.get(`/api/admin/${realm}/clients/${clientId}/roles`);
+    // Assuming /admin/:realm/clients/:clientId/roles based on clients.routes.js
+    const res = await api.get(`/admin/${realm}/clients/${clientId}/roles`);
     return extractData(res);
   }
 
@@ -87,8 +87,8 @@ class RoleService {
    * @returns {Promise<Object>} Role details
    */
   async getClientRole(clientId, roleName, realm) {
-    // Assuming /api/admin/:realm/clients/:clientId/roles/:roleName
-    const res = await api.get(`/api/admin/${realm}/clients/${clientId}/roles/${roleName}`);
+    // Assuming /admin/:realm/clients/:clientId/roles/:roleName
+    const res = await api.get(`/admin/${realm}/clients/${clientId}/roles/${roleName}`);
     return extractData(res);
   }
 
@@ -102,7 +102,7 @@ class RoleService {
    * @returns {Promise<Object>} Created role data
    */
   async createClientRole(clientId, roleData, realm) {
-    const res = await api.post(`/api/admin/${realm}/clients/${clientId}/roles`, roleData);
+    const res = await api.post(`/admin/${realm}/clients/${clientId}/roles`, roleData);
     return extractData(res);
   }
 
@@ -115,7 +115,7 @@ class RoleService {
    * @returns {Promise<Object>} Updated role data
    */
   async updateClientRole(clientId, roleName, updates, realm) {
-    const res = await api.patch(`/api/admin/${realm}/clients/${clientId}/roles/${roleName}`, updates);
+    const res = await api.patch(`/admin/${realm}/clients/${clientId}/roles/${roleName}`, updates);
     return extractData(res);
   }
 
@@ -127,7 +127,7 @@ class RoleService {
    * @returns {Promise<void>}
    */
   async deleteClientRole(clientId, roleName, realm) {
-    await api.delete(`/api/admin/${realm}/clients/${clientId}/roles/${roleName}`);
+    await api.delete(`/admin/${realm}/clients/${clientId}/roles/${roleName}`);
   }
 
   /**
@@ -137,7 +137,7 @@ class RoleService {
    * @returns {Promise<Array>} List of users with this role
    */
   async getRealmRoleUsers(roleName, realm) {
-    const res = await api.get(`/api/admin/${realm}/roles/${roleName}/users`);
+    const res = await api.get(`/admin/${realm}/roles/${roleName}/users`);
     return extractData(res);
   }
 }

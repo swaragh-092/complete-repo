@@ -17,7 +17,7 @@ export function useUser(options = {}) {
     const query = useQuery({
         queryKey: ['user'],
         queryFn: async () => {
-            const response = await auth.api.get('/auth/me');
+            const response = await auth.api.get('/me');
             return response.data;
         },
         onError: (err) => {
