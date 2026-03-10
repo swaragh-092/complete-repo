@@ -5,11 +5,18 @@
 // Modified:
 
 const { Op, Sequelize } = require("sequelize");
-const { withContext, giveValicationErrorFormal, paginateHelperFunction } = require("../../util/helper");
+const {
+  withContext,
+  giveValicationErrorFormal,
+  paginateHelperFunction,
+} = require("../../util/helper");
 const { createNotification } = require("../notification/notification.service");
+const { authClient } = require("../serviceClients");
 
-
-const { queryMultipleWithAuditLog, queryWithLogAudit } = require("../auditLog.service");
+const {
+  queryMultipleWithAuditLog,
+  queryWithLogAudit,
+} = require("../auditLog.service");
 
 class ProjectMemberService {
   /**
@@ -52,7 +59,7 @@ class ProjectMemberService {
 
       // Filter out already existing users
       const newUsers = users.filter(
-        (u) => !existingUserIds.includes(u.user_id)
+        (u) => !existingUserIds.includes(u.user_id),
       );
 
       if (newUsers.length === 0) {
@@ -71,20 +78,14 @@ class ProjectMemberService {
         project_role: u.project_role || "member", // default role if not given
       }));
 
-
-
       const multipleOperation = [];
-            
 
       multipleOperation.push({
         queryCallBack: async (t) => {
-          const newMembers = await ProjectMember.bulkCreate(
-            membersData,
-            {
-              ...withContext(req),
-              transaction: t 
-            }
-          );
+          const newMembers = await ProjectMember.bulkCreate(membersData, {
+            ...withContext(req),
+            transaction: t,
+          });
 
           const notificationData = {
             scope: "individual",
@@ -102,14 +103,16 @@ class ProjectMemberService {
           );
 
           return newMembers;
-
         },
         updated_columns: Object.keys(membersData[0]),
         action: "bulk_create",
         model: ProjectMember,
       });
 
-      const result = await queryMultipleWithAuditLog({operations: multipleOperation, req});
+      const result = await queryMultipleWithAuditLog({
+        operations: multipleOperation,
+        req,
+      });
 
       return {
         success: true,
@@ -143,7 +146,9 @@ class ProjectMemberService {
   async removeMember(req, memberId) {
     const { ProjectMember } = req.db;
 
-    const member = await ProjectMember.findByPk(memberId, {include: [{association: "project", require: true}]});
+    const member = await ProjectMember.findByPk(memberId, {
+      include: [{ association: "project", require: true }],
+    });
 
     if (!member) {
       return {
@@ -171,7 +176,10 @@ class ProjectMemberService {
         userId: member.user_id,
       };
 
-      const notificationResult = await createNotification(req, notificationData);
+      const notificationResult = await createNotification(
+        req,
+        notificationData,
+      );
 
       return deletedMember;
     };
@@ -181,7 +189,6 @@ class ProjectMemberService {
       action: "delete",
       queryCallBack: query,
     });
-
 
     return {
       status: 200,
@@ -196,27 +203,158 @@ class ProjectMemberService {
    * @param {Object} options - Optional parameters (req for context)
    * @returns {Promise<Object>}
    */
-  async getProjectWtihMembers(req, { project_id, department_id = null,  }, query = {}) {
+  async getProjectWtihMembers(
+    req,
+    { project_id, department_id = null },
+    query = {},
+  ) {
     const { ProjectMember, Project } = req.db;
-    
+
     try {
       const project = await Project.findByPk(project_id);
 
-      if (!project) return {success: false, message : "Project not found!.", status: 404};
+      if (!project)
+        return { success: false, message: "Project not found!.", status: 404 };
 
       const filter = {
         project_id,
         ...(department_id && { department_id }),
       };
 
-      const result = await paginateHelperFunction({model : ProjectMember, whereFilters: filter , query });
+      const result = await paginateHelperFunction({
+        model: ProjectMember,
+        whereFilters: filter,
+        query,
+      });
 
-      const responseData = {project, members: result};
-      
+      // Enrich members with user and workspace details
+      const enrichedMembers = await this.enrichMembersWithDetails(
+        result.data || result,
+      );
+
+      const responseData = {
+        project,
+        members: {
+          ...result,
+          data: enrichedMembers,
+        },
+      };
+
       return { status: 200, success: true, data: responseData };
     } catch (err) {
       console.log(err);
       throw new Error(`Error fetching project members: ${err.message}`);
+    }
+  }
+
+  /**
+   * Enrich members array with user and workspace details from auth-service
+   * @param {Array} members - Array of ProjectMember instances or plain objects
+   * @returns {Promise<Array>} Enriched members with user_details and department_details
+   */
+  async enrichMembersWithDetails(members) {
+    if (!members || members.length === 0) {
+      return members;
+    }
+
+    try {
+      // Extract unique user IDs and department IDs
+      const userIds = [
+        ...new Set(members.map((m) => m.user_id).filter(Boolean)),
+      ];
+      const departmentIds = [
+        ...new Set(members.map((m) => m.department_id).filter(Boolean)),
+      ];
+
+      console.log("[ProjectMember] Enriching members:", {
+        totalMembers: members.length,
+        uniqueUsers: userIds.length,
+        uniqueDepartments: departmentIds.length,
+      });
+
+      // Fetch user details from auth-service
+      let userDetailsMap = {};
+      if (userIds.length > 0) {
+        try {
+          const client = authClient();
+          const userResponse = await client.post(
+            "/auth/internal/users/lookup",
+            {
+              user_ids: userIds,
+            },
+          );
+
+          if (userResponse.data?.data?.users) {
+            userDetailsMap = userResponse.data.data.users.reduce(
+              (acc, user) => {
+                acc[user.id] = user;
+                return acc;
+              },
+              {},
+            );
+          }
+          console.log(
+            "[ProjectMember] Fetched user details:",
+            Object.keys(userDetailsMap).length,
+          );
+        } catch (error) {
+          console.error(
+            "[ProjectMember] Failed to fetch user details:",
+            error.message,
+          );
+        }
+      }
+
+      // Fetch workspace/department details from auth-service
+      let departmentDetailsMap = {};
+      if (departmentIds.length > 0) {
+        try {
+          const client = authClient();
+          const deptResponse = await client.post(
+            "/auth/workspaces/batch-lookup",
+            {
+              workspace_ids: departmentIds,
+            },
+          );
+
+          if (deptResponse.data?.data?.workspaces) {
+            departmentDetailsMap = deptResponse.data.data.workspaces.reduce(
+              (acc, workspace) => {
+                acc[workspace.id] = workspace;
+                return acc;
+              },
+              {},
+            );
+          }
+          console.log(
+            "[ProjectMember] Fetched department details:",
+            Object.keys(departmentDetailsMap).length,
+          );
+        } catch (error) {
+          console.error(
+            "[ProjectMember] Failed to fetch department details:",
+            error.message,
+          );
+        }
+      }
+
+      // Enrich each member with details
+      const enrichedMembers = members.map((member) => {
+        const memberObj = member.toJSON ? member.toJSON() : { ...member };
+
+        memberObj.user_details = userDetailsMap[memberObj.user_id] || null;
+        memberObj.department_details =
+          departmentDetailsMap[memberObj.department_id] || null;
+
+        return memberObj;
+      });
+
+      console.log("[ProjectMember] Enrichment complete");
+      return enrichedMembers;
+    } catch (error) {
+      console.error("[ProjectMember] Error during enrichment:", error);
+      // Return original members if enrichment fails
+      return members;
     }
   }
 
@@ -229,7 +367,9 @@ class ProjectMemberService {
   async editMemberRole(req, data) {
     const { ProjectMember } = req.db;
 
-    const member = await ProjectMember.findByPk(data.member_id, {include: [{association: "project", require: true}]});
+    const member = await ProjectMember.findByPk(data.member_id, {
+      include: [{ association: "project", require: true }],
+    });
     if (!member) {
       return {
         status: 404,
@@ -241,10 +381,13 @@ class ProjectMemberService {
     const project = member.project;
 
     const query = async (t) => {
-      const updatedMember = await member.update({ project_role: data.project_role }, {
-        ...withContext(req),
-        transaction: t,
-      });
+      const updatedMember = await member.update(
+        { project_role: data.project_role },
+        {
+          ...withContext(req),
+          transaction: t,
+        },
+      );
 
       const notificationData = {
         scope: "individual",
@@ -256,7 +399,10 @@ class ProjectMemberService {
         userId: updatedMember.user_id,
       };
 
-      const notificationResult = await createNotification(req, notificationData);
+      const notificationResult = await createNotification(
+        req,
+        notificationData,
+      );
 
       return updatedMember;
     };
@@ -265,67 +411,73 @@ class ProjectMemberService {
       req,
       action: "update",
       queryCallBack: query,
-      updated_columns: ['project_role'],
+      updated_columns: ["project_role"],
     });
 
     return { status: 200, success: true, data: result };
   }
 
-  // get members while searching of same project and department  .. 
-  async getMembersInSearch(req, {searchText, projectMemberId}){
+  // get members while searching of same project and department  ..
+  async getMembersInSearch(req, { searchText, projectMemberId }) {
     const { ProjectMember } = req.db;
 
     const projectMember = await ProjectMember.findByPk(projectMemberId);
     console.log(projectMemberId);
-    if (!projectMember) return {success : false, status: 404, message : "Helper not foung!.."};
-    const userProjectMember = await ProjectMember.findOne({where : {user_id: req.user.id, project_id : projectMember.project_id, department_id: projectMember.department_id}});
-    
-    if (!userProjectMember) return {success : false, status: 401, };
+    if (!projectMember)
+      return { success: false, status: 404, message: "Helper not foung!.." };
+    const userProjectMember = await ProjectMember.findOne({
+      where: {
+        user_id: req.user.id,
+        project_id: projectMember.project_id,
+        department_id: projectMember.department_id,
+      },
+    });
+
+    if (!userProjectMember) return { success: false, status: 401 };
 
     const members = await ProjectMember.findAll({
       where: {
         project_id: projectMember.project_id,
         department_id: projectMember.department_id,
-        id: { [Op.ne]: projectMember.id } 
+        id: { [Op.ne]: projectMember.id },
       },
-      attributes: ['user_id', "id"],
-      raw: true
+      attributes: ["user_id", "id"],
+      raw: true,
     });
 
-    const userIds = members.map(m => m.user_id);
+    const userIds = members.map((m) => m.user_id);
     const matchingUsers = await searchUsersByName(searchText, userIds);
 
     // create a map of user_id → projectMemberId for faster lookup
-    const memberMap = new Map(members.map(m => [m.user_id, m.id]));
+    const memberMap = new Map(members.map((m) => [m.user_id, m.id]));
 
-    const usersWithProjectMemberId = matchingUsers.map(user => ({
+    const usersWithProjectMemberId = matchingUsers.map((user) => ({
       ...user,
-      projectMemberId: memberMap.get(user.id) || null
+      projectMemberId: memberMap.get(user.id) || null,
     }));
 
-    
-    return { data : usersWithProjectMemberId, success: true, status: 200 };
-
+    return { data: usersWithProjectMemberId, success: true, status: 200 };
   }
 }
 
 module.exports = new ProjectMemberService();
- 
+
 // this is what we should from auth service
 async function searchUsersByName(searchTerm, userIds = []) {
   const dummyUsers = [
-    { id: 'key-cloak-id', name: 'John Doe', email: 'john@example.com' },
-    { id: 'user-10', name: 'Jane Smith', email: 'jane@example.com' },
-    { id: 'user-1', name: 'Michael Jordan', email: 'mj@example.com' },
-    { id: 'user-12', name: 'Joanna Brown', email: 'joanna@example.com' },
+    { id: "key-cloak-id", name: "John Doe", email: "john@example.com" },
+    { id: "user-10", name: "Jane Smith", email: "jane@example.com" },
+    { id: "user-1", name: "Michael Jordan", email: "mj@example.com" },
+    { id: "user-12", name: "Joanna Brown", email: "joanna@example.com" },
   ];
 
   if (!searchTerm && (!userIds || userIds.length === 0)) return dummyUsers;
 
   const filtered = dummyUsers.filter((u) => {
-    const nameMatch = !searchTerm || u.name.toLowerCase().includes(searchTerm.toLowerCase());
+    const nameMatch =
+      !searchTerm || u.name.toLowerCase().includes(searchTerm.toLowerCase());
     // const idMatch = !userIds?.length || userIds.includes(u.id);
-    return nameMatch ;
+    return nameMatch;
   });
 
   return filtered;

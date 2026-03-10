@@ -1,10 +1,4 @@
-import {
-  createBrowserRouter,
-  createRoutesFromElements,
-  RouterProvider,
-  Route,
-  Navigate,
-} from "react-router-dom";
+import { createBrowserRouter, createRoutesFromElements, RouterProvider, Route, Navigate } from "react-router-dom";
 
 import { CssBaseline, ThemeProvider } from "@mui/material";
 import { SnackbarProvider } from "notistack";
@@ -61,11 +55,7 @@ function ProtectedLayout() {
   const { loading, isAuthenticated, sessionValid } = useAuth();
 
   if (loading) {
-    return (
-      <div style={{ height: "100vh", display: "grid", placeItems: "center" }}>
-        Loading...
-      </div>
-    );
+    return <div style={{ height: "100vh", display: "grid", placeItems: "center" }}>Loading...</div>;
   }
 
   if (!isAuthenticated) {
@@ -79,7 +69,6 @@ function ProtectedLayout() {
   return <Layout />;
 }
 
-
 /* ---------------------- Router ---------------------- */
 
 const router = createBrowserRouter(
@@ -89,22 +78,14 @@ const router = createBrowserRouter(
         <Route index element={<Dash />} />
 
         <Route path={paths.projects()} element={<ProjectDashboard />} />
-        <Route
-          path={paths.projectDetail().path}
-          element={<ProjectDetailView />}
-          loader={projectFetchLoader}
-        />
+        <Route path={paths.projectDetail().path} element={<ProjectDetailView />} loader={projectFetchLoader} />
 
         <Route path={paths.issues} element={<Issue />} />
         <Route path={paths.daily_logs} element={<DailyLog />} />
         <Route path={paths.notifications} element={<Notification />} />
         <Route path={paths.tasks} element={<TaskPage />} />
         <Route path={paths.features} element={<FeaturesList />} />
-        <Route
-          path={paths.feature_detail().path}
-          element={<FeatureDetail />}
-          loader={featureFetchLoader}
-        />
+        <Route path={paths.feature_detail().path} element={<FeatureDetail />} loader={featureFetchLoader} />
 
         <Route path="/profile" element={<Profile />} />
         <Route path="/settings" element={<Settings />} />
@@ -116,8 +97,8 @@ const router = createBrowserRouter(
       <Route path="/login" element={<Login />} />
       <Route path="/callback" element={<Callback />} />
       <Route path="/dashboard" element={<Navigate to="/" replace />} />
-    </>
-  )
+    </>,
+  ),
 );
 
 /* ---------------------- App ---------------------- */
@@ -127,14 +108,13 @@ function App() {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    auth.api.get('/account/profile').then((response) => {
+    auth.api.get("/account/profile").then((response) => {
       if (response.data?.data || response.data) {
         console.log(response.data?.data || response.data);
         dispatch(setUser(response.data?.data || response.data));
       }
-    })
+    });
   }, []);
-  
 
   useEffect(() => {
     backendRequest({ endpoint: BACKEND_ENDPOINT.has_notifications }).then((res) => {
@@ -150,10 +130,14 @@ function App() {
         <ThemeProvider theme={theme}>
           <CssBaseline />
           <SnackbarProvider maxSnack={3} anchorOrigin={{ vertical: "bottom", horizontal: "right" }}>
-            <RouterProvider router={router} />
-            <ConfirmDialog />
-            <AlertDialog />
-            <ToastContainer />
+            <OrganizationProvider>
+              <WorkspaceProvider>
+                <RouterProvider router={router} />
+                <ConfirmDialog />
+                <AlertDialog />
+                <ToastContainer />
+              </WorkspaceProvider>
+            </OrganizationProvider>
           </SnackbarProvider>
         </ThemeProvider>
       </ColorModeContext.Provider>
@@ -165,16 +149,10 @@ export default function AppWithAuth() {
   return (
     <AuthProvider
       onSessionExpired={(reason) => {
-        window.location.href =
-          "/login?expired=true&reason=" + encodeURIComponent(reason);
+        window.location.href = "/login?expired=true&reason=" + encodeURIComponent(reason);
       }}
     >
-      <OrganizationProvider>
-        <WorkspaceProvider>
-          <App />
-        </WorkspaceProvider>
-      </OrganizationProvider>
+      <App />
     </AuthProvider>
   );
 }
-

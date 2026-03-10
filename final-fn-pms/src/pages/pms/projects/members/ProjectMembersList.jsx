@@ -12,9 +12,9 @@ import { colorCodes } from "../../../../theme";
 import EditIcon from "@mui/icons-material/ModeEditOutline";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditMemberRoleDialog from "./EditMemberRoleDialog";
-import AddIcon from '@mui/icons-material/Add';
+import AddIcon from "@mui/icons-material/Add";
 
-export default function ProjectMembersList({ projectId, setMemberIdCreateTask, setTaskRefresher = () => {}  }) {
+export default function ProjectMembersList({ projectId, setMemberIdCreateTask, setTaskRefresher = () => {} }) {
   const theme = useTheme();
   const colors = colorCodes(theme.palette.mode);
 
@@ -34,8 +34,39 @@ export default function ProjectMembersList({ projectId, setMemberIdCreateTask, s
   };
 
   const displayColumns = [
-    { field: "user_id", headerName: "User Id", flex: 1 },
-    { field: "department_id", headerName: "Department Id", flex: 1 },
+    {
+      field: "user_id",
+      headerName: "User",
+      flex: 1,
+      renderCell: (params) => {
+        // Display user name if available, otherwise show ID
+        const userName = params.row.user_details?.name;
+        const userEmail = params.row.user_details?.email;
+
+        if (userName) {
+          return (
+            <Box>
+              <Box fontWeight={600}>{userName}</Box>
+              {userEmail && (
+                <Box fontSize="0.85em" color="text.secondary">
+                  {userEmail}
+                </Box>
+              )}
+            </Box>
+          );
+        }
+        return params.row.user_id || "N/A";
+      },
+    },
+    {
+      field: "department_id",
+      headerName: "Workspace/Department",
+      flex: 1,
+      renderCell: (params) => {
+        // Display workspace name if available, otherwise show ID
+        return params.row.department_details?.name || params.row.department_id || "N/A";
+      },
+    },
     { field: "project_role", headerName: "Project Role", flex: 1 },
     // { field: "is_active", headerName: "Active Status", flex: 1 },
     {
@@ -101,13 +132,13 @@ export default function ProjectMembersList({ projectId, setMemberIdCreateTask, s
         );
       },
     },
-  ];  
+  ];
 
   return (
     <>
       {projectId && (
         <>
-          <Box m="20px" maxWidth={"49%"} width={"100%"} >
+          <Box m="20px" maxWidth={"49%"} width={"100%"}>
             <Box display="flex" alignItems="center" justifyContent="space-between">
               <Heading title={"Project Members"} level={2} />
 
@@ -119,21 +150,17 @@ export default function ProjectMembersList({ projectId, setMemberIdCreateTask, s
           <AddMembersDialog isOpen={open} setOpen={setOpen} setRefresher={setRefresher} projectId={projectId} />
 
           {/* Edit Role Dialog */}
-          <EditMemberRoleDialog editDialog={editDialog}  setEditDialog={setEditDialog} setRefresher={setRefresher}   />
-
-                  
+          <EditMemberRoleDialog editDialog={editDialog} setEditDialog={setEditDialog} setRefresher={setRefresher} />
         </>
       )}
     </>
   );
 }
 
-
 const deleteMemberRequest = async (memberId) => {
-  const endpoint = BACKEND_ENDPOINT['delete_project_member'](memberId);
+  const endpoint = BACKEND_ENDPOINT["delete_project_member"](memberId);
   const response = await backendRequest({ endpoint });
-  
-  showToast({message: response.message ?? (response.success ? "Delected Successfully":"Failed to delete"), type : response.success ? "success": "error" });
-  return response;
-}
 
+  showToast({ message: response.message ?? (response.success ? "Delected Successfully" : "Failed to delete"), type: response.success ? "success" : "error" });
+  return response;
+};

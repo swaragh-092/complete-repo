@@ -59,6 +59,7 @@ app.use(
  *                   example: 1670000000000
  */
 app.get("/health", (req, res) => {
+  console.log("Health check endpoint accessed");
   res.status(200).json({
     status: "ok",
     uptime: process.uptime(),

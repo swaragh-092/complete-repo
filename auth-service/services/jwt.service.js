@@ -42,28 +42,41 @@ async function verifyJwt(token, realm) {
     };
 
     return new Promise((resolve, reject) => {
-      jwt.verify(token, getKey, {
-        issuer: [
-          `${FRONTEND_AUTH_URL}/realms/${realm}`,
-          `${KEYCLOAK_URL}/realms/${realm}`
-        ],
-        algorithms: ['RS256'],
-      }, (err, decoded) => {
-        if (err) {
-          console.error('------- JWT VERIFY ERROR -------', err);
-          logger.error(`JWT verification failed for realm ${realm}`, { error: err.message });
-          reject(err);
-        } else {
-          logger.debug(`JWT verified successfully for realm ${realm}`, {
-            sub: decoded.sub,
-            azp: decoded.azp,
-            hasAllClaims: !!decoded.sub && !!decoded.azp
-          });
-          resolve(decoded);
-        }
-      });
-    });
+      // Build allowed issuers list
+      const allowedIssuers = [
+        `${FRONTEND_AUTH_URL}/realms/${realm}`,
+        `${KEYCLOAK_URL}/realms/${realm}`,
+      ];
 
+      // For local development: also accept localhost:8081 and keycloak.local.test:8081
+      if (process.env.NODE_ENV !== 'production') {
+        allowedIssuers.push(`http://localhost:8081/realms/${realm}`);
+        allowedIssuers.push(`http://keycloak.local.test:8081/realms/${realm}`);
+      }
+
+      jwt.verify(
+        token,
+        getKey,
+        {
+          issuer: allowedIssuers,
+          algorithms: ['RS256'],
+        },
+        (err, decoded) => {
+          if (err) {
+            console.error('------- JWT VERIFY ERROR -------', err);
+            logger.error(`JWT verification failed for realm ${realm}`, { error: err.message });
+            reject(err);
+          } else {
+            logger.debug(`JWT verified successfully for realm ${realm}`, {
+              sub: decoded.sub,
+              azp: decoded.azp,
+              hasAllClaims: !!decoded.sub && !!decoded.azp,
+            });
+            resolve(decoded);
+          }
+        }
+      );
+    });
   } catch (e) {
     console.error('------- JWT CATCH ERROR -------', e);
     logger.error(`JWT verification failed for realm ${realm}`, { error: e.message });

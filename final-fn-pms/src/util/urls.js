@@ -6,7 +6,8 @@
 // file : src/util/urls.js
 
 // const domain = "http://localhost:8089/pms";
-const domain = "https://pms.local.test/pms_mod";
+// const domain = "https://pms.local.test/pms_mod";
+const domain = "http://localhost:3015/pms_mod";
 
 const BACKEND_ENDPOINT = {
   // dashboard

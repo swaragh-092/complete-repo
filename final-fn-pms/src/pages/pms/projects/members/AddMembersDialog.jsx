@@ -1,8 +1,8 @@
 /*
   Notes:
   - Uses react-window for virtualization.
-  - Dummy data generator simulates thousands of users per department.
-  - Replace fetchDepartments / fetchUsers with real backendRequest calls later.
+  - Fetches real workspace members from auth-service.
+  - Submits to PMS addMembers endpoint to add users to projects.
 */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -13,286 +13,259 @@ import backendRequest from "../../../../util/request";
 import { List } from "react-window";
 // import { FixedSizeList as List } from "react-window";
 
-
 import CloseIcon from "@mui/icons-material/Close";
 import BACKEND_ENDPOINT from "../../../../util/urls";
-import { departments } from "../../../../dymmyData";
 import { useWorkspace } from "../../../../context/WorkspaceContext";
-
+import { getWorkspaceMembers } from "../../../../api/workspaces";
 
 // virtualization constants
 const ITEM_HEIGHT = 64; // px per user row
 const LIST_HEIGHT = 360; // px height for user list viewport
 const LIST_WIDTH = "100%";
 
+export default function AddMembersDialog({ isOpen, setOpen, projectId, setRefresher }) {
+  const { currentWorkspace } = useWorkspace();
 
-export default function AddMembersDialog ({isOpen, setOpen, projectId, setRefresher}) {
+  // controlled states
+  // const [departments, setDepartments] = useState([]);
+  // const [departmentId, setDepartmentId] = useState("");
+  // const [deptQuery, setDeptQuery] = useState("");
 
-    const { workspaces, currentWorkspace, selectWorkspace, loading, isAdmin } = useWorkspace();
+  const [users, setUsers] = useState([]); // entire list for selected department
+  const [userQuery, setUserQuery] = useState("");
+  const [filteredUsers, setFilteredUsers] = useState([]);
 
-    // controlled states
-    // const [departments, setDepartments] = useState([]);
-    // const [departmentId, setDepartmentId] = useState("");
-    // const [deptQuery, setDeptQuery] = useState("");
+  const [selectedUsers, setSelectedUsers] = useState([]); // array of user objects {id,name,email,role}
+  const [userRoles, setUserRoles] = useState({}); // map id->role
 
-    const [users, setUsers] = useState([]); // entire list for selected department
-    const [userQuery, setUserQuery] = useState("");
-    const [filteredUsers, setFilteredUsers] = useState([]);
+  const [isSubmitting, setSubmitting] = useState(false);
 
-    const [selectedUsers, setSelectedUsers] = useState([]); // array of user objects {id,name,email,role}
-    const [userRoles, setUserRoles] = useState({}); // map id->role
+  // debounce refs
+  // const deptDebounceRef = useRef(null);
+  const userDebounceRef = useRef(null);
 
-    const [isSubmitting, setSubmitting] = useState(false);
+  // open dialog: load departments (dummy or backend)
+  // const fetchDepartments = async () => {
+  //     // Dummy:
+  //     const d = makeDummyDepartments();
+  //     setDepartments(d);
 
-    // debounce refs
-    // const deptDebounceRef = useRef(null);
-    const userDebounceRef = useRef(null);
+  //     // If using backend:
+  //     // try {
+  //     //   const res = await backendRequest({ endpoint: BACKEND_ENDPOINT.organization_departments(organizationId) });
+  //     //   setDepartments(res.data || []);
+  //     // } catch (err) { showToast({message:'Failed to load departments', type:'error'}) }
+  // };
 
-    // open dialog: load departments (dummy or backend)
-    // const fetchDepartments = async () => {
-    //     // Dummy:
-    //     const d = makeDummyDepartments();
-    //     setDepartments(d);
+  // fetch users for a workspace (real API call)
+  const fetchUsers = useCallback(async () => {
+    if (!currentWorkspace?.id) {
+      setUsers([]);
+      setFilteredUsers([]);
+      return;
+    }
 
-    //     // If using backend:
-    //     // try {
-    //     //   const res = await backendRequest({ endpoint: BACKEND_ENDPOINT.organization_departments(organizationId) });
-    //     //   setDepartments(res.data || []);
-    //     // } catch (err) { showToast({message:'Failed to load departments', type:'error'}) }
-    // };
+    try {
+      // Call auth-service to get workspace members via the API helper
+      const members = await getWorkspaceMembers(currentWorkspace.id);
 
-    // fetch users for a department (dummy)
-    const fetchUsers = async () => {
-        if (!currentWorkspace?.id) {
-        setUsers([]);
-        return;
-        }
-
-        // A real backend would support pagination & server-side search.
-        // Dummy: generate many users once and set.
-        const list = makeDummyUsersFor();
-        setUsers(list);
-        setFilteredUsers(list); // initially same
-    };
-
-    
-
-    // When department changes, clear previous selections and load users
-    useEffect(() => {
-        // clear selected users & roles when department changes
-        setSelectedUsers([]);
-        setUserRoles({});
-        setUserQuery("");
-        if (!currentWorkspace?.id) {
-            setUsers([]);
-            setFilteredUsers([]);
-            return;
-        }
-        fetchUsers(currentWorkspace?.id);
-    }, [currentWorkspace?.id]);
-
-    const handleClose = () => {
-        setOpen(false);
-        // reset everything
-        // setDepartmentId("");
+      if (members && Array.isArray(members)) {
+        // Map auth-service response to dialog format
+        const mappedUsers = members.map((member) => ({
+          id: member.user_id,
+          name: member.name || member.UserMetadata?.email || "Unknown",
+          email: member.UserMetadata?.email || "",
+          workspace_role: member.role, // admin/member/viewer in workspace
+        }));
+        setUsers(mappedUsers);
+        setFilteredUsers(mappedUsers);
+      } else {
+        showToast({ message: "Failed to load workspace members", type: "error" });
         setUsers([]);
         setFilteredUsers([]);
-        setUserQuery("");
-        setSelectedUsers([]);
-        setUserRoles({});
+      }
+    } catch (error) {
+      console.error("Failed to fetch workspace members:", error);
+      showToast({ message: "Error loading workspace members", type: "error" });
+      setUsers([]);
+      setFilteredUsers([]);
+    }
+  }, [currentWorkspace]);
+
+  // When workspace changes, clear previous selections and load users
+  useEffect(() => {
+    if (!isOpen) return; // Only fetch when dialog is open
+
+    // Reset state
+    setSelectedUsers([]);
+    setUserRoles({});
+    setUserQuery("");
+
+    if (!currentWorkspace?.id) {
+      setUsers([]);
+      setFilteredUsers([]);
+      return;
+    }
+
+    fetchUsers();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentWorkspace, isOpen]);
+  //         // client-side filter departments
+  //         // For backend: call API to search departments
+  //         setDepartments((prev) => {
+  //           const all = makeDummyDepartments(); // ensure full list for dummy
+  //           if (!deptQuery) return all;
+  //           return all.filter((d) => d.name.toLowerCase().includes(deptQuery.toLowerCase()));
+  //         });
+  //     }, 200);
+  //     return () => clearTimeout(deptDebounceRef.current);
+  // }, [deptQuery]);
+
+  // Debounced user search (client-side)
+  useEffect(() => {
+    if (userDebounceRef.current) clearTimeout(userDebounceRef.current);
+    userDebounceRef.current = setTimeout(() => {
+      if (!userQuery) {
+        setFilteredUsers(users);
+        return;
+      }
+      const q = userQuery.toLowerCase();
+      // for scalability, filter on fields known (name/email)
+      const res = users.filter((u) => u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q) || u.id.toLowerCase().includes(q));
+      setFilteredUsers(res);
+    }, 180);
+    return () => clearTimeout(userDebounceRef.current);
+  }, [userQuery, users]);
+
+  const handleClose = () => {
+    setOpen(false);
+    // reset everything
+    setUsers([]);
+    setFilteredUsers([]);
+    setUserQuery("");
+    setSelectedUsers([]);
+    setUserRoles({});
+  };
+
+  // helper: toggle selection (selectedUsers stores full user objects)
+  const toggleSelectUser = (user) => {
+    setSelectedUsers((prev) => {
+      const exists = prev.find((p) => p.id === user.id);
+      if (exists) {
+        // remove
+        return prev.filter((p) => p.id !== user.id);
+      } else {
+        // add with default role
+        setUserRoles((r) => ({ ...r, [user.id]: r[user.id] || "member" }));
+        return [...prev, user];
+      }
+    });
+  };
+
+  // set role for a user (updates map)
+  const setRoleForUser = (userId, role) => {
+    setUserRoles((prev) => ({ ...prev, [userId]: role }));
+  };
+
+  // remove selected user
+  const removeSelectedUser = (userId) => {
+    setSelectedUsers((prev) => prev.filter((u) => u.id !== userId));
+    setUserRoles((prev) => {
+      const copy = { ...prev };
+      delete copy[userId];
+      return copy;
+    });
+  };
+
+  // Save handler: builds payload and calls backend (or logs)
+  const handleAddMembers = async () => {
+    if (!projectId) {
+      showToast({ message: "Invalid project", type: "error" });
+      return;
+    }
+    if (!currentWorkspace?.id) {
+      showToast({ message: "Please pick a department", type: "warning" });
+      return;
+    }
+    if (selectedUsers.length === 0) {
+      showToast({ message: "Select at least one user", type: "warning" });
+      return;
+    }
+
+    const payload = {
+      users: selectedUsers.map((u) => ({
+        user_id: u.id,
+        project_role: userRoles[u.id] || "member",
+      })),
     };
 
-    // // Debounced department search (client-side filtering)
-    // useEffect(() => {
-    //     if (deptDebounceRef.current) clearTimeout(deptDebounceRef.current);
-    //     deptDebounceRef.current = setTimeout(() => {
-    //         // client-side filter departments
-    //         // For backend: call API to search departments
-    //         setDepartments((prev) => {
-    //           const all = makeDummyDepartments(); // ensure full list for dummy
-    //           if (!deptQuery) return all;
-    //           return all.filter((d) => d.name.toLowerCase().includes(deptQuery.toLowerCase()));
-    //         });
-    //     }, 200);
-    //     return () => clearTimeout(deptDebounceRef.current);
-    // }, [deptQuery]);
+    const result = await updateToBackend(payload, projectId, currentWorkspace?.id);
 
-    // Debounced user search (client-side)
-    useEffect(() => {
-        if (userDebounceRef.current) clearTimeout(userDebounceRef.current);
-        userDebounceRef.current = setTimeout(() => {
-        if (!userQuery) {
-            setFilteredUsers(users);
-            return;
-        }
-        const q = userQuery.toLowerCase();
-        // for scalability, filter on fields known (name/email)
-        const res = users.filter((u) => u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q) || u.id.toLowerCase().includes(q));
-        setFilteredUsers(res);
-        }, 180);
-        return () => clearTimeout(userDebounceRef.current);
-    }, [userQuery, users]);
+    if (!result.success) {
+      showToast({ message: result.message || "Failed to update", type: "error" });
+      return;
+    }
 
-    // helper: toggle selection (selectedUsers stores full user objects)
-    const toggleSelectUser = (user) => {
-        setSelectedUsers((prev) => {
-        const exists = prev.find((p) => p.id === user.id);
-        if (exists) {
-            // remove
-            return prev.filter((p) => p.id !== user.id);
-        } else {
-            // add with default role
-            setUserRoles((r) => ({ ...r, [user.id]: r[user.id] || "member" }));
-            return [...prev, user];
-        }
-        });
-    };
+    showToast({ message: `${selectedUsers.length} members added successfully`, type: "success" });
+    // close and refresh
+    handleClose();
+    setRefresher(true);
+  };
 
-    // set role for a user (updates map)
-    const setRoleForUser = (userId, role) => {
-        setUserRoles((prev) => ({ ...prev, [userId]: role }));
-    };
+  // virtualization row renderer
+  const Row = useCallback(
+    ({ index, style }) => {
+      const u = filteredUsers[index];
+      if (!u) return null;
+      const isSelected = !!selectedUsers.find((s) => s.id === u.id);
+      return (
+        <Box style={style} key={u.id} display="flex" alignItems="center" justifyContent="space-between" px={1.5} py={1} sx={{ borderBottom: "1px solid transparent" }}>
+          <Box>
+            <Typography fontWeight={600}>{u.name}</Typography>
+            <Typography variant="body2" color="text.secondary">
+              {u.email}
+            </Typography>
+          </Box>
 
-    // remove selected user
-    const removeSelectedUser = (userId) => {
-        setSelectedUsers((prev) => prev.filter((u) => u.id !== userId));
-        setUserRoles((prev) => {
-            const copy = { ...prev };
-            delete copy[userId];
-            return copy;
-        });
-    };
+          <Box display="flex" alignItems="center" gap={1}>
+            <FormControl size="small" sx={{ minWidth: 120 }}>
+              <Select value={userRoles[u.id] || "member"} onChange={(e) => setRoleForUser(u.id, e.target.value)} size="small">
+                <MenuItem value="lead">Lead</MenuItem>
+                <MenuItem value="member">Member</MenuItem>
+                <MenuItem value="viewer">Viewer</MenuItem>
+              </Select>
+            </FormControl>
 
+            <Button variant={isSelected ? "contained" : "outlined"} size="small" onClick={() => toggleSelectUser(u)}>
+              {isSelected ? "Remove" : "Add"}
+            </Button>
+          </Box>
+        </Box>
+      );
+    },
+    [filteredUsers, selectedUsers, userRoles],
+  );
 
-    
-    // Save handler: builds payload and calls backend (or logs)
-    const handleAddMembers = async () => {
+  // memoized item count for virtualization
+  const itemCount = useMemo(() => filteredUsers.length, [filteredUsers]);
 
-        if (!projectId) {
-            showToast({ message: "Invalid project", type: "error" });
-            return;
-        }
-        if (!currentWorkspace?.id) {
-            showToast({ message: "Please pick a department", type: "warning" });
-            return;
-        }
-        if (selectedUsers.length === 0) {
-            showToast({ message: "Select at least one user", type: "warning" });
-            return;
-        }
+  // Note: Moved to real API call in fetchUsers above
+  // No longer using dummy data generation
 
-        const payload = {
-            users: selectedUsers.map((u) => ({
-            user_id: u.id,
-            project_role: userRoles[u.id] || "member",
-            })),
-        };
+  return (
+    <Dialog open={isOpen} onClose={handleClose} fullWidth maxWidth="md">
+      <DialogTitle>
+        Add Members to Project
+        <IconButton aria-label="close" onClick={handleClose} sx={{ position: "absolute", right: 8, top: 8 }} size="small">
+          <CloseIcon />
+        </IconButton>
+      </DialogTitle>
 
-        const result = await updateToBackend(payload, projectId, currentWorkspace?.id);
-
-        
-
-        if (!result.success) {
-          showToast({ message: result.message || "Failed to update", type: "error" });
-          return;
-        }
-
-        showToast({ message: `${selectedUsers.length} members added (simulated)`, type: "success" });
-        // close and refresh
-        handleClose();
-        setRefresher(true);
-    };
-
-    // virtualization row renderer
-    const Row = useCallback(
-        ({ index, style }) => {
-        const u = filteredUsers[index];
-        if (!u) return null;
-        const isSelected = !!selectedUsers.find((s) => s.id === u.id);
-        return (
-            <Box
-            style={style}
-            key={u.id}
-            display="flex"
-            alignItems="center"
-            justifyContent="space-between"
-            px={1.5}
-            py={1}
-            sx={{ borderBottom: "1px solid transparent" }}
-            >
-            <Box>
-                <Typography fontWeight={600}>{u.name}</Typography>
-                <Typography variant="body2" color="text.secondary">
-                {u.email}
-                </Typography>
-            </Box>
-
-            <Box display="flex" alignItems="center" gap={1}>
-                <FormControl size="small" sx={{ minWidth: 120 }}>
-                <Select
-                    value={userRoles[u.id] || "member"}
-                    onChange={(e) => setRoleForUser(u.id, e.target.value)}
-                    size="small"
-                >
-                    <MenuItem value="lead">Lead</MenuItem>
-                    <MenuItem value="member">Member</MenuItem>
-                    <MenuItem value="viewer">Viewer</MenuItem>
-                </Select>
-                </FormControl>
-
-                <Button
-                variant={isSelected ? "contained" : "outlined"}
-                size="small"
-                onClick={() => toggleSelectUser(u)}
-                >
-                {isSelected ? "Remove" : "Add"}
-                </Button>
-            </Box>
-            </Box>
-        );
-        },
-        [filteredUsers, selectedUsers, userRoles]
-    );
-
-    // memoized item count for virtualization
-    const itemCount = useMemo(() => filteredUsers.length, [filteredUsers]);
-
-    // simulate thousands of users for a dept
-    const makeDummyUsersFor = () => {
-        const department = currentWorkspace;
-        const list = [];
-        for (let i = 1; i <= 5; i++) {
-            const id = `7b6709f5-57a5-48df-af22-771459865${i}d0`;
-            list.push({
-                id,
-                name: `${department.name.toUpperCase()} User ${i}`,
-                email: `user${i}@${department.name.toLowerCase()}.example.com`,
-                department_id: department.id,
-            });
-        }
-        console.log(list);
-        return list;
-    };
-
-    return (
-        <Dialog open={isOpen} onClose={handleClose} fullWidth maxWidth="md">
-        <DialogTitle>
-          Add Members to Project
-          <IconButton
-            aria-label="close"
-            onClick={handleClose}
-            sx={{ position: "absolute", right: 8, top: 8 }}
-            size="small"
-          >
-            <CloseIcon />
-          </IconButton>
-        </DialogTitle>
-
-        <DialogContent dividers sx={{ display: "flex", gap: 2, pb: 2 }}>
-          {/* LEFT: controls & user list */}
-          <Box sx={{ flex: 1, minWidth: 420 }}>
-            {/* Dept search */}
-            {/* <Typography variant="subtitle2" sx={{ mb: 1 }}>
+      <DialogContent dividers sx={{ display: "flex", gap: 2, pb: 2 }}>
+        {/* LEFT: controls & user list */}
+        <Box sx={{ flex: 1, minWidth: 420 }}>
+          {/* Dept search */}
+          {/* <Typography variant="subtitle2" sx={{ mb: 1 }}>
               Department
             </Typography>
             <TextField
@@ -304,8 +277,8 @@ export default function AddMembersDialog ({isOpen, setOpen, projectId, setRefres
               sx={{ mb: 1 }}
             /> */}
 
-            {/* Dept list (clickable) */}
-            {/* <Box
+          {/* Dept list (clickable) */}
+          {/* <Box
               sx={{
                 border: "1px solid #ddd",
                 borderRadius: 1,
@@ -358,39 +331,33 @@ export default function AddMembersDialog ({isOpen, setOpen, projectId, setRefres
               )}
             </Box> */}
 
-            {/* users area */}
-            <Typography variant="subtitle2" sx={{ mb: 1 }}>
-              Users {currentWorkspace?.id ? currentWorkspace?.name : ""}
-            </Typography>
+          {/* users area */}
+          <Typography variant="subtitle2" sx={{ mb: 1 }}>
+            Users {currentWorkspace?.id ? currentWorkspace?.name : ""}
+          </Typography>
 
-            <Box sx={{ mb: 1, display: "flex", gap: 1 }}>
-              <TextField
-                placeholder="Search users..."
-                fullWidth
-                size="small"
-                value={userQuery}
-                onChange={(e) => setUserQuery(e.target.value)}
-              />
-            </Box>
+          <Box sx={{ mb: 1, display: "flex", gap: 1 }}>
+            <TextField placeholder="Search users..." fullWidth size="small" value={userQuery} onChange={(e) => setUserQuery(e.target.value)} />
+          </Box>
 
-            <Divider sx={{ mb: 1 }} />
+          <Divider sx={{ mb: 1 }} />
 
-            {/* Virtualized list */}
-            <Box
-              sx={{
-                border: "1px solid #eee",
-                borderRadius: 1,
-                height: LIST_HEIGHT,
-                overflow: "hidden",
-              }}
-            >
-              {itemCount === 0 ? (
-                <Box p={2}>
-                  <Typography variant="body2" color="text.secondary">
-                    {currentWorkspace?.id ? "No users found" : "Select a department to view users"}
-                  </Typography>
-                </Box>
-              ) : (
+          {/* Virtualized list */}
+          <Box
+            sx={{
+              border: "1px solid #eee",
+              borderRadius: 1,
+              height: LIST_HEIGHT,
+              overflow: "hidden",
+            }}
+          >
+            {itemCount === 0 ? (
+              <Box p={2}>
+                <Typography variant="body2" color="text.secondary">
+                  {currentWorkspace?.id ? "No users found" : "Select a department to view users"}
+                </Typography>
+              </Box>
+            ) : (
               //  <List
               //     height={400}
               //     width={600}
@@ -400,156 +367,135 @@ export default function AddMembersDialog ({isOpen, setOpen, projectId, setRefres
               //     {Row}
               //   </List>
               <Box
-  sx={{
-    border: "1px solid #eee",
-    borderRadius: 1,
-    maxHeight: 400,
-    overflowY: "auto",
-  }}
->
-  {itemCount === 0 ? (
-    <Box p={2}>
-      <Typography variant="body2" color="text.secondary">
-        {currentWorkspace?.id
-          ? "No users found"
-          : "Select a department to view users"}
-      </Typography>
-    </Box>
-  ) : (
-    filteredUsers.map((u) => {
-      const isSelected = selectedUsers.some((s) => s.id === u.id);
-
-      return (
-        <Box
-          key={u.id}
-          display="flex"
-          alignItems="center"
-          justifyContent="space-between"
-          px={1.5}
-          py={1}
-          sx={{ borderBottom: "1px solid #f0f0f0" }}
-        >
-          <Box>
-            <Typography fontWeight={600}>{u.name}</Typography>
-            <Typography variant="body2" color="text.secondary">
-              {u.email}
-            </Typography>
-          </Box>
-
-          <Box display="flex" alignItems="center" gap={1}>
-            <FormControl size="small" sx={{ minWidth: 120 }}>
-              <Select
-                value={userRoles[u.id] || "member"}
-                onChange={(e) => setRoleForUser(u.id, e.target.value)}
+                sx={{
+                  border: "1px solid #eee",
+                  borderRadius: 1,
+                  maxHeight: 400,
+                  overflowY: "auto",
+                }}
               >
-                <MenuItem value="lead">Lead</MenuItem>
-                <MenuItem value="member">Member</MenuItem>
-                <MenuItem value="viewer">Viewer</MenuItem>
-              </Select>
-            </FormControl>
+                {itemCount === 0 ? (
+                  <Box p={2}>
+                    <Typography variant="body2" color="text.secondary">
+                      {currentWorkspace?.id ? "No users found" : "Select a department to view users"}
+                    </Typography>
+                  </Box>
+                ) : (
+                  filteredUsers.map((u) => {
+                    const isSelected = selectedUsers.some((s) => s.id === u.id);
 
-            <Button
-              variant={isSelected ? "contained" : "outlined"}
-              size="small"
-              onClick={() => toggleSelectUser(u)}
-            >
-              {isSelected ? "Remove" : "Add"}
-            </Button>
+                    return (
+                      <Box key={u.id} display="flex" alignItems="center" justifyContent="space-between" px={1.5} py={1} sx={{ borderBottom: "1px solid #f0f0f0" }}>
+                        <Box>
+                          <Typography fontWeight={600}>{u.name}</Typography>
+                          <Typography variant="body2" color="text.secondary">
+                            {u.email}
+                          </Typography>
+                        </Box>
+
+                        <Box display="flex" alignItems="center" gap={1}>
+                          <FormControl size="small" sx={{ minWidth: 120 }}>
+                            <Select value={userRoles[u.id] || "member"} onChange={(e) => setRoleForUser(u.id, e.target.value)}>
+                              <MenuItem value="lead">Lead</MenuItem>
+                              <MenuItem value="member">Member</MenuItem>
+                              <MenuItem value="viewer">Viewer</MenuItem>
+                            </Select>
+                          </FormControl>
+
+                          <Button variant={isSelected ? "contained" : "outlined"} size="small" onClick={() => toggleSelectUser(u)}>
+                            {isSelected ? "Remove" : "Add"}
+                          </Button>
+                        </Box>
+                      </Box>
+                    );
+                  })
+                )}
+              </Box>
+            )}
           </Box>
         </Box>
-      );
-    })
-  )}
-</Box>
-              )}
-            </Box>
+
+        {/* RIGHT: selected users panel */}
+        <Box sx={{ width: 360, minWidth: 280 }}>
+          <Typography variant="subtitle2" sx={{ mb: 1 }}>
+            Selected Users ({selectedUsers.length})
+          </Typography>
+
+          <Box
+            sx={{
+              border: "1px solid #eee",
+              borderRadius: 1,
+              minHeight: 200,
+              maxHeight: 420,
+              overflowY: "auto",
+              p: 1,
+              mb: 2,
+              backgroundColor: "background.paper",
+            }}
+          >
+            {selectedUsers.length === 0 ? (
+              <Typography variant="body2" color="text.secondary">
+                No users selected
+              </Typography>
+            ) : (
+              selectedUsers.map((u) => (
+                <Box key={u.id} display="flex" alignItems="center" justifyContent="space-between" sx={{ mb: 1 }}>
+                  <Box>
+                    <Typography fontWeight={600}>{u.name}</Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      {u.email}
+                    </Typography>
+                  </Box>
+
+                  <Box display="flex" alignItems="center" gap={1}>
+                    <FormControl size="small" sx={{ minWidth: 110 }}>
+                      <Select value={userRoles[u.id] || "member"} onChange={(e) => setRoleForUser(u.id, e.target.value)}>
+                        <MenuItem value="lead">Lead</MenuItem>
+                        <MenuItem value="member">Member</MenuItem>
+                        <MenuItem value="viewer">Viewer</MenuItem>
+                      </Select>
+                    </FormControl>
+
+                    <IconButton size="small" onClick={() => removeSelectedUser(u.id)}>
+                      <CloseIcon fontSize="small" />
+                    </IconButton>
+                  </Box>
+                </Box>
+              ))
+            )}
           </Box>
 
-          {/* RIGHT: selected users panel */}
-          <Box sx={{ width: 360, minWidth: 280 }}>
-            <Typography variant="subtitle2" sx={{ mb: 1 }}>
-              Selected Users ({selectedUsers.length})
-            </Typography>
+          <Divider sx={{ mb: 2 }} />
 
-            <Box
-              sx={{
-                border: "1px solid #eee",
-                borderRadius: 1,
-                minHeight: 200,
-                maxHeight: 420,
-                overflowY: "auto",
-                p: 1,
-                mb: 2,
-                backgroundColor: "background.paper",
+          <Typography variant="caption" color="text.secondary" display="block" sx={{ mb: 1 }}>
+            Quick add/remove: click "Add" on the left list. Selection persists until you change department or close.
+          </Typography>
+
+          <Box display="flex" gap={1}>
+            <Button fullWidth onClick={handleClose}>
+              Cancel
+            </Button>
+            <DoButton
+              isDisable={isSubmitting}
+              fullWidth
+              onclick={async () => {
+                setSubmitting(true);
+                await handleAddMembers();
+                setSubmitting(false);
               }}
             >
-              {selectedUsers.length === 0 ? (
-                <Typography variant="body2" color="text.secondary">
-                  No users selected
-                </Typography>
-              ) : (
-                selectedUsers.map((u) => (
-                  <Box
-                    key={u.id}
-                    display="flex"
-                    alignItems="center"
-                    justifyContent="space-between"
-                    sx={{ mb: 1 }}
-                  >
-                    <Box>
-                      <Typography fontWeight={600}>{u.name}</Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        {u.email}
-                      </Typography>
-                    </Box>
-
-                    <Box display="flex" alignItems="center" gap={1}>
-                      <FormControl size="small" sx={{ minWidth: 110 }}>
-                        <Select
-                          value={userRoles[u.id] || "member"}
-                          onChange={(e) => setRoleForUser(u.id, e.target.value)}
-                        >
-                          <MenuItem value="lead">Lead</MenuItem>
-                          <MenuItem value="member">Member</MenuItem>
-                          <MenuItem value="viewer">Viewer</MenuItem>
-                        </Select>
-                      </FormControl>
-
-                      <IconButton size="small" onClick={() => removeSelectedUser(u.id)}>
-                        <CloseIcon fontSize="small" />
-                      </IconButton>
-                    </Box>
-                  </Box>
-                ))
-              )}
-            </Box>
-
-            <Divider sx={{ mb: 2 }} />
-
-            <Typography variant="caption" color="text.secondary" display="block" sx={{ mb: 1 }}>
-              Quick add/remove: click "Add" on the left list. Selection persists until you change department or close.
-            </Typography>
-
-            <Box display="flex" gap={1}>
-              <Button fullWidth onClick={handleClose}>Cancel</Button>
-              <DoButton isDisable={isSubmitting} fullWidth onclick={async() => {setSubmitting(true);await handleAddMembers();setSubmitting(false);}}>{isSubmitting ? <CircularProgress size={20} /> : "Save"}</DoButton>
-            </Box>
+              {isSubmitting ? <CircularProgress size={20} /> : "Save"}
+            </DoButton>
           </Box>
-        </DialogContent>
-      </Dialog>
-    );
-
+        </Box>
+      </DialogContent>
+    </Dialog>
+  );
 }
-
-
-
-
-
-
 
 const updateToBackend = async (payload, projectId, departmentId) => {
   const endpoint = BACKEND_ENDPOINT["add_project_members"](projectId, departmentId);
-  const response = await backendRequest({endpoint, bodyData: payload, });
+  const response = await backendRequest({ endpoint, bodyData: payload });
 
   return response;
-}
+};

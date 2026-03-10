@@ -48,7 +48,7 @@ const dataValidation = async (req, res, next) => {
 
     // const subdomain = req.headers.host.split(".")[0];
     const subdomain = 'final-fn-pms';
-    console.log(req.headers.host);
+    // console.log(req.headers.host);
     req.tenantConfig = await getRequiredData(subdomain, MODULE_CODE, req);
 
     namespace.run(() => {
@@ -81,17 +81,22 @@ async function getRequiredData(subdomain, moduleCode, req) {
 
   console.log(`${DOMAIN.superAdmin}/api/required-data/${req.organization_id}/${subdomain}/${moduleCode}`);
   // Call Super Admin (only on cache miss)
-  const response = await fetch(
-    `${DOMAIN.superAdmin}/api/required-data/${req.organization_id}/${subdomain}/${moduleCode}`,
-  );
-
+  let response;
+  // try {
+  //   response = await fetch(
+  //     `${DOMAIN.superAdmin}/api/required-data/${req.organization_id}/${subdomain}/${moduleCode}`,
+  //   );
+  // } catch (err) {
+    // console.log(err);
+    return {}; // todo - handle super admin down scenario gracefully, maybe return default config or an error message indicating the issue.
+  // }
   console.log(response);
 
   let data;
   
   try {
     data = await response.json();
-    console.log(data);
+    // console.log(data);
   } catch {
     throw {
       status: response.status || 500,

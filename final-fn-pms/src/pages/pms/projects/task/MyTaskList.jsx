@@ -19,7 +19,7 @@ import TaskDependenciesDialog from "./TaskDependenciesDialog";
 import TimerIcon from "@mui/icons-material/Timer";
 import LowPriorityIcon from "@mui/icons-material/LowPriority";
 import DependencyTaskCreateDialog from "./DependencyTaskCreateDialog";
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 
 const taskFilter = [
   { label: "On Going", value: "in_progress" },
@@ -100,7 +100,12 @@ export default function MyTaskList({ typeFilter, refreshCurrentTask, setRefreshC
     { field: "project_id", headerName: "Project", flex: 1, renderCell: (params) => params.row.project?.name, type: "singleSelect", valueOptions: userProjects },
     { field: "title", headerName: "Title", flex: 1 },
     { field: "description", headerName: "Discription", flex: 1 },
-    { field: "department_id", headerName: "Department", flex: 1 },
+    {
+      field: "department_id",
+      headerName: "Department",
+      flex: 1,
+      renderCell: (params) => params.row.department_details?.name || params.row.department_id,
+    },
     { field: "priority", headerName: "Priority", flex: 1 },
     { field: "status", headerName: "Status", flex: 1, type: "singleSelect", valueOptions: taskFilter },
     { field: "due_date", headerName: "Due Date", flex: 1 },
@@ -280,22 +285,20 @@ export default function MyTaskList({ typeFilter, refreshCurrentTask, setRefreshC
                     }}
                   />
                 </Box>
-                {
-                  params.row.status === "in_progress" && (
-                    <Box title="Complete Task">
-                      <CheckCircleIcon
-                        onClick={() => {
-                          handleCompleteTask(params.row.id);
-                        }}
-                        sx={{
-                          cursor: "pointer",
-                          color: colors.text.dark,
-                          "&:hover": { color: colors.primary.dark },
-                        }}
-                      />
-                    </Box>
-                  )
-                }
+                {params.row.status === "in_progress" && (
+                  <Box title="Complete Task">
+                    <CheckCircleIcon
+                      onClick={() => {
+                        handleCompleteTask(params.row.id);
+                      }}
+                      sx={{
+                        cursor: "pointer",
+                        color: colors.text.dark,
+                        "&:hover": { color: colors.primary.dark },
+                      }}
+                    />
+                  </Box>
+                )}
 
                 {(params.row.status === "in_progress" || params.row.status === "approved") && (
                   <>
@@ -337,28 +340,24 @@ export default function MyTaskList({ typeFilter, refreshCurrentTask, setRefreshC
                   </>
                 )}
 
-                {
-                  ["approve_pending", "approved", "assign_pending", "accept_pending"].includes(params.row.status) && (
-                    <Box title="Delete">
-                      <DeleteIcon
-                        onClick={() => {
-                          showConfirmDialog({
-                            message: "Sure of removing member?",
-                            title: "Delete Project Member",
-                            onConfirm: () => handleDeleteTask(params.row.id),
-                          });
-                        }}
-                        sx={{
-                          cursor: "pointer",
-                          color: colors.error.light,
-                          "&:hover": { color: colors.error.modrate },
-                        }}
-                      />
-                    </Box>
-                  )
-                }
-
-                
+                {["approve_pending", "approved", "assign_pending", "accept_pending"].includes(params.row.status) && (
+                  <Box title="Delete">
+                    <DeleteIcon
+                      onClick={() => {
+                        showConfirmDialog({
+                          message: "Sure of removing member?",
+                          title: "Delete Project Member",
+                          onConfirm: () => handleDeleteTask(params.row.id),
+                        });
+                      }}
+                      sx={{
+                        cursor: "pointer",
+                        color: colors.error.light,
+                        "&:hover": { color: colors.error.modrate },
+                      }}
+                    />
+                  </Box>
+                )}
               </>
             )}
           </Box>
@@ -389,16 +388,25 @@ export default function MyTaskList({ typeFilter, refreshCurrentTask, setRefreshC
 
       <CreateHelperTask open={!!openHelperTask} onClose={() => setOpenHelperTask(false)} projectMemberId={openHelperTask.projectMemberId} taskId={openHelperTask.taskId} />
 
-      <TaskDependenciesDialog taskId={taskDependencyDialog?.taskId} onClose={() => setTaskDependencyDialog(null)} pathName={taskDependencyDialog?.pathName} name={taskDependencyDialog?.name} onSuccess={() => {setRefresher(true)}} />
+      <TaskDependenciesDialog
+        taskId={taskDependencyDialog?.taskId}
+        onClose={() => setTaskDependencyDialog(null)}
+        pathName={taskDependencyDialog?.pathName}
+        name={taskDependencyDialog?.name}
+        onSuccess={() => {
+          setRefresher(true);
+        }}
+      />
 
-      <DependencyTaskCreateDialog 
+      <DependencyTaskCreateDialog
         open={editDialog.open && editDialog.type === "dependencyTask"}
         onClose={() => {
-            setEditDialog({ open: false, task: null, type: null });
-          }}
-
+          setEditDialog({ open: false, task: null, type: null });
+        }}
         task={editDialog.task}
-        onSuccess={() => {setRefresher(true)}}
+        onSuccess={() => {
+          setRefresher(true);
+        }}
       />
     </>
   );

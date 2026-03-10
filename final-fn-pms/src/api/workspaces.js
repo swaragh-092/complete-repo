@@ -3,9 +3,9 @@
  * @description API functions for workspace management within organizations
  */
 
-import { auth } from '@spidy092/auth-client';
+import { auth } from "@spidy092/auth-client";
 
-const STORAGE_KEY = 'sso.currentWorkspace';
+const STORAGE_KEY = "sso.currentWorkspace";
 
 /**
  * Get workspaces for a specific organization
@@ -14,22 +14,22 @@ const STORAGE_KEY = 'sso.currentWorkspace';
  */
 export async function getWorkspaces(orgId) {
   try {
-    const response = await auth.api.get('/workspaces', {
-      params: { org_id: orgId }
+    const response = await auth.api.get("/workspaces", {
+      params: { org_id: orgId },
     });
     // Handle ResponseHandler wrapper: { success, data: [...] }
     const data = response.data?.data || response.data;
-    
-    console.log('📋 Workspaces API response:', data);
-    
+
+    console.log("📋 Workspaces API response:", data);
+
     // Normalize response - handle both direct array and membership wrapper
     if (Array.isArray(data)) {
-      return data.map(item => item.workspace || item);
+      return data.map((item) => item.workspace || item);
     }
-    
+
     return data.workspaces || [];
   } catch (error) {
-    console.error('Failed to fetch workspaces:', error);
+    console.error("Failed to fetch workspaces:", error);
     throw error;
   }
 }
@@ -45,10 +45,10 @@ export async function getWorkspaces(orgId) {
  */
 export async function createWorkspace(workspaceData) {
   try {
-    const response = await auth.api.post('/workspaces', workspaceData);
+    const response = await auth.api.post("/workspaces", workspaceData);
     return response.data?.data || response.data;
   } catch (error) {
-    console.error('Failed to create workspace:', error);
+    console.error("Failed to create workspace:", error);
     throw error;
   }
 }
@@ -63,7 +63,7 @@ export async function getWorkspace(workspaceId) {
     const response = await auth.api.get(`/workspaces/${workspaceId}`);
     return response.data?.data || response.data;
   } catch (error) {
-    console.error('Failed to fetch workspace:', error);
+    console.error("Failed to fetch workspace:", error);
     throw error;
   }
 }
@@ -79,7 +79,7 @@ export async function updateWorkspace(workspaceId, updates) {
     const response = await auth.api.patch(`/workspaces/${workspaceId}`, updates);
     return response.data?.data || response.data;
   } catch (error) {
-    console.error('Failed to update workspace:', error);
+    console.error("Failed to update workspace:", error);
     throw error;
   }
 }
@@ -93,7 +93,22 @@ export async function deleteWorkspace(workspaceId) {
   try {
     await auth.api.delete(`/workspaces/${workspaceId}`);
   } catch (error) {
-    console.error('Failed to delete workspace:', error);
+    console.error("Failed to delete workspace:", error);
+    throw error;
+  }
+}
+
+/**
+ * Get members of a workspace
+ * @param {string} workspaceId - Workspace ID
+ * @returns {Promise<Array>} List of workspace members with user details
+ */
+export async function getWorkspaceMembers(workspaceId) {
+  try {
+    const response = await auth.api.get(`/workspaces/${workspaceId}/members`);
+    return response.data?.data || response.data;
+  } catch (error) {
+    console.error("Failed to fetch workspace members:", error);
     throw error;
   }
 }
@@ -107,7 +122,7 @@ export function getCurrentWorkspace() {
     const stored = localStorage.getItem(STORAGE_KEY);
     return stored ? JSON.parse(stored) : null;
   } catch (error) {
-    console.error('Failed to get current workspace:', error);
+    console.error("Failed to get current workspace:", error);
     return null;
   }
 }
@@ -124,7 +139,7 @@ export function setCurrentWorkspace(workspace) {
       localStorage.removeItem(STORAGE_KEY);
     }
   } catch (error) {
-    console.error('Failed to set current workspace:', error);
+    console.error("Failed to set current workspace:", error);
   }
 }
 
@@ -135,7 +150,7 @@ export function clearCurrentWorkspace() {
   try {
     localStorage.removeItem(STORAGE_KEY);
   } catch (error) {
-    console.error('Failed to clear current workspace:', error);
+    console.error("Failed to clear current workspace:", error);
   }
 }
 
@@ -145,8 +160,9 @@ export default {
   getWorkspace,
   updateWorkspace,
   deleteWorkspace,
+  getWorkspaceMembers,
   getCurrentWorkspace,
   setCurrentWorkspace,
   clearCurrentWorkspace,
-  STORAGE_KEY
+  STORAGE_KEY,
 };

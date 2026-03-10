@@ -14,9 +14,9 @@ export default function TaskDependenciesDialog({ taskId, onClose, pathName, name
   const open = Boolean(taskId);
 
   const handleOnDeleteDependencyTask = async (dependencyTaskId) => {
-    console.log()
+    console.log();
     setDeletingTaskId((prev) => [...prev, dependencyTaskId]);
-    const response = await backendRequest({endpoint: BACKEND_ENDPOINT.remove_dependency_task(taskId, dependencyTaskId)});
+    const response = await backendRequest({ endpoint: BACKEND_ENDPOINT.remove_dependency_task(taskId, dependencyTaskId) });
 
     showToast({ message: response.message ?? (response.success ? "Dependency Removed Successfully" : "Failed to Remove Dependency"), type: response.success ? "success" : "error" });
     if (response.success) {
@@ -24,18 +24,30 @@ export default function TaskDependenciesDialog({ taskId, onClose, pathName, name
       onSuccess();
     }
     setDeletingTaskId((prev) => prev.filter((id) => id !== dependencyTaskId)); // remove after done
-  }
+  };
 
-  useEffect(() => { if (open) setRefresh(true)}, [open]);
+  useEffect(() => {
+    if (open) setRefresh(true);
+  }, [open]);
 
   const theme = useTheme();
   const colors = colorCodes(theme.palette.mode);
 
   const displayColumns = [
-    { field: "assigned_to", headerName: "Assigned User", flex: 1 },
+    {
+      field: "assigned_to",
+      headerName: "Assigned User",
+      flex: 1,
+      renderCell: (params) => params.row.assigned?.user_details?.name || params.row.assigned_to || "N/A",
+    },
     { field: "title", headerName: "Title", flex: 1 },
     { field: "description", headerName: "Discription", flex: 1 },
-    { field: "department_id", headerName: "Department", flex: 1 },
+    {
+      field: "department_id",
+      headerName: "Department",
+      flex: 1,
+      renderCell: (params) => params.row.department_details?.name || params.row.department_id,
+    },
     { field: "priority", headerName: "Priority", flex: 1 },
     {
       field: "status",
@@ -54,7 +66,7 @@ export default function TaskDependenciesDialog({ taskId, onClose, pathName, name
       flex: 1,
       sortable: false,
       filterable: false,
-      renderCell: (params) => params.row.helping_for?.title,
+      renderCell: (params) => params.row.creator?.user_details?.name || params.row.creator?.user_id || "N/A",
     },
     {
       field: "assigne_to",
@@ -96,7 +108,6 @@ export default function TaskDependenciesDialog({ taskId, onClose, pathName, name
                     }}
                   />
                 )}
-                
               </Box>
             ),
           },
@@ -109,7 +120,7 @@ export default function TaskDependenciesDialog({ taskId, onClose, pathName, name
       <DialogTitle>{name} Tasks</DialogTitle>
 
       <DialogContent dividers sx={{ padding: 0 }}>
-        {taskId && <DataTable columns={displayColumns} fetchEndpoint={BACKEND_ENDPOINT[pathName](taskId)} defaultPageSize={5} refresh={refresh} setRefresh={setRefresh}  />}
+        {taskId && <DataTable columns={displayColumns} fetchEndpoint={BACKEND_ENDPOINT[pathName](taskId)} defaultPageSize={5} refresh={refresh} setRefresh={setRefresh} />}
       </DialogContent>
 
       <DialogActions>
@@ -120,6 +131,3 @@ export default function TaskDependenciesDialog({ taskId, onClose, pathName, name
     </Dialog>
   );
 }
-
-
-

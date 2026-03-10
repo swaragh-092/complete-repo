@@ -11,33 +11,45 @@ import backendRequest from "../../../../util/request";
 import { showToast } from "../../../../util/feedback/ToastService";
 import Heading from "../../../../components/Heading";
 
-export default function AcceptHelps({setRefreshCurrentTask}) {
+export default function AcceptHelps({ setRefreshCurrentTask }) {
   const [refresh, setRefresher] = useState(true);
   const [editingIds, setEditingIds] = useState([]);
 
   const handleAccept = async (taskId, status) => {
     setEditingIds((prev) => [...prev, taskId]);
     const endpoint = BACKEND_ENDPOINT.accept_hekp_asked(taskId, status);
-    const response = await backendRequest({endpoint});
+    const response = await backendRequest({ endpoint });
 
-    showToast({message: response.message || (response.success ? `Task ${status}ed.` : `Task ${status} failed`), type: response.success ? "success" : "error"});
-    if ( response.success ) { 
-      setRefresher(true);   
+    showToast({ message: response.message || (response.success ? `Task ${status}ed.` : `Task ${status} failed`), type: response.success ? "success" : "error" });
+    if (response.success) {
+      setRefresher(true);
       if (status === "accept") setRefreshCurrentTask(true);
     }
-    setEditingIds((prev) => prev.filter((id) => id !== taskId)); 
-  }
+    setEditingIds((prev) => prev.filter((id) => id !== taskId));
+  };
 
   const theme = useTheme();
   const colors = colorCodes(theme.palette.mode);
 
   const displayColumns = [
     { field: "helpedTask", headerName: "Help for", flex: 1, renderCell: (params) => params.row.helpedTask?.title, filterable: false, sortable: false },
-    { field: "helpedTask.assigned_to", headerName: "Help user", flex: 1, renderCell: (params) => params.row.helpedTask?.assigned?.user_id, filterable: false, sortable: false },
+    {
+      field: "helpedTask.assigned_to",
+      headerName: "Help user",
+      flex: 1,
+      renderCell: (params) => params.row.helpedTask?.assigned?.user_details?.name || params.row.helpedTask?.assigned?.user_id || "N/A",
+      filterable: false,
+      sortable: false,
+    },
 
     { field: "title", headerName: "Title", flex: 1 },
     { field: "description", headerName: "Discription", flex: 1 },
-    { field: "department_id", headerName: "Department", flex: 1 },
+    {
+      field: "department_id",
+      headerName: "Department",
+      flex: 1,
+      renderCell: (params) => params.row.department_details?.name || params.row.department_id,
+    },
     { field: "due_date", headerName: "Due Date", flex: 1 },
     {
       field: "",
@@ -91,10 +103,10 @@ export default function AcceptHelps({setRefreshCurrentTask}) {
 
   return (
     <>
-    <Box padding={"20px"} >
-      <Heading title={"Asking Help"} level={3}/>
-      <DataTable refresh={refresh} setRefresh={setRefresher} columns={displayColumns} fetchEndpoint={BACKEND_ENDPOINT.asked_help_tasks} />
-    </Box>
+      <Box padding={"20px"}>
+        <Heading title={"Asking Help"} level={3} />
+        <DataTable refresh={refresh} setRefresh={setRefresher} columns={displayColumns} fetchEndpoint={BACKEND_ENDPOINT.asked_help_tasks} />
+      </Box>
     </>
   );
 }

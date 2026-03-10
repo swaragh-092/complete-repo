@@ -13,7 +13,7 @@ const {
   auditLogUpdateHelperFunction,
 } = require("../../util/helper");
 const { DOMAIN } = require("../../config/config");
-const { authClient } = require('../serviceClients');
+const { authClient } = require("../serviceClients");
 
 const { createNotification } = require("../notification/notification.service");
 const { queryWithLogAudit } = require("../auditLog.service");
@@ -414,12 +414,19 @@ class TaskService {
         { association: "project", required: true },
         {
           association: "assigned",
+          attributes: ["id", "user_id", "department_id", "project_role"],
           ...(onlyUser
             ? { where: { user_id: req.user.id }, required: true }
             : {}),
         },
-        { association: "creator" },
-        { association: "approver" },
+        {
+          association: "creator",
+          attributes: ["id", "user_id", "department_id", "project_role"],
+        },
+        {
+          association: "approver",
+          attributes: ["id", "user_id", "department_id", "project_role"],
+        },
         { association: "helperTasks", attributes: ["id"] },
         { association: "dependencyTasks", attributes: ["id"] },
         { association: "parentTasks", attributes: ["id"] },
@@ -437,17 +444,36 @@ class TaskService {
     // ONE call so the frontend gets names/emails instead of raw IDs.
     // department_id in PMS == workspace_id in auth-service.
     if (result.data && result.data.length > 0) {
+      // Extract user_ids - handle both plain objects and Sequelize instances
       const uniqueUserIds = [
         ...new Set(
           result.data
-            .flatMap((task) => [
-              task.assigned?.user_id,
-              task.creator?.user_id,
-              task.approver?.user_id,
-            ])
+            .flatMap((task) => {
+              const taskData = task.toJSON ? task.toJSON() : task;
+              return [
+                taskData.assigned?.user_id,
+                taskData.creator?.user_id,
+                taskData.approver?.user_id,
+              ];
+            })
             .filter(Boolean),
         ),
       ];
+
+      console.log("[getTasks] Extracted user IDs from tasks:", {
+        uniqueUserIds,
+        sampleTask: {
+          assigned: result.data[0]?.assigned,
+          assigned_json: result.data[0].toJSON
+            ? result.data[0].toJSON().assigned
+            : result.data[0].assigned,
+          creator: result.data[0]?.creator,
+          creator_json: result.data[0].toJSON
+            ? result.data[0].toJSON().creator
+            : result.data[0].creator,
+          approver: result.data[0]?.approver,
+        },
+      });
 
       const uniqueDepartmentIds = [
         ...new Set(
@@ -455,72 +481,128 @@ class TaskService {
         ),
       ];
 
-      if (uniqueUserIds.length > 0) {
+      if (uniqueUserIds.length > 0 || uniqueDepartmentIds.length > 0) {
         try {
           // Use service-to-service auth (Client Credentials) instead of
           // forwarding the user's browser JWT.
           const authServiceClient = authClient();
-          const authResponse = await authServiceClient.post(
-            `${DOMAIN.auth}/auth/workspaces/members/lookup`,
-            {
+
+          // Build map: UserMetadata.id → { id, name, email }
+          const userDetailsMap = {};
+          // Build map: workspace(department) id → { id, name, description }
+          const departmentDetailsMap = {};
+
+          // STEP 1: Fetch user details (for assigned, creator, approver)
+          if (uniqueUserIds.length > 0) {
+            console.log("[getTasks] Fetching user details:", {
+              url: `${DOMAIN.auth}/auth/internal/users/lookup`,
               user_ids: uniqueUserIds,
-              workspace_ids: uniqueDepartmentIds, // departments = workspaces
-              user_id_type: "id", // PMS stores UserMetadata.id
-            },
-          );
+            });
 
-          console.log(`[getTasks] Auth-service lookup response:`, {
-            status: authResponse.status,
-          });
+            const userResponse = await authServiceClient.post(
+              `${DOMAIN.auth}/auth/internal/users/lookup`,
+              {
+                user_ids: uniqueUserIds,
+                user_id_type: "id", // PMS stores UserMetadata.id
+              },
+            );
 
-          if (authResponse.data) {
-            const members = authResponse.data?.data?.members || [];
+            console.log(`[getTasks] User lookup response:`, {
+              status: userResponse.status,
+              usersCount: userResponse.data?.data?.users?.length || 0,
+              firstUser: userResponse.data?.data?.users?.[0],
+            });
 
-            // Build map: UserMetadata.id → { id, name, email }
-            const userDetailsMap = {};
-            // Build map: workspace(department) id → { id, name }
-            const departmentDetailsMap = {};
-
-            for (const member of members) {
-              if (member.user?.id) {
-                userDetailsMap[member.user.id] = {
-                  id: member.user.id,
-                  name: member.user.name,
-                  email: member.user.email,
+            const users = userResponse.data?.data?.users || [];
+            for (const user of users) {
+              if (user.id) {
+                userDetailsMap[user.id] = {
+                  id: user.id,
+                  name: user.name,
+                  email: user.email,
                 };
-              }
-              // Each member carries the workspaces (departments) they belong to;
-              // collect every unique workspace we haven't seen yet.
-              for (const ws of member.workspaces ?? []) {
-                if (ws.id && !departmentDetailsMap[ws.id]) {
-                  departmentDetailsMap[ws.id] = {
-                    id: ws.id,
-                    name: ws.name,
-                  };
-                }
               }
             }
 
-            // Attach user_details + department_details to each task
-            result.data = result.data.map((task) => {
-              const plain = task.toJSON ? task.toJSON() : { ...task };
-              if (plain.assigned?.user_id) {
-                plain.assigned.user_details =
-                  userDetailsMap[plain.assigned.user_id] ?? null;
-              }
-              if (plain.creator?.user_id) {
-                plain.creator.user_details =
-                  userDetailsMap[plain.creator.user_id] ?? null;
-              }
-              if (plain.approver?.user_id) {
-                plain.approver.user_details =
-                  userDetailsMap[plain.approver.user_id] ?? null;
-              }
-              plain.department_details =
-                departmentDetailsMap[plain.department_id] ?? null;
-              return plain;
+            console.log("[getTasks] UserDetailsMap created:", {
+              mapKeys: Object.keys(userDetailsMap),
+              mapValues: Object.values(userDetailsMap),
             });
           }
+
+          // STEP 2: Fetch workspace/department details
+          if (uniqueDepartmentIds.length > 0) {
+            console.log("[getTasks] Fetching workspace details:", {
+              url: `${DOMAIN.auth}/auth/workspaces/batch-lookup`,
+              workspace_ids: uniqueDepartmentIds,
+            });
+
+            const workspaceResponse = await authServiceClient.post(
+              `${DOMAIN.auth}/auth/workspaces/batch-lookup`,
+              {
+                workspace_ids: uniqueDepartmentIds,
+              },
+            );
+
+            console.log(`[getTasks] Workspace lookup response:`, {
+              status: workspaceResponse.status,
+              workspacesCount:
+                workspaceResponse.data?.data?.workspaces?.length || 0,
+            });
+
+            const workspaces = workspaceResponse.data?.data?.workspaces || [];
+            for (const ws of workspaces) {
+              departmentDetailsMap[ws.id] = {
+                id: ws.id,
+                name: ws.name,
+                description: ws.description,
+                slug: ws.slug,
+              };
+            }
+          }
+
+          // Attach user_details + department_details to each task
+          result.data = result.data.map((task, index) => {
+            const plain = task.toJSON ? task.toJSON() : { ...task };
+
+            if (index === 0) {
+              console.log("[getTasks] Processing FIRST task - looking up:", {
+                assigned_user_id: plain.assigned?.user_id,
+                creator_user_id: plain.creator?.user_id,
+                approver_user_id: plain.approver?.user_id,
+                availableInMap: Object.keys(userDetailsMap),
+              });
+            }
+
+            if (plain.assigned?.user_id) {
+              plain.assigned.user_details =
+                userDetailsMap[plain.assigned.user_id] ?? null;
+              if (index === 0) {
+                console.log("[getTasks] Assigned enrichment:", {
+                  user_id: plain.assigned.user_id,
+                  found: userDetailsMap[plain.assigned.user_id],
+                  user_details: plain.assigned.user_details,
+                });
+              }
+            }
+            if (plain.creator?.user_id) {
+              plain.creator.user_details =
+                userDetailsMap[plain.creator.user_id] ?? null;
+            }
+            if (plain.approver?.user_id) {
+              plain.approver.user_details =
+                userDetailsMap[plain.approver.user_id] ?? null;
+            }
+            plain.department_details =
+              departmentDetailsMap[plain.department_id] ?? null;
+            return plain;
+          });
+
+          console.log("[getTasks] After enrichment - sample task:", {
+            assigned: result.data[0]?.assigned,
+            creator: result.data[0]?.creator,
+            department_details: result.data[0]?.department_details,
+          });
         } catch (authErr) {
           // Non-critical — tasks are still returned without enriched details
           // if auth-service is temporarily unreachable.
@@ -532,7 +614,12 @@ class TaskService {
       }
     }
 
-    console.log("Fetched tasks with filter:", result, "Result count:", result.data.length);
+    console.log(
+      "Fetched tasks with filter:",
+      result,
+      "Result count:",
+      result.data.length,
+    );
 
     return { success: true, status: 200, data: result };
   }
@@ -587,7 +674,12 @@ class TaskService {
     const { Task } = req.db;
 
     const task = await Task.findByPk(taskId, {
-      include: [{ association: "assigned" }],
+      include: [
+        {
+          association: "assigned",
+          attributes: ["id", "user_id", "department_id", "project_role"],
+        },
+      ],
     });
     if (!task) {
       return { success: false, status: 404, message: "Task not found" };
@@ -726,7 +818,12 @@ class TaskService {
 
     const [task, helperTask] = await Task.findAll({
       where: { id: taskIds },
-      include: [{ association: "assigned" }],
+      include: [
+        {
+          association: "assigned",
+          attributes: ["id", "user_id", "department_id", "project_role"],
+        },
+      ],
     }).then((tasks) => {
       const main = tasks.find((t) => t.id === task_id) || null;
       const helper = tasks.find((t) => t.id === helper_task_id) || null;
@@ -766,7 +863,12 @@ class TaskService {
 
     const existingHelper = await Task.findOne({
       where: { helped_for: parent_task_id, id: helper_task_id },
-      include: [{ association: "assigned" }],
+      include: [
+        {
+          association: "assigned",
+          attributes: ["id", "user_id", "department_id", "project_role"],
+        },
+      ],
     });
 
     if (!existingHelper) {
@@ -796,10 +898,19 @@ class TaskService {
       include: [
         {
           association: "assigned",
+          attributes: ["id", "user_id", "department_id", "project_role"],
           where: { user_id: req.user.id },
           required: true,
         },
-        { association: "helpedTask", include: [{ association: "assigned" }] },
+        {
+          association: "helpedTask",
+          include: [
+            {
+              association: "assigned",
+              attributes: ["id", "user_id", "department_id", "project_role"],
+            },
+          ],
+        },
       ],
     };
 
@@ -809,6 +920,101 @@ class TaskService {
       whereFilters: { task_for: "help", status: "accept_pending" },
       query: req.query,
     });
+
+    // Enrich with user details from auth-service
+    if (helpingTasks.data && helpingTasks.data.length > 0) {
+      try {
+        const authServiceClient = authClient();
+
+        // Collect all user IDs from both the help task and the helped task
+        const uniqueUserIds = [
+          ...new Set(
+            helpingTasks.data
+              .flatMap((task) => [
+                task.assigned?.user_id,
+                task.helpedTask?.assigned?.user_id,
+              ])
+              .filter(Boolean),
+          ),
+        ];
+
+        const uniqueDepartmentIds = [
+          ...new Set(
+            helpingTasks.data.map((task) => task.department_id).filter(Boolean),
+          ),
+        ];
+
+        const userDetailsMap = {};
+        const departmentDetailsMap = {};
+
+        // Fetch user details
+        if (uniqueUserIds.length > 0) {
+          const userResponse = await authServiceClient.post(
+            `${DOMAIN.auth}/auth/internal/users/lookup`,
+            {
+              user_ids: uniqueUserIds,
+              user_id_type: "id",
+            },
+          );
+
+          const users = userResponse.data?.data?.users || [];
+          for (const user of users) {
+            if (user.id) {
+              userDetailsMap[user.id] = {
+                id: user.id,
+                name: user.name,
+                email: user.email,
+              };
+            }
+          }
+        }
+
+        // Fetch workspace/department details
+        if (uniqueDepartmentIds.length > 0) {
+          const workspaceResponse = await authServiceClient.post(
+            `${DOMAIN.auth}/auth/workspaces/batch-lookup`,
+            {
+              workspace_ids: uniqueDepartmentIds,
+            },
+          );
+
+          const workspaces = workspaceResponse.data?.data?.workspaces || [];
+          for (const ws of workspaces) {
+            departmentDetailsMap[ws.id] = {
+              id: ws.id,
+              name: ws.name,
+              description: ws.description,
+              slug: ws.slug,
+            };
+          }
+        }
+
+        // Enrich tasks with user and department details
+        helpingTasks.data = helpingTasks.data.map((task) => {
+          const plain = task.toJSON ? task.toJSON() : { ...task };
+
+          if (plain.assigned?.user_id) {
+            plain.assigned.user_details =
+              userDetailsMap[plain.assigned.user_id] ?? null;
+          }
+
+          if (plain.helpedTask?.assigned?.user_id) {
+            plain.helpedTask.assigned.user_details =
+              userDetailsMap[plain.helpedTask.assigned.user_id] ?? null;
+          }
+
+          plain.department_details =
+            departmentDetailsMap[plain.department_id] ?? null;
+
+          return plain;
+        });
+      } catch (authErr) {
+        console.warn(
+          "[getAcceptableTask] Failed to fetch details from auth-service:",
+          authErr.message,
+        );
+      }
+    }
 
     return { success: true, status: 200, data: helpingTasks };
   }
@@ -937,7 +1143,13 @@ class TaskService {
 
     try {
       const task = await Task.findByPk(data.task_id, {
-        include: [{ association: "assigned", require: true }],
+        include: [
+          {
+            association: "assigned",
+            attributes: ["id", "user_id", "department_id", "project_role"],
+            require: true,
+          },
+        ],
       });
 
       if (!task)
@@ -987,7 +1199,12 @@ class TaskService {
     const { Task } = req.db;
 
     const task = await Task.findByPk(taskId, {
-      include: [{ association: "assigned" }],
+      include: [
+        {
+          association: "assigned",
+          attributes: ["id", "user_id", "department_id", "project_role"],
+        },
+      ],
     });
 
     if (!task)
