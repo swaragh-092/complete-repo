@@ -1,0 +1,379 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "PMS",
+    "description": "The **Project Management System (PMS)** module provides APIs for managing projects, tasks, issues, and related entities within an organization.",
+    "version": "1.0.0",
+    "contact": {}
+  },
+  "servers": [
+    {
+      "url": "https://postman-echo.com"
+    }
+  ],
+  "paths": {
+    "/": {
+      "post": {
+        "tags": [
+          "dailylogs"
+        ],
+        "summary": "create stand up",
+        "description": "This endpoint creates a new stand-up (daily log) entry for a specific task.\n\n**HTTP Method:** POST  \n**Endpoint:** `domain:/pms/dailylog/task/{task_id}`",
+        "operationId": "post",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "example": {}
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "create stand up",
+            "content": {
+              "application/json; charset=utf-8": {
+                "schema": {
+                  "type": "object",
+                  "example": {
+                    "success": true,
+                    "message": "Stand Up Task create successfully!",
+                    "data": {
+                      "id": "ce9d5535-73da-49ab-94ed-ab757d96dec6",
+                      "created_at": "2025-10-15T07:31:48.516Z",
+                      "updated_at": "2025-10-15T07:31:48.516Z",
+                      "user_id": "key-cloak-id",
+                      "project_id": "f367a329-5043-42fb-9a82-be3c313b99cf",
+                      "task_id": "33d7f069-3265-4885-bc02-ba21224ec887",
+                      "date": "2025-10-15",
+                      "log_type": "StandUp",
+                      "expected_duration": 180,
+                      "notes": null,
+                      "updatedAt": "2025-10-15T07:31:48.517Z",
+                      "createdAt": "2025-10-15T07:31:48.517Z",
+                      "organization_id": "5cb06b44-e2ee-494f-a7d8-47fc06475cb7",
+                      "created_by": "key-cloak-id",
+                      "updated_by": "key-cloak-id",
+                      "created_ip": "::1",
+                      "updated_ip": "::1",
+                      "created_user_agent": "PostmanRuntime/7.48.0",
+                      "updated_user_agent": "PostmanRuntime/7.48.0"
+                    },
+                    "errors": null
+                  }
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "string",
+                "example": "{\n    \"expected_duration\" : \"03:00\",\n    \"notes\": \"some note on this \" // optional\n}"
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "dailylogs"
+        ],
+        "summary": "get Project's task logs",
+        "description": "This endpoint retrieves all daily log (stand-up) entries for all tasks within a specific project.\n\n**HTTP Method:** GET  \n**Endpoint:** `domain:/pms/dailylog/{project_id}/project`",
+        "operationId": "get",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "get Project task logs",
+            "content": {
+              "application/json; charset=utf-8": {
+                "schema": {
+                  "type": "object",
+                  "example": {
+                    "success": true,
+                    "message": "Project Task Log Get successfully!",
+                    "data": {
+                      "data": [
+                        {
+                          "id": "ce9d5535-73da-49ab-94ed-ab757d96dec6",
+                          "user_id": "key-cloak-id",
+                          "project_id": "f367a329-5043-42fb-9a82-be3c313b99cf",
+                          "task_id": "33d7f069-3265-4885-bc02-ba21224ec887",
+                          "date": "2025-10-15",
+                          "log_type": "standup",
+                          "expected_duration": 180,
+                          "actual_duration": null,
+                          "status": null,
+                          "notes": null,
+                          "related_id": null,
+                          "organization_id": "5cb06b44-e2ee-494f-a7d8-47fc06475cb7",
+                          "created_by": "key-cloak-id",
+                          "updated_by": "key-cloak-id",
+                          "created_ip": "::1",
+                          "updated_ip": "::1",
+                          "created_user_agent": "PostmanRuntime/7.48.0",
+                          "updated_user_agent": "PostmanRuntime/7.48.0",
+                          "created_at": "2025-10-15T07:31:48.000Z",
+                          "updated_at": "2025-10-15T07:31:48.000Z",
+                          "createdAt": "2025-10-15T07:31:48.000Z",
+                          "updatedAt": "2025-10-15T07:31:48.000Z",
+                          "deleted_at": null
+                        },
+                        {
+                          "id": "5d4cfeaf-7193-4ae5-870e-cad6c67b6c8a",
+                          "user_id": "key-cloak-id",
+                          "project_id": "f367a329-5043-42fb-9a82-be3c313b99cf",
+                          "task_id": "51692fd6-ce8c-4588-a6fb-413d4ad1f916",
+                          "date": "2025-10-10",
+                          "log_type": "wrapup",
+                          "expected_duration": null,
+                          "actual_duration": 90,
+                          "status": "in_progress",
+                          "notes": null,
+                          "related_id": null,
+                          "organization_id": "5cb06b44-e2ee-494f-a7d8-47fc06475cb7",
+                          "created_by": null,
+                          "updated_by": null,
+                          "created_ip": null,
+                          "updated_ip": null,
+                          "created_user_agent": null,
+                          "updated_user_agent": null,
+                          "created_at": "2025-10-10T09:07:00.000Z",
+                          "updated_at": "2025-10-10T09:07:00.000Z",
+                          "createdAt": "2025-10-10T09:07:00.000Z",
+                          "updatedAt": "2025-10-10T09:07:00.000Z",
+                          "deleted_at": null
+                        },
+                        {
+                          "id": "a83a20d5-95d4-4d01-9329-cfb4578dfaec",
+                          "user_id": "key-cloak-id",
+                          "project_id": "f367a329-5043-42fb-9a82-be3c313b99cf",
+                          "task_id": "33d7f069-3265-4885-bc02-ba21224ec887",
+                          "date": "2025-10-10",
+                          "log_type": "standup",
+                          "expected_duration": 180,
+                          "actual_duration": 0,
+                          "status": "not_taken",
+                          "notes": null,
+                          "related_id": null,
+                          "organization_id": "5cb06b44-e2ee-494f-a7d8-47fc06475cb7",
+                          "created_by": "key-cloak-id",
+                          "updated_by": "key-cloak-id",
+                          "created_ip": "::1",
+                          "updated_ip": "::1",
+                          "created_user_agent": "PostmanRuntime/7.48.0",
+                          "updated_user_agent": "PostmanRuntime/7.48.0",
+                          "created_at": "2025-10-10T09:03:04.000Z",
+                          "updated_at": "2025-10-10T09:03:04.000Z",
+                          "createdAt": "2025-10-10T09:03:04.000Z",
+                          "updatedAt": "2025-10-10T09:03:04.000Z",
+                          "deleted_at": null
+                        },
+                        {
+                          "id": "4b4b85f9-5cde-4b04-bda5-3440ee42ac35",
+                          "user_id": "key-cloak-id",
+                          "project_id": "f367a329-5043-42fb-9a82-be3c313b99cf",
+                          "task_id": "24952c01-1fc0-422b-bca9-ffddb917b746",
+                          "date": "2025-10-10",
+                          "log_type": "standup",
+                          "expected_duration": 180,
+                          "actual_duration": 40,
+                          "status": "in_progress",
+                          "notes": "hai this is me what are you doing",
+                          "related_id": null,
+                          "organization_id": "5cb06b44-e2ee-494f-a7d8-47fc06475cb7",
+                          "created_by": "key-cloak-id",
+                          "updated_by": "key-cloak-id",
+                          "created_ip": "::1",
+                          "updated_ip": "::1",
+                          "created_user_agent": "PostmanRuntime/7.48.0",
+                          "updated_user_agent": "PostmanRuntime/7.48.0",
+                          "created_at": "2025-10-10T09:02:43.000Z",
+                          "updated_at": "2025-10-15T07:32:41.000Z",
+                          "createdAt": "2025-10-10T09:02:43.000Z",
+                          "updatedAt": "2025-10-15T07:32:41.000Z",
+                          "deleted_at": null
+                        }
+                      ],
+                      "pagination": {
+                        "totalItems": 4,
+                        "perPage": 10,
+                        "currentPage": 1,
+                        "totalPages": 1,
+                        "hasNextPage": false,
+                        "hasPrevPage": false
+                      }
+                    },
+                    "errors": null
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "dailylogs"
+        ],
+        "summary": "update log",
+        "description": "This endpoint updates an existing daily log (stand-up) entry.\n\n**HTTP Method:** PUT  \n**Endpoint:** `domain:/pms/dailylog/{log_id}`",
+        "operationId": "put",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "update log",
+            "content": {
+              "application/json; charset=utf-8": {
+                "schema": {
+                  "type": "object",
+                  "example": {
+                    "success": true,
+                    "message": "Daily Log Update successfully!",
+                    "data": {
+                      "id": "4b4b85f9-5cde-4b04-bda5-3440ee42ac35",
+                      "user_id": "key-cloak-id",
+                      "project_id": "f367a329-5043-42fb-9a82-be3c313b99cf",
+                      "task_id": "24952c01-1fc0-422b-bca9-ffddb917b746",
+                      "date": "2025-10-10",
+                      "log_type": "standup",
+                      "expected_duration": 180,
+                      "actual_duration": 40,
+                      "status": "in_progress",
+                      "notes": "hai this is me what are you doing",
+                      "related_id": null,
+                      "organization_id": "5cb06b44-e2ee-494f-a7d8-47fc06475cb7",
+                      "created_by": "key-cloak-id",
+                      "updated_by": "key-cloak-id",
+                      "created_ip": "::1",
+                      "updated_ip": "::1",
+                      "created_user_agent": "PostmanRuntime/7.48.0",
+                      "updated_user_agent": "PostmanRuntime/7.48.0",
+                      "created_at": "2025-10-10T09:02:43.000Z",
+                      "updated_at": "2025-10-10T09:02:43.000Z",
+                      "createdAt": "2025-10-10T09:02:43.000Z",
+                      "updatedAt": "2025-10-15T07:32:41.284Z",
+                      "deleted_at": null
+                    },
+                    "errors": null
+                  }
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "example": {
+                  "notes": " hai this is me what are you doing "
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "checklist"
+        ],
+        "summary": "delete checklist",
+        "description": "This endpoint Deletes a specific checklist by its ID.\n\n**HTTP Method:** `GET`  \n**Endpoint:** `domain:/pms/check-list/{checklist_id}`",
+        "operationId": "delete",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "delete checklist",
+            "content": {
+              "application/json; charset=utf-8": {
+                "schema": {
+                  "type": "object",
+                  "example": {
+                    "success": true,
+                    "message": "Checklist item deleted successfully",
+                    "data": null,
+                    "errors": null
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {},
+    "securitySchemes": {
+      "basicAuth": {
+        "type": "http",
+        "scheme": "basic"
+      },
+      "digestAuth": {
+        "type": "http",
+        "scheme": "digest"
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "project",
+      "description": ""
+    },
+    {
+      "name": "project members",
+      "description": ""
+    },
+    {
+      "name": "task",
+      "description": ""
+    },
+    {
+      "name": "dependency task",
+      "description": ""
+    },
+    {
+      "name": "helper task",
+      "description": ""
+    },
+    {
+      "name": "work flow",
+      "description": ""
+    },
+    {
+      "name": "feature",
+      "description": ""
+    },
+    {
+      "name": "checklist",
+      "description": ""
+    },
+    {
+      "name": "feature project",
+      "description": ""
+    },
+    {
+      "name": "issue",
+      "description": ""
+    },
+    {
+      "name": "notifications",
+      "description": ""
+    },
+    {
+      "name": "dailylogs",
+      "description": ""
+    }
+  ]
+}

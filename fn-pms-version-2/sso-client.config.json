@@ -1,0 +1,15 @@
+{
+  "$schema": "./sso-client.config.schema.json",
+  "theme": "default",
+  "features": {
+    "enableIdleTimeout": true,
+    "enableCrossTabSync": true,
+    "enableDarkMode": true,
+    "enableSessionValidation": true
+  },
+  "session": {
+    "idleTimeoutMs": 1800000,
+    "tokenRefreshBuffer": 120,
+    "sessionValidationInterval": 300000
+  }
+}
