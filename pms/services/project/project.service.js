@@ -134,7 +134,9 @@ class ProjectService {
   async getAllProjects({ req, query, extrafilter } = {}) {
     const { Project, Issue, Task } = req.db;
     try {
-      let whereFilters = {};
+      const organization_id =
+        req.organization_id || namespace.get("organization_id");
+      let whereFilters = { organization_id };
       const extrasInQuery = {
         as: "project",
         attributes: {
@@ -331,8 +333,6 @@ class ProjectService {
         }
       }
 
-      
-
       const result = await paginateHelperFunction({
         model: Project,
         query,
@@ -376,13 +376,14 @@ class ProjectService {
   async getOverviewData(req) {
     const { Project } = req.db;
     try {
-      const organization_id = namespace.get("organization_id");
+      const organization_id =
+        req.organization_id || namespace.get("organization_id");
 
       const ongoingProjects = await Project.count({
-        where: { is_completed: false },
+        where: { is_completed: false, organization_id },
       });
       const completedProjects = await Project.count({
-        where: { is_completed: true },
+        where: { is_completed: true, organization_id },
       });
 
       const totalProjects = ongoingProjects + completedProjects;
@@ -394,12 +395,26 @@ class ProjectService {
         organization_id,
       });
 
+      const summary = healthoverview
+        ? {
+            critical_high_issues_count: healthoverview.projects.all.reduce(
+              (sum, p) => sum + parseInt(p.high_issues || 0, 10),
+              0,
+            ),
+            overdue_tasks_count: healthoverview.projects.all.reduce(
+              (sum, p) => sum + parseInt(p.overdue_tasks || 0, 10),
+              0,
+            ),
+          }
+        : { critical_high_issues_count: 0, overdue_tasks_count: 0 };
+
       const responseData = {
         totalProjects,
         ongoingProjects,
         completedProjects,
         healthoverview,
         deliverySnapshot,
+        summary,
       };
 
       return { status: 200, data: responseData, success: true };
@@ -527,6 +542,159 @@ class ProjectService {
       console.error("Error completing project:", error);
       throw error;
     }
+  }
+
+  async getMemberDashboardData(req) {
+    const { Task, ProjectMember, Project, Issue } = req.db;
+    const DailyLog = req.db.DailyLog;
+    const userId = req.user.id;
+    const today = new Date().toISOString().split("T")[0];
+
+    // All project memberships for current user
+    const memberships = await ProjectMember.findAll({
+      where: { user_id: userId },
+      attributes: ["id", "project_id", "department_id", "project_role"],
+      include: [
+        {
+          association: "project",
+          attributes: ["id", "is_completed"],
+          required: true,
+        },
+      ],
+    });
+
+    const memberIds = memberships.map((m) => m.id);
+    const deptIds = [...new Set(memberships.map((m) => m.department_id))];
+    const projectIds = [...new Set(memberships.map((m) => m.project_id))];
+    const activeProjectIds = memberships
+      .filter((m) => !m.project?.is_completed)
+      .map((m) => m.project_id);
+
+    // Task counts by status (tasks assigned to current user)
+    const taskStatusList = [
+      "approve_pending",
+      "approved",
+      "in_progress",
+      "blocked",
+      "assign_pending",
+      "accept_pending",
+    ];
+    const taskCounts =
+      memberIds.length > 0
+        ? await Task.findAll({
+            attributes: [
+              "status",
+              [Sequelize.fn("COUNT", Sequelize.col("Task.id")), "count"],
+            ],
+            where: {
+              assigned_to: { [Op.in]: memberIds },
+              status: { [Op.in]: taskStatusList },
+            },
+            group: ["status"],
+            raw: true,
+          })
+        : [];
+
+    const taskByStatus = {};
+    for (const row of taskCounts) {
+      taskByStatus[row.status] = parseInt(row.count, 10);
+    }
+
+    // Overdue tasks (due_date < today, active status)
+    const overdueCount =
+      memberIds.length > 0
+        ? await Task.count({
+            where: {
+              assigned_to: { [Op.in]: memberIds },
+              status: {
+                [Op.in]: ["approved", "in_progress", "accept_pending"],
+              },
+              due_date: { [Op.lt]: today },
+            },
+          })
+        : 0;
+
+    // Today's log count
+    const todayLogCount = await (DailyLog
+      ? DailyLog.count({ where: { user_id: userId, date: today } })
+      : Promise.resolve(0));
+
+    // Tasks with approve_pending (created by me, waiting for me to approve — as lead)
+    const pendingApprovalCount =
+      memberIds.length > 0
+        ? await Task.count({
+            where: {
+              assignee: { [Op.in]: memberIds },
+              status: "approve_pending",
+            },
+          })
+        : 0;
+
+    // Issues in my departments
+    const issueCount =
+      deptIds.length > 0
+        ? await Issue.count({
+            where: {
+              status: { [Op.in]: ["open", "re_open", "in_progress"] },
+              [Op.or]: [
+                { from_department_id: { [Op.in]: deptIds } },
+                { to_department_id: { [Op.in]: deptIds } },
+              ],
+            },
+          })
+        : 0;
+
+    const highPriorityIssueCount =
+      deptIds.length > 0
+        ? await Issue.count({
+            where: {
+              status: { [Op.in]: ["open", "re_open", "in_progress"] },
+              priority: { [Op.in]: ["high", "critical"] },
+              [Op.or]: [
+                { from_department_id: { [Op.in]: deptIds } },
+                { to_department_id: { [Op.in]: deptIds } },
+              ],
+            },
+          })
+        : 0;
+
+    return {
+      status: 200,
+      success: true,
+      data: {
+        tasks: {
+          in_progress: taskByStatus["in_progress"] || 0,
+          approve_pending: taskByStatus["approve_pending"] || 0,
+          approved: taskByStatus["approved"] || 0,
+          blocked: taskByStatus["blocked"] || 0,
+          assign_pending: taskByStatus["assign_pending"] || 0,
+          accept_pending: taskByStatus["accept_pending"] || 0,
+          overdue: overdueCount,
+          pending_my_approval: pendingApprovalCount,
+          total_active:
+            (taskByStatus["in_progress"] || 0) +
+            (taskByStatus["approve_pending"] || 0) +
+            (taskByStatus["approved"] || 0) +
+            (taskByStatus["blocked"] || 0) +
+            (taskByStatus["assign_pending"] || 0),
+        },
+        issues: {
+          open: issueCount,
+          high_priority: highPriorityIssueCount,
+        },
+        logs: {
+          today_count: todayLogCount,
+          has_log_today: todayLogCount > 0,
+        },
+        projects: {
+          active: [...new Set(activeProjectIds)].length,
+          total: projectIds.length,
+        },
+        role: {
+          is_lead: memberships.some((m) => m.project_role === "lead"),
+        },
+      },
+    };
   }
 
   // ...existing code...

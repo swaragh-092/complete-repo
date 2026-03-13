@@ -20,6 +20,7 @@ import TimerIcon from "@mui/icons-material/Timer";
 import LowPriorityIcon from "@mui/icons-material/LowPriority";
 import DependencyTaskCreateDialog from "./DependencyTaskCreateDialog";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import HowToRegIcon from "@mui/icons-material/HowToReg";
 
 const taskFilter = [
   { label: "On Going", value: "in_progress" },
@@ -84,6 +85,16 @@ export default function MyTaskList({ typeFilter, refreshCurrentTask, setRefreshC
       setRefreshCurrentTask(true);
     } else showToast({ message: response.message || "Failed to Complete Task", type: "error" });
     setEditingIds((prev) => prev.filter((id) => id !== taskId)); // remove after done
+  };
+
+  const handleApproveTask = async (taskId) => {
+    setEditingIds((prev) => [...prev, taskId]);
+    const response = await backendRequest({ endpoint: BACKEND_ENDPOINT.approve_task(taskId) });
+    if (response.success) {
+      setRefresher(true);
+      setRefreshCurrentTask(true);
+    } else showToast({ message: response.message || "Failed to Approve Task", type: "error" });
+    setEditingIds((prev) => prev.filter((id) => id !== taskId));
   };
 
   const handleDeleteTask = async (taskId) => {
@@ -233,7 +244,7 @@ export default function MyTaskList({ typeFilter, refreshCurrentTask, setRefreshC
       filterable: false,
       sortable: false,
       renderCell: (params) => {
-        return params.row.helping_for?.title;
+        return params.row.creator?.user_details?.name || "—";
       },
     },
     {
@@ -243,7 +254,7 @@ export default function MyTaskList({ typeFilter, refreshCurrentTask, setRefreshC
       filterable: false,
       sortable: false,
       renderCell: (params) => {
-        return params.row.assigned_to;
+        return params.row.assigned?.user_details?.name || "—";
       },
     },
     {
@@ -253,7 +264,7 @@ export default function MyTaskList({ typeFilter, refreshCurrentTask, setRefreshC
       filterable: false,
       sortable: false,
       renderCell: (params) => {
-        return params.row.helping_for?.title;
+        return params.row.approver?.user_details?.name || "—";
       },
     },
 
@@ -338,6 +349,25 @@ export default function MyTaskList({ typeFilter, refreshCurrentTask, setRefreshC
                       )}
                     </Box>
                   </>
+                )}
+
+                {params.row.status === "approve_pending" && (
+                  <Box title="Approve Task">
+                    <HowToRegIcon
+                      onClick={() => {
+                        showConfirmDialog({
+                          message: "Approve this task?",
+                          title: "Approve Task",
+                          onConfirm: () => handleApproveTask(params.row.id),
+                        });
+                      }}
+                      sx={{
+                        cursor: "pointer",
+                        color: colors.success?.main || "#4caf50",
+                        "&:hover": { color: colors.success?.dark || "#388e3c" },
+                      }}
+                    />
+                  </Box>
                 )}
 
                 {["approve_pending", "approved", "assign_pending", "accept_pending"].includes(params.row.status) && (

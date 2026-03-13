@@ -9,19 +9,18 @@ const express = require("express");
 
 const projectController = require("../../controllers/project/project.controller");
 const validate = require("../../services/validation");
-const validationMiddleware = require('../../middleware/validation.middleware');
-const ENTITY = 'Project';
+const validationMiddleware = require("../../middleware/validation.middleware");
+const ENTITY = "Project";
 const ACTIONS = {
-  CREATE: 'Add',
-  READ: 'Read',
-  UPDATE: 'Update',
-  DELETE: 'Delete',
+  CREATE: "Add",
+  READ: "Read",
+  UPDATE: "Update",
+  DELETE: "Delete",
 };
 
 const router = express.Router();
 
 // {moduleCode}/project/...
-
 
 /**
  * @swagger
@@ -42,8 +41,7 @@ const router = express.Router();
  *       200:
  *         description: Overview data retrieved successfully
  */
-router.get('/overview', projectController.getOverviewData);
-
+router.get("/overview", projectController.getOverviewData);
 
 /**
  * @swagger
@@ -69,14 +67,28 @@ router.get('/overview', projectController.getOverviewData);
  *       200:
  *         description: Projects retrieved by status
  */
-router.get('/health/:status', [
-  validate.enumValue(
-    'status',
-    ['ongoing', 'on_track', 'at_risk', 'critical', 'near_deadline', 'no_update', 'overdue'],
-    'params'
-  ).optional()
-], validationMiddleware(ENTITY, ACTIONS.READ), projectController.getAllProjects);
-
+router.get(
+  "/health/:status",
+  [
+    validate
+      .enumValue(
+        "status",
+        [
+          "ongoing",
+          "on_track",
+          "at_risk",
+          "critical",
+          "near_deadline",
+          "no_update",
+          "overdue",
+        ],
+        "params",
+      )
+      .optional(),
+  ],
+  validationMiddleware(ENTITY, ACTIONS.READ),
+  projectController.getAllProjects,
+);
 
 /**
  * @swagger
@@ -96,8 +108,7 @@ router.get('/health/:status', [
  *       200:
  *         description: All projects retrieved
  */
-router.get('/', projectController.getAllProjects);
-
+router.get("/", projectController.getAllProjects);
 
 /**
  * @swagger
@@ -117,8 +128,7 @@ router.get('/', projectController.getAllProjects);
  *       200:
  *         description: Users ongoing projects retrieved
  */
-router.get('/usersongoing', projectController.getAllUsersOngoingProjects);
-
+router.get("/usersongoing", projectController.getAllUsersOngoingProjects);
 
 /**
  * @swagger
@@ -143,10 +153,12 @@ router.get('/usersongoing', projectController.getAllUsersOngoingProjects);
  *       200:
  *         description: Users ongoing projects by department
  */
-router.get('/usersongoing/department/:departmentId', [
-  validate.uuid('departmentId')
-], validationMiddleware(ENTITY, ACTIONS.READ), projectController.getAllUsersOngoingProjects);
-
+router.get(
+  "/usersongoing/department/:departmentId",
+  [validate.uuid("departmentId")],
+  validationMiddleware(ENTITY, ACTIONS.READ),
+  projectController.getAllUsersOngoingProjects,
+);
 
 /**
  * @swagger
@@ -185,14 +197,18 @@ router.get('/usersongoing/department/:departmentId', [
  *       200:
  *         description: Project created successfully
  */
-router.post('/register', [
-  validate.name('name'),
-  validate.description('description'),
-  validate.dateFuture('estimatedStartDate'),
-  validate.dateGreaterThan('estimatedEndDate', 'estimatedStartDate'),
-  validate.permissionCode(),
-], validationMiddleware(ENTITY, ACTIONS.CREATE), projectController.postCreateProject);
-
+router.post(
+  "/register",
+  [
+    validate.name("name"),
+    validate.description("description"),
+    validate.dateFuture("estimatedStartDate"),
+    validate.dateGreaterThan("estimatedEndDate", "estimatedStartDate"),
+    validate.permissionCode(),
+  ],
+  validationMiddleware(ENTITY, ACTIONS.CREATE),
+  projectController.postCreateProject,
+);
 
 /**
  * @swagger
@@ -217,10 +233,12 @@ router.post('/register', [
  *       200:
  *         description: Project retrieved successfully
  */
-router.get('/:id', [
-  validate.uuid('id', 'params')
-], validationMiddleware(ENTITY, ACTIONS.READ), projectController.getProject);
-
+router.get(
+  "/:id",
+  [validate.uuid("id", "params")],
+  validationMiddleware(ENTITY, ACTIONS.READ),
+  projectController.getProject,
+);
 
 /**
  * @swagger
@@ -245,10 +263,12 @@ router.get('/:id', [
  *       200:
  *         description: Project with features retrieved
  */
-router.get('/:id/features', [
-  validate.uuid('id', 'params')
-], validationMiddleware(ENTITY, ACTIONS.READ), projectController.getProjectWithFeatures);
-
+router.get(
+  "/:id/features",
+  [validate.uuid("id", "params")],
+  validationMiddleware(ENTITY, ACTIONS.READ),
+  projectController.getProjectWithFeatures,
+);
 
 /**
  * @swagger
@@ -273,14 +293,20 @@ router.get('/:id/features', [
  *       200:
  *         description: Project updated successfully
  */
-router.put('/:id', [
-  validate.uuid('id', 'params'),
-  validate.name('name').optional(),
-  validate.description('description').optional(),
-  validate.dateFuture('estimatedStartDate').optional(),
-  validate.dateGreaterThan('estimatedEndDate', 'estimatedStartDate').optional(),
-], validationMiddleware(ENTITY, ACTIONS.UPDATE), projectController.updateProject);
-
+router.put(
+  "/:id",
+  [
+    validate.uuid("id", "params"),
+    validate.name("name").optional(),
+    validate.description("description").optional(),
+    validate.dateFuture("estimatedStartDate").optional(),
+    validate
+      .dateGreaterThan("estimatedEndDate", "estimatedStartDate")
+      .optional(),
+  ],
+  validationMiddleware(ENTITY, ACTIONS.UPDATE),
+  projectController.updateProject,
+);
 
 /**
  * @swagger
@@ -305,10 +331,12 @@ router.put('/:id', [
  *       200:
  *         description: Project deleted successfully
  */
-router.delete('/:id', [
-  validate.uuid('id', 'params')
-], validationMiddleware(ENTITY, ACTIONS.DELETE), projectController.deleteProject);
-
+router.delete(
+  "/:id",
+  [validate.uuid("id", "params")],
+  validationMiddleware(ENTITY, ACTIONS.DELETE),
+  projectController.deleteProject,
+);
 
 /**
  * @swagger
@@ -333,10 +361,11 @@ router.delete('/:id', [
  *       200:
  *         description: Project marked as complete
  */
-router.post('/:id/complete', [
-  validate.uuid('id', 'params')
-], validationMiddleware(ENTITY, ACTIONS.UPDATE), projectController.completeProject);
-
+router.post(
+  "/:id/complete",
+  [validate.uuid("id", "params")],
+  validationMiddleware(ENTITY, ACTIONS.UPDATE),
+  projectController.completeProject,
+);
 
 module.exports = router;
-

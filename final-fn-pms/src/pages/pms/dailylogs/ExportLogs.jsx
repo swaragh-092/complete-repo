@@ -4,6 +4,8 @@ import FileDownloadIcon from "@mui/icons-material/FileDownload";
 import BACKEND_ENDPOINT from "../../../util/urls";
 import backendRequest from "../../../util/request";
 import { showToast } from "../../../util/feedback/ToastService";
+import { useWorkspace } from "../../../context/WorkspaceContext";
+import { getWorkspaceMembers } from "../../../api/workspaces";
 
 const getYesterdayDate = () => {
   const date = new Date();
@@ -18,6 +20,7 @@ const get365DaysAgoDate = () => {
 };
 
 export default function ExportLogs() {
+  const { workspaces, currentWorkspace } = useWorkspace();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -38,9 +41,19 @@ export default function ExportLogs() {
   // Load projects and users on mount
   useEffect(() => {
     loadProjects();
-    loadUsers();
-    loadDepartments();
   }, []);
+
+  // Load users when currentWorkspace changes
+  useEffect(() => {
+    loadUsers();
+  }, [currentWorkspace]);
+
+  // Populate departments from WorkspaceContext
+  useEffect(() => {
+    if (workspaces && workspaces.length > 0) {
+      setDepartments(workspaces);
+    }
+  }, [workspaces]);
 
   const loadProjects = async () => {
     try {
@@ -56,15 +69,19 @@ export default function ExportLogs() {
   };
 
   const loadUsers = async () => {
+    if (!currentWorkspace?.id) {
+      setUsers([]);
+      return;
+    }
     try {
-      // This endpoint may vary based on your actual API
-      const endpoint = {
-        path: "https://pms.local.test/pms_mod/user", // Adjust as needed
-        method: "GET",
-      };
-      const response = await backendRequest({ endpoint });
-      if (response.success && response.data) {
-        setUsers(response.data);
+      const members = await getWorkspaceMembers(currentWorkspace.id);
+      if (members && Array.isArray(members)) {
+        const mapped = members.map((m) => ({
+          id: m.user_id,
+          name: m.name || m.UserMetadata?.email || "Unknown",
+          email: m.UserMetadata?.email || "",
+        }));
+        setUsers(mapped);
       }
     } catch (err) {
       console.error("Error loading users:", err);
@@ -156,11 +173,13 @@ export default function ExportLogs() {
       const url = `${BACKEND_ENDPOINT.exportExcel.path}?${params.toString()}`;
 
       // Fetch the file
+      const token = localStorage.getItem("authToken") || "";
       const response = await fetch(url, {
         method: "GET",
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("token") || ""}`,
+          Authorization: `Bearer ${token}`,
         },
+        credentials: "include",
       });
 
       if (!response.ok) {

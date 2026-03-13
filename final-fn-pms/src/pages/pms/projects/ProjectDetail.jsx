@@ -11,6 +11,8 @@ import { redirect, useLoaderData, useNavigate, useRevalidator } from "react-rout
 import BACKEND_ENDPOINT, { paths } from "../../../util/urls";
 import Heading from "../../../components/Heading";
 import backendRequest from "../../../util/request";
+import { useAuth } from "@spidy092/auth-client";
+import { useOrganization } from "../../../context/OrganizationContext";
 
 // import { useLoaderData } from "react-router-dom";
 import { Typography, Stack, Chip, Box, useTheme, CircularProgress } from "@mui/material";
@@ -31,16 +33,17 @@ export default function ProjectDetail() {
   const theme = useTheme();
   const colors = colorCodes(theme.palette.mode);
 
-
   const navigate = useNavigate();
-
+  const { user } = useAuth();
+  const { currentOrganization } = useOrganization();
 
   const [taskRefresh, setTaskRefresher] = useState(true);
   const response = useLoaderData();
   const [project, setProject] = useState(response?.data);
-  const [ memberIdCreateTask, setMemberIdCreateTask ] = useState(null);
+  const [canApprove, setCanApprove] = useState(false);
+  const [memberIdCreateTask, setMemberIdCreateTask] = useState(null);
 
-  const [ isLoading, setLoading ] = useState(false);
+  const [isLoading, setLoading] = useState(false);
 
   const [editProjectDialog, setEditProjectDialog] = useState(false);
   const revalidator = useRevalidator();
@@ -50,6 +53,24 @@ export default function ProjectDetail() {
       setProject(response.data);
     }
   }, [response?.data]);
+
+  // Determine if the current user can approve tasks in this project
+  useEffect(() => {
+    if (!project?.id) return;
+
+    const orgRole = currentOrganization?.role?.name?.toLowerCase();
+    const isOrgApprover = ["owner", "admin"].includes(orgRole);
+    if (isOrgApprover) {
+      setCanApprove(true);
+      return;
+    }
+
+    backendRequest({ endpoint: BACKEND_ENDPOINT.my_project_membership(project.id) }).then((res) => {
+      if (res.success && res.data?.project_role === "lead") {
+        setCanApprove(true);
+      }
+    });
+  }, [project?.id, currentOrganization, user]);
 
   const onEditSuccess = (updatedData) => {
     setEditProjectDialog(false);
@@ -87,11 +108,11 @@ export default function ProjectDetail() {
   const handleDeleteProject = async () => {
     setLoading(true);
     const response = await deleteProjectBackend(project.id);
-    
+
     if (response.success) navigate(paths.projects);
-    showToast({message : response.message || (response.success ? "Successfully Deleted" : "Failed to delete"), type: response.success ? "success" : "error"});
+    showToast({ message: response.message || (response.success ? "Successfully Deleted" : "Failed to delete"), type: response.success ? "success" : "error" });
     setLoading(false);
-  }
+  };
 
   return (
     <>
@@ -99,27 +120,27 @@ export default function ProjectDetail() {
         <Box display="flex" justifyContent="space-between" alignItems="center">
           <Heading title={project.name} subtitle={project.description || "-"} giveMarginBottom={false} />
           <Box display={"flex"} alignItems={"center"} justifyContent={"center"}>
-            {isLoading ? <CircularProgress size={"15px"} /> : (
-
+            {isLoading ? (
+              <CircularProgress size={"15px"} />
+            ) : (
               <DeleteIcon
-                onClick={ async () => {
+                onClick={async () => {
                   showConfirmDialog({
-                    title : "Delete Project",
-                    message : "Are you sure of deleting project " + project.name,
-                    onConfirm : handleDeleteProject
+                    title: "Delete Project",
+                    message: "Are you sure of deleting project " + project.name,
+                    onConfirm: handleDeleteProject,
                   });
                 }}
-              sx={{
-                cursor: "pointer",
-                color: colors.error.light,
-                "&:hover": { color: colors.error.modrate },
-              }}
-            />
-            ) }
-            
+                sx={{
+                  cursor: "pointer",
+                  color: colors.error.light,
+                  "&:hover": { color: colors.error.modrate },
+                }}
+              />
+            )}
 
             <DoButton onclick={() => setEditProjectDialog(true)}>Edit Project</DoButton>
-            <DoButton 
+            <DoButton
               isDisable={project.is_completed}
               onclick={async () => {
                 showConfirmDialog({
@@ -129,23 +150,23 @@ export default function ProjectDetail() {
                     setLoading(true);
                     const response = await backendRequest({
                       endpoint: BACKEND_ENDPOINT.completeProject(project.id),
-                      method: "POST"
+                      method: "POST",
                     });
-                    
+
                     if (response.success) {
-                      showToast({message: "Project completed successfully", type: "success"});
+                      showToast({ message: "Project completed successfully", type: "success" });
                       setProject((prev) => ({ ...prev, is_completed: true }));
                       revalidator.revalidate();
                     } else {
-                      const errorMsg = response.validation_errors 
+                      const errorMsg = response.validation_errors
                         ? Object.entries(response.validation_errors)
-                          .map(([key, val]) => `${key}: ${val}`)
-                          .join(", ")
+                            .map(([key, val]) => `${key}: ${val}`)
+                            .join(", ")
                         : response.message;
-                      showToast({message: errorMsg || "Failed to complete project", type: "error"});
+                      showToast({ message: errorMsg || "Failed to complete project", type: "error" });
                     }
                     setLoading(false);
-                  }
+                  },
                 });
               }}
               disabled={project.is_completed}
@@ -197,11 +218,11 @@ export default function ProjectDetail() {
           },
         }}
       >
-        <ProjectMembersList projectId={project.id} setMemberIdCreateTask={setMemberIdCreateTask} setTaskRefresher={setTaskRefresher}  />
+        <ProjectMembersList projectId={project.id} setMemberIdCreateTask={setMemberIdCreateTask} setTaskRefresher={setTaskRefresher} />
         <ProjectFeatures projectId={project.id} setTaskRefresher={setTaskRefresher} />
       </Box>
 
-      <TaskList project_id={project.id} memberIdCreateTask={memberIdCreateTask} setMemberIdCreateTask={setMemberIdCreateTask} refresh={taskRefresh} setRefresher={setTaskRefresher} /> 
+      <TaskList project_id={project.id} canApprove={canApprove} memberIdCreateTask={memberIdCreateTask} setMemberIdCreateTask={setMemberIdCreateTask} refresh={taskRefresh} setRefresher={setTaskRefresher} />
       <ListLogs projectId={project.id} />
     </>
   );
@@ -238,15 +259,11 @@ const projectFormFields = [
   { type: "date", name: "estimatedEndDate", label: "Estimated End Date", validationName: "futureDate", lookFor: "estimated_end_date" },
 ];
 
-
-async function deleteProjectBackend (projectId) {
- 
+async function deleteProjectBackend(projectId) {
   const endpoint = BACKEND_ENDPOINT.delete_project(projectId);
   const response = await backendRequest({
     endpoint,
   });
 
   return response;
-
 }
-

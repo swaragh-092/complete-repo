@@ -7,7 +7,7 @@
 const express = require("express");
 
 const projectMemberController = require("../../controllers/project/projectMember.controller");
-const validationMiddleware = require('../../middleware/validation.middleware');
+const validationMiddleware = require("../../middleware/validation.middleware");
 const { uuid, enumValue } = require("../../services/validation");
 
 const router = express.Router();
@@ -39,12 +39,11 @@ const router = express.Router();
  *         description: Project members matching search retrieved
  */
 router.get(
-  '/search/:projectMemberId',
-  [uuid('projectMemberId')],
+  "/search/:projectMemberId",
+  [uuid("projectMemberId")],
   validationMiddleware("Project members", "Get"),
-  projectMemberController.getMembersSearching
+  projectMemberController.getMembersSearching,
 );
-
 
 /**
  * @swagger
@@ -75,15 +74,11 @@ router.get(
  *         description: Members added successfully
  */
 router.post(
-  '/:projectId/department/:departmentId',
-  [
-    uuid('projectId'),
-    uuid('departmentId'),
-  ],
+  "/:projectId/department/:departmentId",
+  [uuid("projectId"), uuid("departmentId")],
   validationMiddleware("Project members", "Add"),
-  projectMemberController.addMembers
+  projectMemberController.addMembers,
 );
-
 
 /**
  * @swagger
@@ -109,12 +104,11 @@ router.post(
  *         description: Member removed successfully
  */
 router.delete(
-  '/:projectMemberId',
-  [uuid('projectMemberId')],
-  validationMiddleware("Project member", 'Remove'),
-  projectMemberController.removeMemberFromProject
+  "/:projectMemberId",
+  [uuid("projectMemberId")],
+  validationMiddleware("Project member", "Remove"),
+  projectMemberController.removeMemberFromProject,
 );
-
 
 /**
  * @swagger
@@ -146,15 +140,11 @@ router.delete(
  *         description: Project member role updated
  */
 router.put(
-  '/:memberId',
-  [
-    uuid('memberId'),
-    enumValue("project_role", ["member", "lead", "viewer"]),
-  ],
-  validationMiddleware("Project member", 'Edit'),
-  projectMemberController.editProjectMemberRole
+  "/:memberId",
+  [uuid("memberId"), enumValue("project_role", ["member", "lead", "viewer"])],
+  validationMiddleware("Project member", "Edit"),
+  projectMemberController.editProjectMemberRole,
 );
-
 
 /**
  * @swagger
@@ -185,15 +175,35 @@ router.put(
  *         description: Department members retrieved
  */
 router.get(
-  '/:projectId/department/:departmentId',
-  [
-    uuid('projectId'),
-    uuid('departmentId'),
-  ],
+  "/:projectId/department/:departmentId",
+  [uuid("projectId"), uuid("departmentId")],
   validationMiddleware("Project members", "Get"),
-  projectMemberController.getMembers
+  projectMemberController.getMembers,
 );
 
+/**
+ * @swagger
+ * /{moduleCode}/project/member/my-membership/{projectId}:
+ *   get:
+ *     tags:
+ *       - Project
+ *     summary: Get current user's own membership in a project
+ *     parameters:
+ *       - in: path
+ *         name: projectId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Current user's project membership (null if not a member)
+ */
+router.get(
+  "/my-membership/:projectId",
+  [uuid("projectId")],
+  validationMiddleware("Project member", "Get"),
+  projectMemberController.getMyMembership,
+);
 
 /**
  * @swagger
@@ -219,10 +229,9 @@ router.get(
  *         description: All department members retrieved
  */
 router.get(
-  '/:projectId',
-  [uuid('projectId')],
+  "/:projectId",
+  [uuid("projectId")],
   validationMiddleware("Project members", "Get"),
-  projectMemberController.getMembersOfAllDepartment
+  projectMemberController.getMembersOfAllDepartment,
 );
 module.exports = router;
-

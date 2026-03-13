@@ -7,10 +7,18 @@
 const express = require("express");
 const router = express.Router();
 
+const projectController = require("../controllers/project/project.controller");
+
 // main routes
 router.get("/dash", (req, res) => {
   res.status(200).json({ dash: "dashboard" });
 });
+
+// Register non-ID project routes here to prevent /:id wildcard conflicts
+router.get(
+  "/project/member-dashboard",
+  projectController.getMemberDashboardData,
+);
 
 router.use("/project", require("./project/project.route"));
 router.use("/project/member", require("./project/projectMember.route"));

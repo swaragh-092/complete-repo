@@ -5,8 +5,6 @@ import WarningIcon from "@mui/icons-material/Warning";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import AssignmentIcon from "@mui/icons-material/Assignment";
 
-
-
 import backendRequest from "../../../../util/request";
 import BACKEND_ENDPOINT from "../../../../util/urls";
 import { showToast } from "../../../../util/feedback/ToastService";
@@ -29,21 +27,27 @@ const KPI = ({ label, value, icon: Icon, color }) => (
 
 /* ===================== STAT CARD (Alerts) ===================== */
 const StatCard = ({ title, value, subtitle, color, label }) => (
-  <Paper sx={{ p: 2, borderRadius: 2, borderLeft: `4px solid ${color}`, bgcolor: 'background.paper' }}>
+  <Paper sx={{ p: 2, borderRadius: 2, borderLeft: `4px solid ${color}`, bgcolor: "background.paper" }}>
     <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
       <Box>
-        <Typography variant="caption" color="text.secondary" fontWeight={600}>{title}</Typography>
-        <Typography variant="h4" fontWeight={700} sx={{ my: 0.5 }}>{value}</Typography>
-        <Typography variant="caption" color="text.secondary">{subtitle}</Typography>
+        <Typography variant="caption" color="text.secondary" fontWeight={600}>
+          {title}
+        </Typography>
+        <Typography variant="h4" fontWeight={700} sx={{ my: 0.5 }}>
+          {value}
+        </Typography>
+        <Typography variant="caption" color="text.secondary">
+          {subtitle}
+        </Typography>
       </Box>
-      <Typography variant="caption" sx={{ bgcolor: `${color}22`, color: color, px: 1, py: 0.2, borderRadius: 1, fontWeight: 700, fontSize: '10px' }}>
+      <Typography variant="caption" sx={{ bgcolor: `${color}22`, color: color, px: 1, py: 0.2, borderRadius: 1, fontWeight: 700, fontSize: "10px" }}>
         {label}
       </Typography>
     </Stack>
   </Paper>
 );
 /* ===================== MAIN COMPONENT ===================== */
-const ProjectPortfolioOverview = () => {
+const ProjectPortfolioOverview = ({ refresh }) => {
   const theme = useTheme();
   const colors = colorCodes(theme.palette.mode);
 
@@ -56,7 +60,7 @@ const ProjectPortfolioOverview = () => {
   useEffect(() => {
     const fetchData = async () => {
       const response = await backendRequest({ endpoint: BACKEND_ENDPOINT.overview });
-      
+
       if (response.success) {
         const data = response.data;
 
@@ -95,7 +99,7 @@ const ProjectPortfolioOverview = () => {
     };
 
     fetchData();
-  }, []);
+  }, [refresh]);
 
   /* ===== DERIVED KPIs ===== */
   const totalProjects = status.reduce((sum, s) => sum + s.value, 0);
@@ -107,21 +111,32 @@ const ProjectPortfolioOverview = () => {
     { name: "Completed", value: getStatus("Completed") },
   ];
 
- return (
-    <Box sx={{ width: '100%', mb: 4 }}>
-      
+  return (
+    <Box sx={{ width: "100%", mb: 4 }}>
       {/* 1. TOP KPI STRIP - Spans Full Width */}
       <Card sx={{ p: 2, mb: 3 }}>
         <Typography variant="subtitle2" fontWeight={700} mb={2} color="primary.main">
           PROJECT PORTFOLIO OVERVIEW
         </Typography>
         <Grid container spacing={2}>
-          <Grid item xs={4} sm={2}><KPI label="Total" value={totalProjects} icon={AssignmentIcon} color={theme.palette.primary.main} /></Grid>
-          <Grid item xs={4} sm={2}><KPI label="Ongoing" value={getStatus("Ongoing")} color="#2196F3" /></Grid>
-          <Grid item xs={4} sm={2}><KPI label="Completed" value={getStatus("Completed")} icon={CheckCircleIcon} color="#66bb6a" /></Grid>
-          <Grid item xs={4} sm={2}><KPI label="On Track" value={getHealth("On Track")} color="#66bb6a" /></Grid>
-          <Grid item xs={4} sm={2}><KPI label="At Risk" value={getHealth("At Risk")} icon={WarningIcon} color="#ffa726" /></Grid>
-          <Grid item xs={4} sm={2}><KPI label="Critical" value={getHealth("Critical")} icon={WarningIcon} color="#ef5350" /></Grid>
+          <Grid item xs={4} sm={2}>
+            <KPI label="Total" value={totalProjects} icon={AssignmentIcon} color={theme.palette.primary.main} />
+          </Grid>
+          <Grid item xs={4} sm={2}>
+            <KPI label="Ongoing" value={getStatus("Ongoing")} color="#2196F3" />
+          </Grid>
+          <Grid item xs={4} sm={2}>
+            <KPI label="Completed" value={getStatus("Completed")} icon={CheckCircleIcon} color="#66bb6a" />
+          </Grid>
+          <Grid item xs={4} sm={2}>
+            <KPI label="On Track" value={getHealth("On Track")} color="#66bb6a" />
+          </Grid>
+          <Grid item xs={4} sm={2}>
+            <KPI label="At Risk" value={getHealth("At Risk")} icon={WarningIcon} color="#ffa726" />
+          </Grid>
+          <Grid item xs={4} sm={2}>
+            <KPI label="Critical" value={getHealth("Critical")} icon={WarningIcon} color="#ef5350" />
+          </Grid>
         </Grid>
       </Card>
 
@@ -129,11 +144,15 @@ const ProjectPortfolioOverview = () => {
       <Grid container spacing={3} mb={3}>
         <Grid item xs={12} md={4}>
           <Card sx={{ p: 2, height: 350 }}>
-            <Typography variant="subtitle2" fontWeight={700} mb={1}>Health Distribution</Typography>
+            <Typography variant="subtitle2" fontWeight={700} mb={1}>
+              Health Distribution
+            </Typography>
             <ResponsiveContainer width="100%" height="70%">
               <PieChart>
                 <Pie data={health} dataKey="value" innerRadius={60} outerRadius={80} paddingAngle={5}>
-                  {health.map((h, i) => <Cell key={i} fill={h.color} />)}
+                  {health.map((h, i) => (
+                    <Cell key={i} fill={h.color} />
+                  ))}
                 </Pie>
                 <Tooltip />
               </PieChart>
@@ -142,7 +161,9 @@ const ProjectPortfolioOverview = () => {
               {health.map((h, i) => (
                 <Stack key={i} direction="row" spacing={0.5} alignItems="center">
                   <Box sx={{ width: 8, height: 8, borderRadius: "50%", bgcolor: h.color }} />
-                  <Typography variant="caption">{h.name}: {h.value}</Typography>
+                  <Typography variant="caption">
+                    {h.name}: {h.value}
+                  </Typography>
                 </Stack>
               ))}
             </Stack>
@@ -151,13 +172,15 @@ const ProjectPortfolioOverview = () => {
 
         <Grid item xs={12} md={4}>
           <Card sx={{ p: 2, height: 350 }}>
-            <Typography variant="subtitle2" fontWeight={700} mb={1}>Project Status</Typography>
+            <Typography variant="subtitle2" fontWeight={700} mb={1}>
+              Project Status
+            </Typography>
             <ResponsiveContainer width="100%" height="90%">
               <BarChart data={statusForChart}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={theme.palette.divider} />
                 <XAxis dataKey="name" axisLine={false} tickLine={false} />
                 <YAxis axisLine={false} tickLine={false} />
-                <Tooltip cursor={{fill: 'transparent'}} />
+                <Tooltip cursor={{ fill: "transparent" }} />
                 <Bar dataKey="value" fill="#8884d8" radius={[4, 4, 0, 0]} barSize={40} />
               </BarChart>
             </ResponsiveContainer>
@@ -165,12 +188,18 @@ const ProjectPortfolioOverview = () => {
         </Grid>
 
         <Grid item xs={12} md={4}>
-          <Card sx={{ p: 2, height: 350, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-            <Typography variant="subtitle2" fontWeight={700} sx={{ alignSelf: 'flex-start', mb: 4 }}>Completion Rate</Typography>
+          <Card sx={{ p: 2, height: 350, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+            <Typography variant="subtitle2" fontWeight={700} sx={{ alignSelf: "flex-start", mb: 4 }}>
+              Completion Rate
+            </Typography>
             <Box sx={{ position: "relative", width: 180, height: 180, borderRadius: "50%", background: `conic-gradient(#66bb6a 0deg ${completionRate * 3.6}deg, ${theme.palette.divider} 0deg)`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <Box sx={{ width: 150, height: 150, borderRadius: "50%", bgcolor: 'background.paper', display: "flex", flexDir: 'column', alignItems: "center", justifyContent: "center" }}>
-                <Typography variant="h3" fontWeight={800}>{completionRate}%</Typography>
-                <Typography variant="caption" color="text.secondary">COMPLETED</Typography>
+              <Box sx={{ width: 150, height: 150, borderRadius: "50%", bgcolor: "background.paper", display: "flex", flexDir: "column", alignItems: "center", justifyContent: "center" }}>
+                <Typography variant="h3" fontWeight={800}>
+                  {completionRate}%
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  COMPLETED
+                </Typography>
               </Box>
             </Box>
           </Card>

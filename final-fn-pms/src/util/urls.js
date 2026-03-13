@@ -6,12 +6,14 @@
 // file : src/util/urls.js
 
 // const domain = "http://localhost:8089/pms";
-// const domain = "https://pms.local.test/pms_mod";
-const domain = "http://localhost:3015/pms_mod";
+// For local PMS server testing: "http://localhost:3015/pms_mod" (won't work with cookies from .local.test domain)
+// Use gateway for proper cookie handling (access_token on .local.test domain)
+const domain = "https://pms.local.test/pms_mod";
 
 const BACKEND_ENDPOINT = {
   // dashboard
   overview: { path: domain + "/project/overview", method: "GET" },
+  member_dashboard: { path: domain + "/project/member-dashboard", method: "GET" },
 
   // notifications
   notification: { path: domain + "/notification", method: "GET" },
@@ -92,6 +94,15 @@ const BACKEND_ENDPOINT = {
   my_task: (type) => {
     return { path: domain + `/project/task/my-task/${type}`, method: "GET" };
   },
+  create_self_task: (projectId) => {
+    return { path: domain + `/project/task/self/${projectId}`, method: "POST" };
+  },
+  approve_task: (taskId) => {
+    return { path: domain + `/project/task/${taskId}/approve`, method: "PUT" };
+  },
+  my_project_membership: (projectId) => {
+    return { path: domain + `/project/member/my-membership/${projectId}`, method: "GET" };
+  },
   start_task: (taskId) => {
     return { path: domain + `/work/${taskId}/start`, method: "POST" };
   },
@@ -102,6 +113,10 @@ const BACKEND_ENDPOINT = {
   working_tasks: { path: domain + `/work/current`, method: "GET" },
   project_department_tasks: (projectId, departmentId) => {
     return { path: domain + `/project/task/${projectId}/${departmentId}`, method: "GET" };
+  },
+  available_checklist_tasks: { path: domain + `/project/task/available/checklist-tasks`, method: "GET" },
+  assign_checklist_task: (taskId, projectMemberId) => {
+    return { path: domain + `/project/task/${taskId}/${projectMemberId}`, method: "POST" };
   },
   add_dependency_task: (taskId, dependencyTaskId) => {
     return { path: domain + `/project/dependency-task/${dependencyTaskId}/${taskId}`, method: "POST" };
@@ -151,6 +166,9 @@ const BACKEND_ENDPOINT = {
   // projects
   project_members: (id) => {
     return { path: domain + `/project/member/${id}`, method: "GET" };
+  },
+  project_members_by_dept: (projectId, departmentId) => {
+    return { path: domain + `/project/member/${projectId}/department/${departmentId}`, method: "GET" };
   },
   add_project_members: (projectId, departmentId) => {
     return { path: domain + `/project/member/${projectId}/department/${departmentId}`, method: "POST" };

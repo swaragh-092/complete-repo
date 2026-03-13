@@ -129,8 +129,6 @@ class TaskService {
         assigned_to: assignedMember.id,
       };
 
-      finalData.status = "approved"; // to-do this is for now remove this later by checking correct validations
-
       // TODO: add hierarchy logic → check if `creator` has permission to assign or create for others
       // (e.g., compare `creator.role_level` vs `assignee.role_level` if your system tracks hierarchy)
 
@@ -1019,6 +1017,122 @@ class TaskService {
     return { success: true, status: 200, data: helpingTasks };
   }
 
+  async getAvailableChecklistTasks(req, { query = {} } = {}) {
+    const { Task, ProjectMember } = req.db;
+    try {
+      // Find all departments where the current user is a project member
+      const myMemberships = await ProjectMember.findAll({
+        where: { user_id: req.user.id },
+        attributes: ["id", "department_id", "project_id", "project_role"],
+      });
+
+      if (!myMemberships.length) {
+        return { success: true, status: 200, data: { data: [], total: 0 } };
+      }
+
+      const departmentIds = [
+        ...new Set(myMemberships.map((m) => m.department_id).filter(Boolean)),
+      ];
+
+      const extrasInQuery = {
+        include: [
+          {
+            association: "project",
+            required: true,
+            attributes: ["id", "name", "code"],
+          },
+          {
+            association: "checklist",
+            attributes: ["id", "title", "description"],
+          },
+          { association: "projectFeature", attributes: ["id", "feature_id"] },
+        ],
+      };
+
+      const result = await paginateHelperFunction({
+        model: Task,
+        whereFilters: {
+          task_for: "checklist",
+          status: "assign_pending",
+          department_id: { [Op.in]: departmentIds },
+        },
+        query,
+        extrasInQuery,
+      });
+
+      // Enrich department details from auth-service
+      const uniqueDepartmentIds = [
+        ...new Set(
+          result.data
+            .map((t) => {
+              const d = t.toJSON ? t.toJSON() : t;
+              return d.department_id;
+            })
+            .filter(Boolean),
+        ),
+      ];
+
+      if (uniqueDepartmentIds.length > 0) {
+        try {
+          const authServiceClient = authClient();
+          const workspaceResponse = await authServiceClient.post(
+            `${DOMAIN.auth}/auth/workspaces/batch-lookup`,
+            { workspace_ids: uniqueDepartmentIds },
+          );
+          const workspaces = workspaceResponse.data?.data?.workspaces || [];
+          const deptMap = {};
+          for (const ws of workspaces) {
+            deptMap[ws.id] = { id: ws.id, name: ws.name, slug: ws.slug };
+          }
+          result.data = result.data.map((task) => {
+            const plain = task.toJSON ? task.toJSON() : { ...task };
+            plain.department_details = deptMap[plain.department_id] ?? null;
+            // Attach logged-in user's role for this project+department
+            const membership = myMemberships.find(
+              (m) =>
+                m.department_id === plain.department_id &&
+                m.project_id === plain.project_id,
+            );
+            plain.my_role = membership?.project_role ?? null;
+            plain.my_project_member_id = membership
+              ? (myMemberships.find(
+                  (m) =>
+                    m.department_id === plain.department_id &&
+                    m.project_id === plain.project_id,
+                )?.id ?? null)
+              : null;
+            return plain;
+          });
+        } catch (authErr) {
+          console.warn(
+            "[getAvailableChecklistTasks] Failed to enrich dept details:",
+            authErr.message,
+          );
+        }
+      }
+
+      // Attach my_project_member_id for tasks whose dept/project the user belongs to
+      // (in case auth enrichment was skipped)
+      result.data = result.data.map((task) => {
+        const plain = task.toJSON ? task.toJSON() : { ...task };
+        if (plain.my_project_member_id === undefined) {
+          const membership = myMemberships.find(
+            (m) =>
+              m.department_id === plain.department_id &&
+              m.project_id === plain.project_id,
+          );
+          plain.my_role = membership?.project_role ?? null;
+          plain.my_project_member_id = membership?.id ?? null;
+        }
+        return plain;
+      });
+
+      return { success: true, status: 200, data: result };
+    } catch (err) {
+      throw err;
+    }
+  }
+
   async assignChecklistTask(req, data) {
     const { Task, ProjectMember } = req.db;
     try {
@@ -1038,8 +1152,8 @@ class TaskService {
         {
           include: [
             {
-              association: "project", // must match the alias in your model association
-              required: true, // ensures INNER JOIN (will return null if no project)
+              association: "project",
+              required: true,
             },
           ],
         },
@@ -1052,16 +1166,25 @@ class TaskService {
           status: 404,
         };
 
+      // Enforce: the assignee must belong to the same department as the task
+      if (assignedMember.department_id !== task.department_id) {
+        return {
+          success: false,
+          status: 403,
+          message: "Member does not belong to the task's department",
+        };
+      }
+
       const project = assignedMember.project;
-
       const user = req.user;
-
       let assigneeMemberId;
 
       if (user.id === assignedMember.user_id) {
+        // Self-assign: any member of the same department can take the task
         assigneeMemberId = assignedMember.id;
         data.status = "approve_pending";
       } else {
+        // Assigning to someone else: the assigner must be a lead in the same department
         const assigneeMember = await ProjectMember.findOne({
           where: {
             project_id: project.id,
@@ -1073,9 +1196,17 @@ class TaskService {
         if (!assigneeMember)
           return {
             success: false,
-            message: "No access to assign member to this proejct",
+            message: "You are not a member of this department in this project",
             status: 403,
           };
+
+        if (assigneeMember.project_role !== "lead") {
+          return {
+            success: false,
+            status: 403,
+            message: "Only department leads can assign tasks to other members",
+          };
+        }
 
         assigneeMemberId = assigneeMember.id;
         data.status = "approved";
@@ -1220,6 +1351,191 @@ class TaskService {
     });
 
     return { success: true, data: assistedTasks, status: 200 };
+  }
+
+  /**
+   * Create a task for the current user themselves within a project.
+   * - If project_role is 'lead': task is immediately approved.
+   * - If project_role is 'member': task requires approval (approve_pending).
+   * - If project_role is 'viewer': forbidden.
+   */
+  async createSelfTask(req, data) {
+    const { Task, ProjectMember } = req.db;
+    const user = req.user;
+
+    try {
+      const myMembership = await ProjectMember.findOne({
+        where: { project_id: data.project_id, user_id: user.id },
+        include: [{ association: "project", required: true }],
+      });
+
+      if (!myMembership)
+        return {
+          success: false,
+          status: 404,
+          message: "You are not a member of this project",
+        };
+
+      if (myMembership.project_role === "viewer")
+        return {
+          success: false,
+          status: 403,
+          message: "Viewers cannot create tasks",
+        };
+
+      const isLead = myMembership.project_role === "lead";
+
+      const orgMembership = req.user.organizations?.memberships?.find(
+        (m) => m.organization?.id === req.organization_id,
+      );
+      const orgRole = orgMembership?.role?.name?.toLowerCase();
+      const isOrgApprover = ["owner", "admin"].includes(orgRole);
+
+      const canAutoApprove = isLead || isOrgApprover;
+      const taskStatus = canAutoApprove ? "approved" : "approve_pending";
+
+      const finalData = {
+        title: data.title,
+        description: data.description || null,
+        priority: data.priority || "medium",
+        due_date: data.due_date,
+        project_id: data.project_id,
+        department_id: myMembership.department_id,
+        assignee: myMembership.id,
+        assigned_to: myMembership.id,
+        status: taskStatus,
+        ...(canAutoApprove && { approved_by: myMembership.id }),
+      };
+
+      const result = await queryWithLogAudit({
+        action: "create",
+        req,
+        queryCallBack: async (t) => {
+          const task = await Task.create(finalData, {
+            ...withContext(req),
+            transaction: t,
+          });
+
+          const project = myMembership.project;
+          const projectUpdates = {};
+          if (project.is_completed) projectUpdates.is_completed = false;
+          if (!project.start_date) projectUpdates.start_date = new Date();
+          if (Object.keys(projectUpdates).length > 0) {
+            await project.update(projectUpdates, {
+              ...withContext(req),
+              transaction: t,
+            });
+          }
+
+          await createNotification(req, {
+            scope: "individual",
+            title: canAutoApprove ? "Task created" : "Task pending approval",
+            message: canAutoApprove
+              ? `Your task "${task.title}" is ready to start.`
+              : `Your task "${task.title}" has been submitted for approval.`,
+            triggeredById: user.id,
+            entityType: "task",
+            entityId: task.id,
+            userId: user.id,
+          });
+
+          return task;
+        },
+        updated_columns: Object.keys(finalData),
+      });
+
+      return { success: true, status: 201, data: result };
+    } catch (err) {
+      if (err instanceof Sequelize.ValidationError) {
+        return {
+          success: false,
+          status: 422,
+          message: "Validation Error",
+          errors: giveValicationErrorFormal(err),
+        };
+      }
+      throw err;
+    }
+  }
+
+  /**
+   * Approve an approve_pending task. Only project leads can approve.
+   */
+  async approveTask(req, taskId) {
+    const { Task, ProjectMember } = req.db;
+    const user = req.user;
+
+    try {
+      const task = await Task.findByPk(taskId);
+      if (!task)
+        return { success: false, status: 404, message: "Task not found" };
+      if (task.status !== "approve_pending")
+        return {
+          success: false,
+          status: 409,
+          message: `Task cannot be approved — current status: ${task.status}`,
+        };
+
+      const approverMembership = await ProjectMember.findOne({
+        where: { project_id: task.project_id, user_id: user.id },
+      });
+
+      const orgMembership = req.user.organizations?.memberships?.find(
+        (m) => m.organization?.id === req.organization_id,
+      );
+      const orgRole = orgMembership?.role?.name?.toLowerCase();
+      const isOrgApprover = ["owner", "admin"].includes(orgRole);
+      const isProjectLead = approverMembership?.project_role === "lead";
+
+      if (!isProjectLead && !isOrgApprover)
+        return {
+          success: false,
+          status: 403,
+          message:
+            "Only project leads or organization admins can approve tasks",
+        };
+
+      const updateData = {
+        status: "approved",
+        ...(approverMembership && { approved_by: approverMembership.id }),
+      };
+      await auditLogUpdateHelperFunction({
+        model: task,
+        data: updateData,
+        req,
+      });
+
+      // Notify the assignee
+      const assignedMembership = await ProjectMember.findByPk(task.assigned_to);
+      if (assignedMembership) {
+        await createNotification(req, {
+          scope: "individual",
+          title: "Task Approved",
+          message: `Your task "${task.title}" has been approved. You can now start working on it.`,
+          triggeredById: user.id,
+          entityType: "task",
+          entityId: task.id,
+          userId: assignedMembership.user_id,
+        });
+      }
+
+      return {
+        success: true,
+        status: 200,
+        data: task,
+        message: "Task approved successfully",
+      };
+    } catch (err) {
+      if (err instanceof Sequelize.ValidationError) {
+        return {
+          success: false,
+          status: 422,
+          message: "Validation Error",
+          errors: giveValicationErrorFormal(err),
+        };
+      }
+      throw err;
+    }
   }
 
   async helperAcceptOrReject(req, { status, taskId }) {

@@ -81,7 +81,7 @@ function authClient() {
       realm: process.env.KEYCLOAK_REALM || "my-projects",
       clientId: process.env.SERVICE_CLIENT_ID || "pms-service",
       clientSecret:
-        process.env.SERVICE_CLIENT_SECRET || "Bc9La56gXTaylpmRcZUgaDSDOlFaO41u",
+        process.env.SERVICE_CLIENT_SECRET || "dV2ljSAo1fiYtobOoOjrSEJiMXtcshyg",
       baseUrl: AUTH_SERVICE_URL,
     });
   } else {

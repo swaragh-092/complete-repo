@@ -42,7 +42,16 @@ module.exports = (sequelize, DataTypes, tablePrefix, commonFields) => {
         timestamps: true,
         underscored: true,
         paranoid: true,              // Soft delete
-        deletedAt: "deleted_at"
+        deletedAt: "deleted_at",
+        indexes: [
+            {
+                // A user can be a member of the same project in multiple departments
+                // (e.g., as both Developer and Designer), but not twice in the same department.
+                unique: true,
+                fields: ["project_id", "user_id", "department_id"],
+                name: (tablePrefix + "project_members") + "_project_user_dept_unique",
+            },
+        ],
     });
 
     commonFields(ProjectMember);

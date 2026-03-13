@@ -6,49 +6,86 @@
 const Response = require("../services/Response");
 const { namespace } = require("../config/cls");
 const { DOMAIN, MODULE_CODE } = require("../config/config");
-const { getRedis} = require("../config/redisConnection");
+const { getRedis } = require("../config/redisConnection");
 
 const dataValidation = async (req, res, next) => {
   try {
-    // validation logic will come here.
+    // Extract access token from cookies or Authorization header
+    const accessToken =
+      req.cookies?.access_token ||
+      req.headers.authorization?.replace("Bearer ", "");
 
-    
-
-    // const authenticate = await fetch(`${domain.auth}/api/auth/validate-token`);
-
-    const authenticate = {
-      ok: true,
-      json: async () => ({
-        organization_id: "org_12345",
-        user: {
-          id: "user_12345",
-          name: "John Doe",
-        },
-      }),
-    };
-
-    if (!authenticate.ok) {
+    if (!accessToken) {
       return Response.apiResponse({
         res,
         success: false,
         status: 401,
+        message: "No access token provided. Please login.",
       });
     }
 
-    // const authData = await authenticate.json();
-    const authData = {
-      organization_id: "b029c32f-6f40-4e87-a5fb-19b6ba435501",
-      user: {
-        id: "7b6709f5-57a5-48df-af22-7714598651d0",
-        name: "John Doe",
+    // Call auth-service to validate token and get user data
+    const authenticate = await fetch(`${DOMAIN.auth}/auth/me`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
       },
-    };
-    req.organization_id = authData.organization_id;
-    req.user = authData.user;
+    });
 
-    // const subdomain = req.headers.host.split(".")[0];
-    const subdomain = 'final-fn-pms';
-    // console.log(req.headers.host);
+    if (!authenticate.ok) {
+      console.error(
+        "Auth validation failed:",
+        authenticate.status,
+        authenticate.statusText,
+      );
+      return Response.apiResponse({
+        res,
+        success: false,
+        status: 401,
+        message: "Invalid or expired token. Please login again.",
+      });
+    }
+
+    const authData = await authenticate.json();
+
+    // organizations is { primaryOrganization, memberships, totalOrganizations } from /auth/me
+    const organization_id =
+      authData.organizations?.primaryOrganization?.id ||
+      authData.organizations?.memberships?.[0]?.organization?.id ||
+      authData.organizations?.[0]?.id || // fallback: authMiddleware array format
+      authData.organizations?.[0]?.organization?.id ||
+      authData.tenant_id;
+
+    console.log(
+      "🏢 org context:",
+      JSON.stringify(authData.organizations),
+      "→ org_id:",
+      organization_id,
+    );
+
+    // Get user ID from DB (auth-service returns id = UserMetadata.id)
+    const userId = authData.id || authData.sub;
+
+    req.organization_id = organization_id;
+    req.user = {
+      id: userId,
+      keycloak_id: authData.sub,
+      sub: authData.sub,
+      email: authData.email,
+      name: authData.name,
+      preferred_username: authData.preferred_username,
+      roles: authData.roles || [],
+      client_id: authData.client_id,
+      tenant_id: authData.tenant_id,
+      organizations: authData.organizations || [],
+    };
+
+    console.log("✅ User authenticated:", req.user.email, "ID:", req.user.id);
+
+    // Extract subdomain from host header
+    const subdomain = req.headers.host?.split(".")[0] || "final-fn-pms";
+
     req.tenantConfig = await getRequiredData(subdomain, MODULE_CODE, req);
 
     namespace.run(() => {
@@ -78,8 +115,9 @@ async function getRequiredData(subdomain, moduleCode, req) {
     return JSON.parse(cached);
   }
 
-
-  console.log(`${DOMAIN.superAdmin}/api/required-data/${req.organization_id}/${subdomain}/${moduleCode}`);
+  console.log(
+    `${DOMAIN.superAdmin}/api/required-data/${req.organization_id}/${subdomain}/${moduleCode}`,
+  );
   // Call Super Admin (only on cache miss)
   let response;
   // try {
@@ -87,13 +125,13 @@ async function getRequiredData(subdomain, moduleCode, req) {
   //     `${DOMAIN.superAdmin}/api/required-data/${req.organization_id}/${subdomain}/${moduleCode}`,
   //   );
   // } catch (err) {
-    // console.log(err);
-    return {}; // todo - handle super admin down scenario gracefully, maybe return default config or an error message indicating the issue.
+  // console.log(err);
+  return {}; // todo - handle super admin down scenario gracefully, maybe return default config or an error message indicating the issue.
   // }
   console.log(response);
 
   let data;
-  
+
   try {
     data = await response.json();
     // console.log(data);
@@ -105,7 +143,6 @@ async function getRequiredData(subdomain, moduleCode, req) {
   }
 
   if (!response.ok) {
-    
     throw {
       status: response.status,
       message: "Admin: " + data?.message || "Super Admin error",

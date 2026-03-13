@@ -1,168 +1,177 @@
-// Author: Gururaj 
+// Author: Gururaj
 // Created: 14th oct 2025
 // Description: Controller for task related routs related routes.
 // Version: 1.0.0
 
 const ResponseService = require("../../services/Response");
 const { fieldPicker, sendErrorResponse } = require("../../util/helper");
-const TaskService = require('../../services/task/task.service');
+const TaskService = require("../../services/task/task.service");
 
-
-exports.createTask = async (req, res,) => {
+exports.createTask = async (req, res) => {
   const thisAction = { usedFor: "Task", action: "Create" };
   try {
     const allowedFileds = [
-        { field: "projectMemberId", as: "project_member_id", source: "params" },
-        "title",
-        "description",
-        "priority",
-        "due_date"
+      { field: "projectMemberId", as: "project_member_id", source: "params" },
+      "title",
+      "description",
+      "priority",
+      "due_date",
     ];
     const data = fieldPicker(req, allowedFileds);
     const result = await TaskService.createTask(req, data);
     return ResponseService.apiResponse({ res, ...result, ...thisAction });
   } catch (err) {
-    
     return sendErrorResponse(thisAction, err, res);
   }
 };
 
-
-exports.deleteTask = async (req, res,) => {
+exports.deleteTask = async (req, res) => {
   const thisAction = { usedFor: "Task", action: "Create" };
   try {
     const taskId = req.params.taskId;
     const result = await TaskService.deleteTask(req, taskId);
     return ResponseService.apiResponse({ res, ...result, ...thisAction });
   } catch (err) {
-    
     return sendErrorResponse(thisAction, err, res);
   }
 };
 
-
-exports.getTasks = async (req, res, ) => {
+exports.getTasks = async (req, res) => {
   const thisAction = { usedFor: "Task", action: "Get" };
   try {
     const projectId = req.params.projectId;
-    
-    const result = await TaskService.getTasks(req, {project_id : projectId}, { query: req.query });
+
+    const result = await TaskService.getTasks(
+      req,
+      { project_id: projectId },
+      { query: req.query },
+    );
     return ResponseService.apiResponse({ res, ...result, ...thisAction });
   } catch (err) {
-    
     return sendErrorResponse(thisAction, err, res);
   }
 };
 
-exports.getOnlyUserTasks = async (req, res, ) => {
+exports.getOnlyUserTasks = async (req, res) => {
   const thisAction = { usedFor: "Task", action: "Get" };
   try {
     const projectId = req.params.projectId;
     const statusFilter = req.params.status;
-    
-    const result = await TaskService.getTasks(req, {project_id : projectId, onlyUser : true, statusFilter}, { query: req.query });
+
+    const result = await TaskService.getTasks(
+      req,
+      { project_id: projectId, onlyUser: true, statusFilter },
+      { query: req.query },
+    );
     return ResponseService.apiResponse({ res, ...result, ...thisAction });
   } catch (err) {
-    
     return sendErrorResponse(thisAction, err, res);
   }
 };
 
-exports.getOnlyUserTasksForStandup = async (req, res, ) => {
-  const thisAction = { usedFor: "Task", action: "Get" };
-  try {    
-    const result = await TaskService.getTasksForDailyLog(req, {query: req.query });
-    return ResponseService.apiResponse({ res, ...result, ...thisAction });
-  } catch (err) {
-    
-    return sendErrorResponse(thisAction, err, res);
-  }
-};
-
-exports.getOnlyUserTasksByDepartment = async (req, res, ) => {
+exports.getOnlyUserTasksForStandup = async (req, res) => {
   const thisAction = { usedFor: "Task", action: "Get" };
   try {
-    const [project_id, department_id ] = [req.params.projectId, req.params.departmentId]; 
-    
-    const result = await TaskService.getTasks(req, {project_id, department_id, onlyUser : true}, { query: req.query });
+    const result = await TaskService.getTasksForDailyLog(req, {
+      query: req.query,
+    });
     return ResponseService.apiResponse({ res, ...result, ...thisAction });
   } catch (err) {
-    
     return sendErrorResponse(thisAction, err, res);
   }
 };
 
-exports.getTasksByDepartment = async (req, res, ) => {
+exports.getOnlyUserTasksByDepartment = async (req, res) => {
   const thisAction = { usedFor: "Task", action: "Get" };
   try {
-    const [project_id, department_id ] = [req.params.projectId, req.params.departmentId]; 
-    
-    const result = await TaskService.getTasks(req, {project_id, department_id}, { query: req.query });
+    const [project_id, department_id] = [
+      req.params.projectId,
+      req.params.departmentId,
+    ];
+
+    const result = await TaskService.getTasks(
+      req,
+      { project_id, department_id, onlyUser: true },
+      { query: req.query },
+    );
     return ResponseService.apiResponse({ res, ...result, ...thisAction });
   } catch (err) {
-    
     return sendErrorResponse(thisAction, err, res);
   }
 };
 
+exports.getTasksByDepartment = async (req, res) => {
+  const thisAction = { usedFor: "Task", action: "Get" };
+  try {
+    const [project_id, department_id] = [
+      req.params.projectId,
+      req.params.departmentId,
+    ];
 
-exports.assignChecklistTask = async (req, res, ) => {
+    const result = await TaskService.getTasks(
+      req,
+      { project_id, department_id },
+      { query: req.query },
+    );
+    return ResponseService.apiResponse({ res, ...result, ...thisAction });
+  } catch (err) {
+    return sendErrorResponse(thisAction, err, res);
+  }
+};
+
+exports.assignChecklistTask = async (req, res) => {
   const thisAction = { usedFor: "Task", action: "assign member" };
   try {
     const allowedFileds = [
-        { field: "projectMemberId", as: "project_member_id", source: "params" },
-        { field: "taskId", as: "task_id", source: "params" },
-        "due_date",
+      { field: "projectMemberId", as: "project_member_id", source: "params" },
+      { field: "taskId", as: "task_id", source: "params" },
+      "due_date",
     ];
     const data = fieldPicker(req, allowedFileds);
     const result = await TaskService.assignChecklistTask(req, data);
     return ResponseService.apiResponse({ res, ...result, ...thisAction });
   } catch (err) {
-   
     return sendErrorResponse(thisAction, err, res);
   }
 };
 
-exports.updateTask = async (req, res, ) => {
+exports.updateTask = async (req, res) => {
   const thisAction = { usedFor: "Task", action: "Update" };
   try {
     const allowedFileds = [
-        { field: "taskId", as: "task_id", source: "params" },
-        "description",
-        "priority",
+      { field: "taskId", as: "task_id", source: "params" },
+      "description",
+      "priority",
     ];
     const data = fieldPicker(req, allowedFileds);
     const result = await TaskService.updateTask(req, data);
     return ResponseService.apiResponse({ res, ...result, ...thisAction });
   } catch (err) {
-    
     return sendErrorResponse(thisAction, err, res);
   }
 };
 
-exports.updateTask = async (req, res, ) => {
+exports.updateTask = async (req, res) => {
   const thisAction = { usedFor: "Task", action: "Update" };
   try {
     const allowedFileds = [
-        { field: "taskId", as: "task_id", source: "params" },
-        "description",
-        "priority",
+      { field: "taskId", as: "task_id", source: "params" },
+      "description",
+      "priority",
     ];
     const data = fieldPicker(req, allowedFileds);
     const result = await TaskService.updateTask(req, data);
     return ResponseService.apiResponse({ res, ...result, ...thisAction });
   } catch (err) {
-    
     return sendErrorResponse(thisAction, err, res);
   }
 };
 
-
-exports.completeTask = async (req, res, ) => {
+exports.completeTask = async (req, res) => {
   const thisAction = { usedFor: "Task", action: "Update" };
   try {
     const allowedFileds = [
-        { field: "taskId", as: "task_id", source: "params" },
+      { field: "taskId", as: "task_id", source: "params" },
     ];
     const data = fieldPicker(req, allowedFileds);
     data.completed_at = new Date();
@@ -170,19 +179,57 @@ exports.completeTask = async (req, res, ) => {
     const result = await TaskService.updateTask(req, data);
     return ResponseService.apiResponse({ res, ...result, ...thisAction });
   } catch (err) {
-    
     return sendErrorResponse(thisAction, err, res);
   }
 };
 
-exports.getAssistedTasks = async (req, res, ) => {
+exports.createSelfTask = async (req, res) => {
+  const thisAction = { usedFor: "Task", action: "Create" };
+  try {
+    const allowedFields = [
+      { field: "projectId", as: "project_id", source: "params" },
+      "title",
+      "description",
+      "priority",
+      "due_date",
+    ];
+    const data = fieldPicker(req, allowedFields);
+    const result = await TaskService.createSelfTask(req, data);
+    return ResponseService.apiResponse({ res, ...result, ...thisAction });
+  } catch (err) {
+    return sendErrorResponse(thisAction, err, res);
+  }
+};
+
+exports.approveTask = async (req, res) => {
+  const thisAction = { usedFor: "Task", action: "Approve" };
+  try {
+    const taskId = req.params.taskId;
+    const result = await TaskService.approveTask(req, taskId);
+    return ResponseService.apiResponse({ res, ...result, ...thisAction });
+  } catch (err) {
+    return sendErrorResponse(thisAction, err, res);
+  }
+};
+
+exports.getAssistedTasks = async (req, res) => {
   const thisAction = { usedFor: "Assisted Task", action: "Get" };
   try {
     const result = await TaskService.getAssistedTasks(req, req.params.taskId);
     return ResponseService.apiResponse({ res, ...result, ...thisAction });
   } catch (err) {
-    
     return sendErrorResponse(thisAction, err, res);
   }
 };
 
+exports.getAvailableChecklistTasks = async (req, res) => {
+  const thisAction = { usedFor: "Checklist Task", action: "Get Available" };
+  try {
+    const result = await TaskService.getAvailableChecklistTasks(req, {
+      query: req.query,
+    });
+    return ResponseService.apiResponse({ res, ...result, ...thisAction });
+  } catch (err) {
+    return sendErrorResponse(thisAction, err, res);
+  }
+};

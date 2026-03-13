@@ -14,7 +14,6 @@ import { Link, useSearchParams } from "react-router-dom";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import CreateDialog from "../../../components/pms/CreateDialog";
 
-
 const displayColumns = [
   { field: "name", headerName: "Name", flex: 1 },
   { field: "description", headerName: "Overview", flex: 1 },
@@ -26,7 +25,7 @@ const displayColumns = [
     renderCell: (params) => {
       const startDate = params.row.start_date;
       const estimatedStartDate = params.row.estimated_start_date;
-      
+
       if (startDate) {
         return new Date(startDate).toLocaleDateString();
       }
@@ -41,7 +40,7 @@ const displayColumns = [
       const endDate = params.row.end_date;
       const completedAt = params.row.completed_at;
       const estimatedEndDate = params.row.estimated_end_date;
-      
+
       if (endDate) {
         return new Date(endDate).toLocaleDateString();
       }
@@ -101,14 +100,11 @@ const displayColumns = [
 
 const filterName = "health";
 
-export default function ProjectList() {
+export default function ProjectList({ onProjectCreated = () => {} }) {
   const [refresh, setRefresher] = useState(true);
   const [createProjectDialog, setCreateProjectDialog] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
   const [urlHealth, setUrlHeath] = useState(searchParams.get(filterName));
-  
-
-  
 
   const handleRemoveFilter = () => {
     setSearchParams((prev) => {
@@ -117,15 +113,14 @@ export default function ProjectList() {
     });
     setUrlHeath("");
     setRefresher(true);
-  }
-
+  };
 
   return (
     <>
-      <Box >
+      <Box>
         <Box display="flex" alignItems="center" justifyContent="space-between">
           <Heading title={"Projects"} level={2} />
-          <Box display="flex" gap={1}> 
+          <Box display="flex" gap={1}>
             {urlHealth && <DoButton onclick={handleRemoveFilter}>Remove Filter</DoButton>}
             <DoButton onclick={() => setCreateProjectDialog(true)}>Create Project</DoButton>
           </Box>
@@ -137,7 +132,7 @@ export default function ProjectList() {
         usefor="Project"
         backendEndpoint={BACKEND_ENDPOINT.createProject}
         formFields={projectFormFields}
-        isOpen={createProjectDialog || searchParams.get('action') === 'create'}
+        isOpen={createProjectDialog || searchParams.get("action") === "create"}
         onClose={() => {
           setCreateProjectDialog(false);
           setSearchParams((prev) => {
@@ -145,7 +140,10 @@ export default function ProjectList() {
             return prev;
           });
         }}
-        onSuccess={() => setRefresher(true)}
+        onSuccess={() => {
+          setRefresher(true);
+          onProjectCreated();
+        }}
       />
     </>
   );

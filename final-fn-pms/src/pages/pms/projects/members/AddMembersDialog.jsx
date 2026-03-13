@@ -1,81 +1,59 @@
 /*
   Notes:
-  - Uses react-window for virtualization.
-  - Fetches real workspace members from auth-service.
-  - Submits to PMS addMembers endpoint to add users to projects.
+  - A user can belong to multiple departments (workspaces) within the same project.
+  - Dept selector lets you pick which department/workspace to add members to.
+  - Fetches real workspace members from auth-service for the selected department.
+  - Submits to PMS addMembers endpoint: POST /project/member/:projectId/department/:departmentId
 */
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { showToast } from "../../../../util/feedback/ToastService";
-import { Box, Button, CircularProgress, Dialog, DialogContent, DialogTitle, Divider, FormControl, IconButton, MenuItem, Select, TextField, Typography } from "@mui/material";
+import { Box, Button, CircularProgress, Dialog, DialogContent, DialogTitle, Divider, FormControl, IconButton, InputLabel, MenuItem, Select, TextField, Typography } from "@mui/material";
 import DoButton from "../../../../components/button/DoButton";
 import backendRequest from "../../../../util/request";
-import { List } from "react-window";
-// import { FixedSizeList as List } from "react-window";
 
 import CloseIcon from "@mui/icons-material/Close";
 import BACKEND_ENDPOINT from "../../../../util/urls";
 import { useWorkspace } from "../../../../context/WorkspaceContext";
 import { getWorkspaceMembers } from "../../../../api/workspaces";
 
-// virtualization constants
-const ITEM_HEIGHT = 64; // px per user row
-const LIST_HEIGHT = 360; // px height for user list viewport
-const LIST_WIDTH = "100%";
-
 export default function AddMembersDialog({ isOpen, setOpen, projectId, setRefresher }) {
-  const { currentWorkspace } = useWorkspace();
+  const { workspaces } = useWorkspace();
 
-  // controlled states
-  // const [departments, setDepartments] = useState([]);
-  // const [departmentId, setDepartmentId] = useState("");
-  // const [deptQuery, setDeptQuery] = useState("");
+  // Department (workspace) selection
+  const [selectedDeptId, setSelectedDeptId] = useState("");
 
-  const [users, setUsers] = useState([]); // entire list for selected department
+  // Users for selected department
+  const [users, setUsers] = useState([]);
   const [userQuery, setUserQuery] = useState("");
   const [filteredUsers, setFilteredUsers] = useState([]);
+  const [loadingUsers, setLoadingUsers] = useState(false);
 
-  const [selectedUsers, setSelectedUsers] = useState([]); // array of user objects {id,name,email,role}
+  const [selectedUsers, setSelectedUsers] = useState([]); // array of {id,name,email}
   const [userRoles, setUserRoles] = useState({}); // map id->role
 
   const [isSubmitting, setSubmitting] = useState(false);
 
-  // debounce refs
-  // const deptDebounceRef = useRef(null);
   const userDebounceRef = useRef(null);
 
-  // open dialog: load departments (dummy or backend)
-  // const fetchDepartments = async () => {
-  //     // Dummy:
-  //     const d = makeDummyDepartments();
-  //     setDepartments(d);
-
-  //     // If using backend:
-  //     // try {
-  //     //   const res = await backendRequest({ endpoint: BACKEND_ENDPOINT.organization_departments(organizationId) });
-  //     //   setDepartments(res.data || []);
-  //     // } catch (err) { showToast({message:'Failed to load departments', type:'error'}) }
-  // };
-
-  // fetch users for a workspace (real API call)
-  const fetchUsers = useCallback(async () => {
-    if (!currentWorkspace?.id) {
+  // fetch users for the selected department/workspace
+  const fetchUsers = useCallback(async (deptId) => {
+    if (!deptId) {
       setUsers([]);
       setFilteredUsers([]);
       return;
     }
 
+    setLoadingUsers(true);
     try {
-      // Call auth-service to get workspace members via the API helper
-      const members = await getWorkspaceMembers(currentWorkspace.id);
+      const members = await getWorkspaceMembers(deptId);
 
       if (members && Array.isArray(members)) {
-        // Map auth-service response to dialog format
         const mappedUsers = members.map((member) => ({
           id: member.user_id,
           name: member.name || member.UserMetadata?.email || "Unknown",
           email: member.UserMetadata?.email || "",
-          workspace_role: member.role, // admin/member/viewer in workspace
+          workspace_role: member.role,
         }));
         setUsers(mappedUsers);
         setFilteredUsers(mappedUsers);
@@ -89,37 +67,29 @@ export default function AddMembersDialog({ isOpen, setOpen, projectId, setRefres
       showToast({ message: "Error loading workspace members", type: "error" });
       setUsers([]);
       setFilteredUsers([]);
+    } finally {
+      setLoadingUsers(false);
     }
-  }, [currentWorkspace]);
+  }, []);
 
-  // When workspace changes, clear previous selections and load users
+  // Reset everything when dialog opens/closes
   useEffect(() => {
-    if (!isOpen) return; // Only fetch when dialog is open
-
-    // Reset state
+    if (!isOpen) return;
+    setSelectedDeptId("");
     setSelectedUsers([]);
     setUserRoles({});
     setUserQuery("");
+    setUsers([]);
+    setFilteredUsers([]);
+  }, [isOpen]);
 
-    if (!currentWorkspace?.id) {
-      setUsers([]);
-      setFilteredUsers([]);
-      return;
-    }
-
-    fetchUsers();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentWorkspace, isOpen]);
-  //         // client-side filter departments
-  //         // For backend: call API to search departments
-  //         setDepartments((prev) => {
-  //           const all = makeDummyDepartments(); // ensure full list for dummy
-  //           if (!deptQuery) return all;
-  //           return all.filter((d) => d.name.toLowerCase().includes(deptQuery.toLowerCase()));
-  //         });
-  //     }, 200);
-  //     return () => clearTimeout(deptDebounceRef.current);
-  // }, [deptQuery]);
+  // Fetch users when selected department changes
+  useEffect(() => {
+    setSelectedUsers([]);
+    setUserRoles({});
+    setUserQuery("");
+    fetchUsers(selectedDeptId);
+  }, [selectedDeptId, fetchUsers]);
 
   // Debounced user search (client-side)
   useEffect(() => {
@@ -139,7 +109,7 @@ export default function AddMembersDialog({ isOpen, setOpen, projectId, setRefres
 
   const handleClose = () => {
     setOpen(false);
-    // reset everything
+    setSelectedDeptId("");
     setUsers([]);
     setFilteredUsers([]);
     setUserQuery("");
@@ -177,14 +147,14 @@ export default function AddMembersDialog({ isOpen, setOpen, projectId, setRefres
     });
   };
 
-  // Save handler: builds payload and calls backend (or logs)
+  // Save handler: builds payload and calls backend
   const handleAddMembers = async () => {
     if (!projectId) {
       showToast({ message: "Invalid project", type: "error" });
       return;
     }
-    if (!currentWorkspace?.id) {
-      showToast({ message: "Please pick a department", type: "warning" });
+    if (!selectedDeptId) {
+      showToast({ message: "Please select a department first", type: "warning" });
       return;
     }
     if (selectedUsers.length === 0) {
@@ -199,58 +169,17 @@ export default function AddMembersDialog({ isOpen, setOpen, projectId, setRefres
       })),
     };
 
-    const result = await updateToBackend(payload, projectId, currentWorkspace?.id);
+    const result = await updateToBackend(payload, projectId, selectedDeptId);
 
     if (!result.success) {
       showToast({ message: result.message || "Failed to update", type: "error" });
       return;
     }
 
-    showToast({ message: `${selectedUsers.length} members added successfully`, type: "success" });
-    // close and refresh
+    showToast({ message: `${selectedUsers.length} member(s) added successfully`, type: "success" });
     handleClose();
     setRefresher(true);
   };
-
-  // virtualization row renderer
-  const Row = useCallback(
-    ({ index, style }) => {
-      const u = filteredUsers[index];
-      if (!u) return null;
-      const isSelected = !!selectedUsers.find((s) => s.id === u.id);
-      return (
-        <Box style={style} key={u.id} display="flex" alignItems="center" justifyContent="space-between" px={1.5} py={1} sx={{ borderBottom: "1px solid transparent" }}>
-          <Box>
-            <Typography fontWeight={600}>{u.name}</Typography>
-            <Typography variant="body2" color="text.secondary">
-              {u.email}
-            </Typography>
-          </Box>
-
-          <Box display="flex" alignItems="center" gap={1}>
-            <FormControl size="small" sx={{ minWidth: 120 }}>
-              <Select value={userRoles[u.id] || "member"} onChange={(e) => setRoleForUser(u.id, e.target.value)} size="small">
-                <MenuItem value="lead">Lead</MenuItem>
-                <MenuItem value="member">Member</MenuItem>
-                <MenuItem value="viewer">Viewer</MenuItem>
-              </Select>
-            </FormControl>
-
-            <Button variant={isSelected ? "contained" : "outlined"} size="small" onClick={() => toggleSelectUser(u)}>
-              {isSelected ? "Remove" : "Add"}
-            </Button>
-          </Box>
-        </Box>
-      );
-    },
-    [filteredUsers, selectedUsers, userRoles],
-  );
-
-  // memoized item count for virtualization
-  const itemCount = useMemo(() => filteredUsers.length, [filteredUsers]);
-
-  // Note: Moved to real API call in fetchUsers above
-  // No longer using dummy data generation
 
   return (
     <Dialog open={isOpen} onClose={handleClose} fullWidth maxWidth="md">
@@ -262,155 +191,90 @@ export default function AddMembersDialog({ isOpen, setOpen, projectId, setRefres
       </DialogTitle>
 
       <DialogContent dividers sx={{ display: "flex", gap: 2, pb: 2 }}>
-        {/* LEFT: controls & user list */}
+        {/* LEFT: department selector + user list */}
         <Box sx={{ flex: 1, minWidth: 420 }}>
-          {/* Dept search */}
-          {/* <Typography variant="subtitle2" sx={{ mb: 1 }}>
-              Department
-            </Typography>
-            <TextField
-              placeholder="Search departments..."
-              fullWidth
-              size="small"
-              value={deptQuery}
-              onChange={(e) => setDeptQuery(e.target.value)}
-              sx={{ mb: 1 }}
-            /> */}
-
-          {/* Dept list (clickable) */}
-          {/* <Box
-              sx={{
-                border: "1px solid #ddd",
-                borderRadius: 1,
-                maxHeight: 160,
-                overflowY: "auto",
-                p: 1,
-                mb: 2,
-                backgroundColor: "background.paper",
-              }}
-            >
-              {departments.length === 0 ? (
-                <Typography variant="body2" color="text.secondary">
-                  No departments
-                </Typography>
-              ) : (
-                departments
-                  .filter((d) => d.name.toLowerCase().includes(deptQuery.toLowerCase()))
-                  .map((d) => {
-                    const sel = d.id === departmentId;
-                    return (
-                      <Box
-                        key={d.id}
-                        onClick={() => {
-                          if (sel) {
-                            // deselect -> clear users & selection
-                            setDepartmentId("");
-                            setUsers([]);
-                            setFilteredUsers([]);
-                            setSelectedUsers([]);
-                            setUserRoles({});
-                            setUserQuery("");
-                          } else {
-                            setDepartmentId(d.id);
-                          }
-                        }}
-                        sx={{
-                          px: 1,
-                          py: 0.75,
-                          borderRadius: 0.5,
-                          cursor: "pointer",
-                          bgcolor: sel ? "primary.main" : "transparent",
-                          color: sel ? "#fff" : "inherit",
-                          mb: 0.5,
-                        }}
-                      >
-                        {d.name}
-                      </Box>
-                    );
-                  })
-              )}
-            </Box> */}
-
-          {/* users area */}
+          {/* Department selector */}
           <Typography variant="subtitle2" sx={{ mb: 1 }}>
-            Users {currentWorkspace?.id ? currentWorkspace?.name : ""}
+            Department (Workspace)
+          </Typography>
+          <FormControl fullWidth size="small" sx={{ mb: 2 }}>
+            <InputLabel>Select Department</InputLabel>
+            <Select label="Select Department" value={selectedDeptId} onChange={(e) => setSelectedDeptId(e.target.value)}>
+              {workspaces.length === 0 ? (
+                <MenuItem disabled>No departments available</MenuItem>
+              ) : (
+                workspaces.map((ws) => (
+                  <MenuItem key={ws.id} value={ws.id}>
+                    {ws.name}
+                  </MenuItem>
+                ))
+              )}
+            </Select>
+          </FormControl>
+
+          {/* Users area */}
+          <Typography variant="subtitle2" sx={{ mb: 1 }}>
+            Users {selectedDeptId ? `— ${workspaces.find((w) => w.id === selectedDeptId)?.name || ""}` : ""}
           </Typography>
 
-          <Box sx={{ mb: 1, display: "flex", gap: 1 }}>
-            <TextField placeholder="Search users..." fullWidth size="small" value={userQuery} onChange={(e) => setUserQuery(e.target.value)} />
+          <Box sx={{ mb: 1 }}>
+            <TextField placeholder="Search users..." fullWidth size="small" value={userQuery} onChange={(e) => setUserQuery(e.target.value)} disabled={!selectedDeptId} />
           </Box>
 
           <Divider sx={{ mb: 1 }} />
 
-          {/* Virtualized list */}
           <Box
             sx={{
               border: "1px solid #eee",
               borderRadius: 1,
-              height: LIST_HEIGHT,
-              overflow: "hidden",
+              maxHeight: 340,
+              overflowY: "auto",
             }}
           >
-            {itemCount === 0 ? (
+            {!selectedDeptId ? (
               <Box p={2}>
                 <Typography variant="body2" color="text.secondary">
-                  {currentWorkspace?.id ? "No users found" : "Select a department to view users"}
+                  Select a department above to view users
+                </Typography>
+              </Box>
+            ) : loadingUsers ? (
+              <Box p={2} display="flex" justifyContent="center">
+                <CircularProgress size={24} />
+              </Box>
+            ) : filteredUsers.length === 0 ? (
+              <Box p={2}>
+                <Typography variant="body2" color="text.secondary">
+                  No users found in this department
                 </Typography>
               </Box>
             ) : (
-              //  <List
-              //     height={400}
-              //     width={600}
-              //     itemCount={itemCount}
-              //     itemSize={72}
-              //   >
-              //     {Row}
-              //   </List>
-              <Box
-                sx={{
-                  border: "1px solid #eee",
-                  borderRadius: 1,
-                  maxHeight: 400,
-                  overflowY: "auto",
-                }}
-              >
-                {itemCount === 0 ? (
-                  <Box p={2}>
-                    <Typography variant="body2" color="text.secondary">
-                      {currentWorkspace?.id ? "No users found" : "Select a department to view users"}
-                    </Typography>
+              filteredUsers.map((u) => {
+                const isSelected = selectedUsers.some((s) => s.id === u.id);
+                return (
+                  <Box key={u.id} display="flex" alignItems="center" justifyContent="space-between" px={1.5} py={1} sx={{ borderBottom: "1px solid #f0f0f0" }}>
+                    <Box>
+                      <Typography fontWeight={600}>{u.name}</Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        {u.email}
+                      </Typography>
+                    </Box>
+
+                    <Box display="flex" alignItems="center" gap={1}>
+                      <FormControl size="small" sx={{ minWidth: 120 }}>
+                        <Select value={userRoles[u.id] || "member"} onChange={(e) => setRoleForUser(u.id, e.target.value)}>
+                          <MenuItem value="lead">Lead</MenuItem>
+                          <MenuItem value="member">Member</MenuItem>
+                          <MenuItem value="viewer">Viewer</MenuItem>
+                        </Select>
+                      </FormControl>
+
+                      <Button variant={isSelected ? "contained" : "outlined"} size="small" onClick={() => toggleSelectUser(u)}>
+                        {isSelected ? "Remove" : "Add"}
+                      </Button>
+                    </Box>
                   </Box>
-                ) : (
-                  filteredUsers.map((u) => {
-                    const isSelected = selectedUsers.some((s) => s.id === u.id);
-
-                    return (
-                      <Box key={u.id} display="flex" alignItems="center" justifyContent="space-between" px={1.5} py={1} sx={{ borderBottom: "1px solid #f0f0f0" }}>
-                        <Box>
-                          <Typography fontWeight={600}>{u.name}</Typography>
-                          <Typography variant="body2" color="text.secondary">
-                            {u.email}
-                          </Typography>
-                        </Box>
-
-                        <Box display="flex" alignItems="center" gap={1}>
-                          <FormControl size="small" sx={{ minWidth: 120 }}>
-                            <Select value={userRoles[u.id] || "member"} onChange={(e) => setRoleForUser(u.id, e.target.value)}>
-                              <MenuItem value="lead">Lead</MenuItem>
-                              <MenuItem value="member">Member</MenuItem>
-                              <MenuItem value="viewer">Viewer</MenuItem>
-                            </Select>
-                          </FormControl>
-
-                          <Button variant={isSelected ? "contained" : "outlined"} size="small" onClick={() => toggleSelectUser(u)}>
-                            {isSelected ? "Remove" : "Add"}
-                          </Button>
-                        </Box>
-                      </Box>
-                    );
-                  })
-                )}
-              </Box>
+                );
+              })
             )}
           </Box>
         </Box>
@@ -468,7 +332,7 @@ export default function AddMembersDialog({ isOpen, setOpen, projectId, setRefres
           <Divider sx={{ mb: 2 }} />
 
           <Typography variant="caption" color="text.secondary" display="block" sx={{ mb: 1 }}>
-            Quick add/remove: click "Add" on the left list. Selection persists until you change department or close.
+            Select a department, pick users, then click Save. To add the same person to another department, open this dialog again and select a different department.
           </Typography>
 
           <Box display="flex" gap={1}>
@@ -496,6 +360,5 @@ export default function AddMembersDialog({ isOpen, setOpen, projectId, setRefres
 const updateToBackend = async (payload, projectId, departmentId) => {
   const endpoint = BACKEND_ENDPOINT["add_project_members"](projectId, departmentId);
   const response = await backendRequest({ endpoint, bodyData: payload });
-
   return response;
 };

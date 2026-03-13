@@ -1,18 +1,23 @@
-
-// Author: Gururaj 
+// Author: Gururaj
 // Created: 09 Sep 2025
 // Description: all routes related to tasks of the project
 // Version: 1.0.0
 
 const express = require("express");
-const {  name, uuid, description, enumValue, dateFuture, paramsEnum } = require("../../services/validation");
+const {
+  name,
+  uuid,
+  description,
+  enumValue,
+  dateFuture,
+  paramsEnum,
+} = require("../../services/validation");
 const validationMiddleware = require("../../middleware/validation.middleware");
 const taskController = require("../../controllers/task/task.controller");
 
 const router = express.Router();
 
 // /{moduleCode}/project/task/...
-
 
 /**
  * @swagger
@@ -33,8 +38,10 @@ const router = express.Router();
  *       200:
  *         description: Ongoing or pending tasks for the user
  */
-router.get('/my-task/on_going_or_pending', taskController.getOnlyUserTasksForStandup);
-
+router.get(
+  "/my-task/on_going_or_pending",
+  taskController.getOnlyUserTasksForStandup,
+);
 
 /**
  * @swagger
@@ -60,11 +67,23 @@ router.get('/my-task/on_going_or_pending', taskController.getOnlyUserTasksForSta
  *       200:
  *         description: Tasks retrieved successfully
  */
-router.get('/my-task/:status', 
+router.get(
+  "/my-task/:status",
   [
-    paramsEnum( "status", "params",  ['in_progress', 'completed', 'approved', 'blocked', "approve_pending", 'issue', 'checklist', 'help'] ),
-  ], validationMiddleware("Task", "Get"), taskController.getOnlyUserTasks);
-
+    paramsEnum("status", "params", [
+      "in_progress",
+      "completed",
+      "approved",
+      "blocked",
+      "approve_pending",
+      "issue",
+      "checklist",
+      "help",
+    ]),
+  ],
+  validationMiddleware("Task", "Get"),
+  taskController.getOnlyUserTasks,
+);
 
 /**
  * @swagger
@@ -89,11 +108,12 @@ router.get('/my-task/:status',
  *       200:
  *         description: Assisted tasks retrieved successfully
  */
-router.get('/:taskId/assisted',
-  [
-    uuid("taskId"),
-  ], validationMiddleware("Task", "assign member"), taskController.getAssistedTasks);
-
+router.get(
+  "/:taskId/assisted",
+  [uuid("taskId")],
+  validationMiddleware("Task", "assign member"),
+  taskController.getAssistedTasks,
+);
 
 /**
  * @swagger
@@ -135,16 +155,70 @@ router.get('/:taskId/assisted',
  *       200:
  *         description: Task created successfully
  */
-router.post('/:projectMemberId', [
+/**
+ * @swagger
+ * /{moduleCode}/project/task/self/{projectId}:
+ *   post:
+ *     tags:
+ *       - Task
+ *     summary: Create a task for yourself in a project
+ *     description: Members get approve_pending status; leads get approved status immediately.
+ *     parameters:
+ *       - in: path
+ *         name: projectId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               title:
+ *                 type: string
+ *               description:
+ *                 type: string
+ *               priority:
+ *                 type: string
+ *                 enum: ['low', 'medium', 'high', 'critical']
+ *               due_date:
+ *                 type: string
+ *                 format: date
+ *     responses:
+ *       201:
+ *         description: Self-task created successfully
+ */
+router.post(
+  "/self/:projectId",
   [
-    uuid("projectMemberId"),
-    name("title"),
-    description().optional({ checkFalsy: true }),
-    enumValue( "priority", ['low', 'medium', 'high', 'critical'] ).optional(),
-    dateFuture("due_date" )
+    [
+      uuid("projectId"),
+      name("title"),
+      description().optional({ checkFalsy: true }),
+      enumValue("priority", ["low", "medium", "high", "critical"]).optional(),
+      dateFuture("due_date"),
+    ],
   ],
-], validationMiddleware("Task", "Create"), taskController.createTask);
+  validationMiddleware("Task", "Create"),
+  taskController.createSelfTask,
+);
 
+router.post(
+  "/:projectMemberId",
+  [
+    [
+      uuid("projectMemberId"),
+      name("title"),
+      description().optional({ checkFalsy: true }),
+      enumValue("priority", ["low", "medium", "high", "critical"]).optional(),
+      dateFuture("due_date"),
+    ],
+  ],
+  validationMiddleware("Task", "Create"),
+  taskController.createTask,
+);
 
 /**
  * @swagger
@@ -169,10 +243,12 @@ router.post('/:projectMemberId', [
  *       200:
  *         description: User tasks for the project
  */
-router.get('/:projectId/my-task', [
-  uuid("projectId"),
-], validationMiddleware("Task", "Get"), taskController.getOnlyUserTasks);
-
+router.get(
+  "/:projectId/my-task",
+  [uuid("projectId")],
+  validationMiddleware("Task", "Get"),
+  taskController.getOnlyUserTasks,
+);
 
 /**
  * @swagger
@@ -202,13 +278,12 @@ router.get('/:projectId/my-task', [
  *       200:
  *         description: User tasks by department
  */
-router.get('/:projectId/:departmentId/my-task', [
-  [
-    uuid("projectId"),
-    uuid("departmentId"),
-  ],
-], validationMiddleware("Task", "Get"), taskController.getOnlyUserTasksByDepartment);
-
+router.get(
+  "/:projectId/:departmentId/my-task",
+  [[uuid("projectId"), uuid("departmentId")]],
+  validationMiddleware("Task", "Get"),
+  taskController.getOnlyUserTasksByDepartment,
+);
 
 /**
  * @swagger
@@ -233,12 +308,12 @@ router.get('/:projectId/:departmentId/my-task', [
  *       200:
  *         description: Task deleted successfully
  */
-router.delete('/:taskId', [
-  [
-    uuid("taskId"),
-  ],
-], validationMiddleware("Task", "Delete"), taskController.deleteTask);
-
+router.delete(
+  "/:taskId",
+  [[uuid("taskId")]],
+  validationMiddleware("Task", "Delete"),
+  taskController.deleteTask,
+);
 
 /**
  * @swagger
@@ -263,12 +338,37 @@ router.delete('/:taskId', [
  *       200:
  *         description: Tasks retrieved successfully
  */
-router.get('/:projectId', [
-  [
-    uuid("projectId"),
-  ],
-], validationMiddleware("Task", "Get"), taskController.getTasks);
+/**
+ * @swagger
+ * /{moduleCode}/project/task/available/checklist-tasks:
+ *   get:
+ *     tags:
+ *       - Task
+ *     summary: Get all assign-pending checklist tasks for the current user's departments
+ *     description: Returns tasks created from checklists that are pending assignment, filtered to departments the current user belongs to. Each task includes my_role (lead/member) and my_project_member_id.
+ *     parameters:
+ *       - in: path
+ *         name: moduleCode
+ *         required: true
+ *         schema:
+ *           type: string
+ *           default: ALREADY_TAKEN
+ *     responses:
+ *       200:
+ *         description: Available checklist tasks retrieved successfully
+ */
+router.get(
+  "/available/checklist-tasks",
+  validationMiddleware("Checklist Task", "Get Available"),
+  taskController.getAvailableChecklistTasks,
+);
 
+router.get(
+  "/:projectId",
+  [[uuid("projectId")]],
+  validationMiddleware("Task", "Get"),
+  taskController.getTasks,
+);
 
 /**
  * @swagger
@@ -298,13 +398,12 @@ router.get('/:projectId', [
  *       200:
  *         description: Tasks retrieved successfully
  */
-router.get('/:projectId/:departmentId', [
-  [
-    uuid("projectId"),
-    uuid("departmentId"),
-  ],
-], validationMiddleware("Task", "Get"), taskController.getTasksByDepartment);
-
+router.get(
+  "/:projectId/:departmentId",
+  [[uuid("projectId"), uuid("departmentId")]],
+  validationMiddleware("Task", "Get"),
+  taskController.getTasksByDepartment,
+);
 
 /**
  * @swagger
@@ -340,14 +439,36 @@ router.get('/:projectId/:departmentId', [
  *       200:
  *         description: Task assigned successfully
  */
-router.post('/:taskId/:projectMemberId', [
-  [
-    uuid("taskId"),
-    uuid("projectMemberId"),
-    dateFuture("due_date"),
-  ],
-], validationMiddleware("Task", "assign member"), taskController.assignChecklistTask);
+router.post(
+  "/:taskId/:projectMemberId",
+  [[uuid("taskId"), uuid("projectMemberId"), dateFuture("due_date")]],
+  validationMiddleware("Task", "assign member"),
+  taskController.assignChecklistTask,
+);
 
+/**
+ * @swagger
+ * /{moduleCode}/project/task/{taskId}/approve:
+ *   put:
+ *     tags:
+ *       - Task
+ *     summary: Approve an approve_pending task (project leads only)
+ *     parameters:
+ *       - in: path
+ *         name: taskId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Task approved successfully
+ */
+router.put(
+  "/:taskId/approve",
+  [uuid("taskId")],
+  validationMiddleware("Task", "Approve"),
+  taskController.approveTask,
+);
 
 /**
  * @swagger
@@ -381,14 +502,18 @@ router.post('/:taskId/:projectMemberId', [
  *       200:
  *         description: Task updated successfully
  */
-router.put('/:taskId', [
+router.put(
+  "/:taskId",
   [
-    uuid("taskId"),
-    description().optional(),
-    enumValue( "priority", ['low', 'medium', 'high', 'critical']).optional(),
+    [
+      uuid("taskId"),
+      description().optional(),
+      enumValue("priority", ["low", "medium", "high", "critical"]).optional(),
+    ],
   ],
-], validationMiddleware("Task", "assign member"), taskController.updateTask);
-
+  validationMiddleware("Task", "assign member"),
+  taskController.updateTask,
+);
 
 /**
  * @swagger
@@ -413,12 +538,11 @@ router.put('/:taskId', [
  *       200:
  *         description: Task completed successfully
  */
-router.put('/:taskId/complete',
-  [
-    uuid("taskId"),
-  ], validationMiddleware("Task", "assign member"), taskController.completeTask);
-
-
+router.put(
+  "/:taskId/complete",
+  [uuid("taskId")],
+  validationMiddleware("Task", "assign member"),
+  taskController.completeTask,
+);
 
 module.exports = router;
-

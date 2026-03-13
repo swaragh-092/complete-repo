@@ -41,7 +41,7 @@ const CustomFooter = ({ selectedRows, selectedAction }) => {
   );
 };
 
-export default function DataTable({ columns, fetchEndpoint, selectedAction = false, refresh, setRefresh = () => {}, dataPath=null, defaultPageSize=10 }) { // datapath represents the where the actal data will be in response and should be array
+export default function DataTable({ columns, fetchEndpoint, selectedAction = false, refresh, setRefresh = () => {}, dataPath=null, defaultPageSize=10, transformRows = null }) { // datapath represents the where the actal data will be in response and should be array
   const theme = useTheme();
   const colors = colorCodes(theme.palette.mode);
   const [responseData, setResponseData] = useState(null);
@@ -62,14 +62,18 @@ export default function DataTable({ columns, fetchEndpoint, selectedAction = fal
 
   useEffect(() => {
     if (refresh) {
-      callFetchData(`?page=${queryData.page + 1}&perPage=${queryData.pageSize}&sortField=${queryData.sortField}&sortOrder=${queryData.sortOrder}&searchText=${queryData.searchText}&searchField=${queryData.searchField}&searchOperator=${queryData.searchOperator}`);
+      if (transformRows) {
+        callFetchData(`?page=1&perPage=9999`);
+      } else {
+        callFetchData(`?page=${queryData.page + 1}&perPage=${queryData.pageSize}&sortField=${queryData.sortField}&sortOrder=${queryData.sortOrder}&searchText=${queryData.searchText}&searchField=${queryData.searchField}&searchOperator=${queryData.searchOperator}`);
+      }
       setRefresh(false);
       setIsReadyToFetch(true);
     }
   }, [refresh]);
 
   useEffect(() => {
-    if (isReadyToFetch) {
+    if (isReadyToFetch && !transformRows) {
       callFetchData(`?page=${queryData.page + 1}&perPage=${queryData.pageSize}&sortField=${queryData.sortField}&sortOrder=${queryData.sortOrder}&searchText=${queryData.searchText}&searchField=${queryData.searchField}&searchOperator=${queryData.searchOperator}`);
     }
   },[queryData]);
@@ -136,26 +140,26 @@ export default function DataTable({ columns, fetchEndpoint, selectedAction = fal
         checkboxSelection={!!selectedAction}
         disableSelectionOnclick={true}
         onRowSelectionModelChange={setSelectedRows}
-        rows={responseData?.data||[]}
+        rows={transformRows ? transformRows(responseData?.data || []) : (responseData?.data || [])}
         columns={columns}
         components={{ Toolbar: GridToolbar }}
-        filterMode="server"
-        onFilterModelChange={(filterModel) => {
-          handleFilterChange(filterModel);
-        }}
         sx={{ fontSize: "14px" }}
         pagination
-        paginationMode="server"
-        sortingMode="server"
-        rowCount={responseData?.pagination?.totalItems || 0}
         pageSizeOptions={[5, 10, 20, 50]}
-        paginationModel={{ page: queryData.page, pageSize: queryData.pageSize }}
-        onPaginationModelChange={({ page, pageSize }) => {
-          handlePageChange(page, pageSize);
-        }}
-        sortModel={queryData.sortModel}
-        onSortModelChange={handleSortModelChange}
         loading={loading}
+        paginationMode={transformRows ? "client" : "server"}
+        filterMode={transformRows ? "client" : "server"}
+        sortingMode={transformRows ? "client" : "server"}
+        {...(transformRows
+          ? { initialState: { pagination: { paginationModel: { pageSize: defaultPageSize } } } }
+          : {
+              rowCount: responseData?.pagination?.totalItems || 0,
+              paginationModel: { page: queryData.page, pageSize: queryData.pageSize },
+              onPaginationModelChange: ({ page, pageSize }) => handlePageChange(page, pageSize),
+              onFilterModelChange: (filterModel) => handleFilterChange(filterModel),
+              sortModel: queryData.sortModel,
+              onSortModelChange: handleSortModelChange,
+            })}
         slots={{
           footer: () =>
             selectedAction ? (

@@ -12,6 +12,7 @@ import { colorCodes } from "../../../../theme";
 import { showConfirmDialog } from "../../../../util/feedback/ConfirmService";
 import EditIcon from "@mui/icons-material/ModeEditOutline";
 import DeleteIcon from "@mui/icons-material/Delete";
+import CheckIcon from "@mui/icons-material/Check";
 import { showToast } from "../../../../util/feedback/ToastService";
 import backendRequest from "../../../../util/request";
 
@@ -75,7 +76,7 @@ const updateFormFields = [
   },
 ];
 
-export default function TaskList({ project_id, memberIdCreateTask, setMemberIdCreateTask, refresh, setRefresher = () => {} }) {
+export default function TaskList({ project_id, canApprove, memberIdCreateTask, setMemberIdCreateTask, refresh, setRefresher = () => {} }) {
   const theme = useTheme();
   const colors = colorCodes(theme.palette.mode);
 
@@ -87,6 +88,14 @@ export default function TaskList({ project_id, memberIdCreateTask, setMemberIdCr
     const response = await deleteTaskRequest(taskId);
     if (response.success) setRefresher(true);
     setEditingIds((prev) => prev.filter((id) => id !== taskId)); // remove after done
+  };
+
+  const handleApproveTask = async (taskId) => {
+    setEditingIds((prev) => [...prev, taskId]);
+    const response = await backendRequest({ endpoint: BACKEND_ENDPOINT.approve_task(taskId) });
+    showToast({ message: response.message ?? (response.success ? "Task approved" : "Failed to approve"), type: response.success ? "success" : "error" });
+    if (response.success) setRefresher(true);
+    setEditingIds((prev) => prev.filter((id) => id !== taskId));
   };
 
   const displayColumns = [
@@ -187,6 +196,25 @@ export default function TaskList({ project_id, memberIdCreateTask, setMemberIdCr
                     }}
                   />
                 </Box>
+
+                {canApprove && params.row.status === "approve_pending" && (
+                  <Box title="Approve Task">
+                    <CheckIcon
+                      onClick={() => {
+                        showConfirmDialog({
+                          message: `Approve task "${params.row.title}"?`,
+                          title: "Approve Task",
+                          onConfirm: () => handleApproveTask(params.row.id),
+                        });
+                      }}
+                      sx={{
+                        cursor: "pointer",
+                        color: colors.primary?.main || colors.primary?.dark,
+                        "&:hover": { color: colors.primary?.dark },
+                      }}
+                    />
+                  </Box>
+                )}
 
                 <Box title="Delete">
                   <DeleteIcon

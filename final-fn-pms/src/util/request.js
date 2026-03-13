@@ -8,6 +8,7 @@
 
 
 import { paths } from "./urls";
+import { auth } from "@spidy092/auth-client";
 
 const backendRequest = async ({ endpoint, bodyData = null, querySets = "", navigate, organizationId, }) => {
   
@@ -16,9 +17,16 @@ const backendRequest = async ({ endpoint, bodyData = null, querySets = "", navig
       throw new Error("Invalid endpoint configuration");
     }
 
+    // Get token from auth-client (stored in localStorage as "authToken")
+    const token = auth.getToken();
+
     const jsonResponse = await fetch(endpoint.path + querySets, {
       method: endpoint.method,
-      headers: { "Content-Type": "application/json", ...(organizationId && { "x-organization-id": organizationId }), },
+      headers: {
+        "Content-Type": "application/json",
+        ...(token && { "Authorization": `Bearer ${token}` }),
+        ...(organizationId && { "x-organization-id": organizationId }),
+      },
       credentials: "include",
       ...(bodyData && endpoint.method !=="GET" && {
         body: JSON.stringify(bodyData),

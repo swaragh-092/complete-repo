@@ -45,7 +45,9 @@ exports.getProjectWithFeatures = async (req, res) => {
   const thisAction = { usedFor: "Project", action: "fetch" };
   try {
     const { id } = req.params;
-    const result = await ProjectService.getProject(req, id, {include_features: true});
+    const result = await ProjectService.getProject(req, id, {
+      include_features: true,
+    });
     return ResponseService.apiResponse({ res, ...result, ...thisAction });
   } catch (err) {
     return sendErrorResponse(thisAction, err, res);
@@ -88,7 +90,11 @@ exports.getAllProjects = async (req, res) => {
   const thisAction = { usedFor: "Project", action: "fetchAll" };
   try {
     const extrafilter = req.params.status;
-    const result = await ProjectService.getAllProjects({ req, query : req.query, extrafilter });
+    const result = await ProjectService.getAllProjects({
+      req,
+      query: req.query,
+      extrafilter,
+    });
     return ResponseService.apiResponse({ res, ...result, ...thisAction });
   } catch (err) {
     return sendErrorResponse(thisAction, err, res);
@@ -98,7 +104,9 @@ exports.getAllProjects = async (req, res) => {
 exports.getAllUsersOngoingProjects = async (req, res) => {
   const thisAction = { usedFor: "Project", action: "fetchAll" };
   try {
-    const result = await ProjectService.getAllUserOngoingProjects(req, {departmentId: req.params.departmentId });
+    const result = await ProjectService.getAllUserOngoingProjects(req, {
+      departmentId: req.params.departmentId,
+    });
     return ResponseService.apiResponse({ res, ...result, ...thisAction });
   } catch (err) {
     return sendErrorResponse(thisAction, err, res);
@@ -106,18 +114,14 @@ exports.getAllUsersOngoingProjects = async (req, res) => {
 };
 
 exports.getOverviewData = async (req, res) => {
-  
   const thisAction = { usedFor: "Overview", action: "fetch" };
   try {
     const result = await ProjectService.getOverviewData(req);
     return ResponseService.apiResponse({ res, ...result, ...thisAction });
   } catch (err) {
-    
     return sendErrorResponse(thisAction, err, res);
   }
 };
-
-
 
 // complete project
 exports.completeProject = async (req, res) => {
@@ -125,6 +129,16 @@ exports.completeProject = async (req, res) => {
   try {
     const { id } = req.params;
     const result = await ProjectService.completeProject(req, id);
+    return ResponseService.apiResponse({ res, ...result, ...thisAction });
+  } catch (err) {
+    return sendErrorResponse(thisAction, err, res);
+  }
+};
+
+exports.getMemberDashboardData = async (req, res) => {
+  const thisAction = { usedFor: "Member Dashboard", action: "fetch" };
+  try {
+    const result = await ProjectService.getMemberDashboardData(req);
     return ResponseService.apiResponse({ res, ...result, ...thisAction });
   } catch (err) {
     return sendErrorResponse(thisAction, err, res);
