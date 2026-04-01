@@ -1,3 +1,9 @@
+// Author: Gururaj
+// Created: 16th May 2025
+// Description: Express application factory that registers middlewares, routes, and Swagger docs.
+// Version: 1.0.0
+// Modified:
+
 // Created: 16th May 2025
 // Description:
 // App Version: 1.0.0
@@ -12,13 +18,10 @@ const config = require("./config/config");
 
 // const errorHandler = require("./middleware/errorHandler.middleware");
 
-
 if (process.env.NODE_ENV !== "test") {
   // runs all cron jobs
   require("./jobs/CronJobs");
 }
-
-
 
 const app = express();
 
@@ -30,9 +33,8 @@ app.use(
   cors({
     origin: config.frontendDomain, // your React frontend URL
     credentials: true, // allow cookies
-  })
+  }),
 );
-
 
 /**
  * @swagger
@@ -63,65 +65,62 @@ app.get("/health", (req, res) => {
   res.status(200).json({
     status: "ok",
     uptime: process.uptime(),
-    timestamp: Date.now()
+    timestamp: Date.now(),
   });
 });
 
-
-
-
-if (process.env.NODE_ENV !== 'production') {
+if (process.env.NODE_ENV !== "production") {
   try {
-    const swaggerUi = require('swagger-ui-express');
-    const swaggerJsdoc = require('swagger-jsdoc');
+    const swaggerUi = require("swagger-ui-express");
+    const swaggerJsdoc = require("swagger-jsdoc");
     const options = {
       definition: {
-        openapi: '3.0.0',
+        openapi: "3.0.0",
         info: {
-          title: 'PMS API',
-          version: '1.0.0',
-          description: 'Project Management System API',
+          title: "PMS API",
+          version: "1.0.0",
+          description: "Project Management System API",
         },
         servers: [
           {
-            url: 'http://localhost:3015',
-            description: 'Local Development Server',
+            url: "http://localhost:3015",
+            description: "Local Development Server",
           },
           {
-            url: 'https://pms.local.test',
-            description: 'Production Server',
-          }
+            url: "https://pms.local.test",
+            description: "Production Server",
+          },
         ],
         tags: [
           {
-            name: 'Log',
-            description: 'Standup and daily logs related endpoints'
+            name: "Project",
+            description: "Project related endpoints",
           },
           {
-            name: 'Project',
-            description: 'Project related endpoints'
+            name: "Feature",
+            description: "Feature related endpoints (project-scoped)",
           },
           {
-            name: 'Feature',
-            description: 'Feature related endpoints'
+            name: "User Story",
+            description:
+              "User Story management (Feature → User Stories → Sub User Stories)",
           },
           {
-            name: 'Issue',
-            description: 'Issue related endpoints'
+            name: "Issue",
+            description: "Issue related endpoints (linked to user stories)",
           },
           {
-            name: 'Notification',
-            description: 'Notification related endpoints'
+            name: "Notification",
+            description: "Notification related endpoints",
           },
           {
-            name: 'Task',
-            description: 'Task related endpoints'
+            name: "Task",
+            description: "Task related endpoints (mapped to user stories)",
           },
-        ]
+        ],
       },
-      apis: ['./routes/**/*.js', './app.js'],
+      apis: ["./routes/**/*.js", "./app.js"],
     };
-
 
     const swaggerSpec = swaggerJsdoc(options);
 
@@ -130,25 +129,23 @@ if (process.env.NODE_ENV !== 'production') {
       Object.entries(swaggerSpec.paths).map(([path, val]) => [
         path.replace("{moduleCode}", config.MODULE_CODE),
         val,
-      ])
+      ]),
     );
 
-    app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+    app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
   } catch (e) {
-    console.log('ℹ️  Swagger not available (devDependency not installed)');
+    console.log("ℹ️  Swagger not available (devDependency not installed)");
   }
 }
 
-
-// routers 
+// routers
 app.use(require("./middleware/dataValidation.middleware"));
 app.use(require("./middleware/dbConnection.middleware").getTenantDB);
 
-
-app.use("/" + require('./config/config').MODULE_CODE, require("./routes"));
+app.use("/" + require("./config/config").MODULE_CODE, require("./routes"));
 
 // 404 response for invalid routes
-app.use((req, res,) => {
+app.use((req, res) => {
   console.log("Invalid URL accessed:", req.path);
   res.status(404).json({ message: "Invalid URL Accessed: " + req.path });
 });
@@ -159,7 +156,6 @@ app.use((error, req, res) => {
   res.status(500).json({ message: "Internal Server Error" });
 });
 
-
 // error handling middleware
 // app.use(errorHandler);
 
@@ -167,46 +163,6 @@ app.use((error, req, res) => {
 app.use(express.static(path.join(__dirname, "public")));
 
 module.exports = app;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 // Manual cors, keep till start frontend
 // app.use(async (req, res, next) => {

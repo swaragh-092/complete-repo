@@ -1,0 +1,9 @@
+                  id                  |      title       |              project_id              |              sprint_id               | story_for |         parent_user_story_id         
+--------------------------------------+------------------+--------------------------------------+--------------------------------------+-----------+--------------------------------------
+ b152e5da-04bc-4624-9c93-235419e7c672 | Login and logout | b5d2ec08-c4f3-4ed3-8520-645bd2b25969 | 39a35511-c7c4-42e1-903f-39dc82aa86cb | normal    | 
+ ce078a82-510d-4a94-9ee6-966e79bc720b | Remember Me      | b5d2ec08-c4f3-4ed3-8520-645bd2b25969 | 39a35511-c7c4-42e1-903f-39dc82aa86cb | normal    | b152e5da-04bc-4624-9c93-235419e7c672
+ 7ccdcea5-c4f9-4c02-aabe-414d5db71f8f | Dark theme       | b5d2ec08-c4f3-4ed3-8520-645bd2b25969 | 39a35511-c7c4-42e1-903f-39dc82aa86cb | normal    | b152e5da-04bc-4624-9c93-235419e7c672
+ c28a84cc-af11-4c45-86a9-5f37f37c73ae | Forgot Password  | b5d2ec08-c4f3-4ed3-8520-645bd2b25969 | 39a35511-c7c4-42e1-903f-39dc82aa86cb | normal    | b152e5da-04bc-4624-9c93-235419e7c672
+ 8e0e9447-604e-462c-abb0-ae7d6133724e | Login Page       | b5d2ec08-c4f3-4ed3-8520-645bd2b25969 | 7752e3cc-436c-4887-8760-1e18c7c584a5 | normal    | b152e5da-04bc-4624-9c93-235419e7c672
+(5 rows)
+

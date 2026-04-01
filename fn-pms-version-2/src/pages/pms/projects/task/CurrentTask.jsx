@@ -1,3 +1,9 @@
+// Author: Gururaj
+// Created: 14th Oct 2025
+// Description: Current Task panel displaying the active running task with a live elapsed-time timer.
+// Version: 1.0.0
+// Modified:
+
 import { useEffect, useState } from "react";
 import { showToast } from "../../../../util/feedback/ToastService";
 import backendRequest from "../../../../util/request";

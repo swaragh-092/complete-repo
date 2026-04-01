@@ -1,3 +1,9 @@
+// Author: Gururaj
+// Created: 16th May 2025
+// Description: Application entry point that starts the HTTP server on the configured port.
+// Version: 1.0.0
+// Modified:
+
 
 const app = require("./app");
 

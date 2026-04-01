@@ -1,3 +1,9 @@
+// Author: Gururaj
+// Created: 19th Jun 2025
+// Description: Immediate Attention widget that surfaces blocked stories and overdue items needing action.
+// Version: 1.0.0
+// Modified:
+
 import { Card, Box, Typography, Button } from "@mui/material";
 import ErrorOutlineOutlinedIcon from "@mui/icons-material/ErrorOutlineOutlined";
 import WarningAmberOutlinedIcon from "@mui/icons-material/WarningAmberOutlined";
@@ -7,10 +13,9 @@ import { useNavigate } from "react-router-dom";
  * Priority mapping using EXISTING data keys
  */
 const PRIORITY_FLOW = [
-  { source: "issue", key: "over_due", level: "error" },
-  { source: "issue", key: "priority", level: "error" },
-  { source: "task", key: "due_today", level: "warning" },
+  { source: "issue", key: "high_priority", level: "error" },
   { source: "task", key: "overdue", level: "error" },
+  { source: "task", key: "approve_pending", level: "warning" },
 ];
 
 const ICON_BY_LEVEL = {
@@ -66,20 +71,14 @@ const ImmediateAttention = ({ issueData, taskData }) => {
             Immediate Attention Required
           </Typography>
 
-          <Typography fontWeight={600}>
-            {activeItem.title}
-          </Typography>
+          <Typography fontWeight={600}>{activeItem.title}</Typography>
 
           <Typography variant="body2" color="text.secondary">
             {activeItem.count} item(s) need action
           </Typography>
         </Box>
 
-        <Button
-          variant="contained"
-          color={activeItem.level === "error" ? "error" : "warning"}
-          onClick={() => navigate(activeItem.navigate)}
-        >
+        <Button variant="contained" color={activeItem.level === "error" ? "error" : "warning"} onClick={() => navigate(activeItem.navigate)}>
           Act Now
         </Button>
       </Box>

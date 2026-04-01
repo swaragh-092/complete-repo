@@ -1,3 +1,9 @@
+// Author: Gururaj
+// Created: 14th Oct 2025
+// Description: Project router declaring REST endpoints for project CRUD, member management, and dashboard data.
+// Version: 1.0.0
+// Modified:
+
 /*   
 Author: Homshree 
 Created: 29th May 2025

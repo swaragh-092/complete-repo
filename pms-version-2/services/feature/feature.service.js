@@ -1,29 +1,89 @@
 // Author: Gururaj
-// Created: 14th oct 2025
-// Description: Feature related service.
-// Version: 1.0.0
+// Created: 14th Oct 2025
+// Description: Feature service for v2 project-scoped feature CRUD with hierarchy validation and notification dispatch.
+// Version: 2.0.0
 // Modified:
 
-const { withContext, giveValicationErrorFormal, paginateHelperFunction, auditLogCreateHelperFunction, auditLogUpdateHelperFunction, auditLogDeleteHelperFunction } = require("../../util/helper");
-const { queryMultipleWithAuditLog } = require("../auditLog.service");
+// Description: Feature service - v2 restructured
+// Features are now project-scoped independent entities
+// Hierarchy: Feature → User Stories → Sub User Stories
+// Version: 2.0.0
+
+const {
+  withContext,
+  giveValicationErrorFormal,
+  paginateHelperFunction,
+  auditLogCreateHelperFunction,
+  auditLogUpdateHelperFunction,
+  auditLogDeleteHelperFunction,
+} = require("../../util/helper");
 const { createNotification } = require("../notification/notification.service");
+const { queryMultipleWithAuditLog } = require("../auditLog.service");
 const paginate = require("../../util/pagination");
 const { Op, Sequelize } = require("sequelize");
 
 class FeatureService {
   /**
    * Create a new feature
-   * @param {Object} data - Feature data (department_id, name, description, status)
+   * @param {Object} data - Feature data (project_id, department_id, name, description, status)
    * @param {Object} options - Optional parameters (req for context)
    * @returns {Promise<Object>} - Created feature
    */
   async createFeature(req, data) {
-    const { Feature } = req.db;
+    const { Feature, Project } = req.db;
     try {
-      const feature = await auditLogCreateHelperFunction({model: Feature, data, req});
+      // v2: project_id is REQUIRED for features
+      if (!data.project_id) {
+        return {
+          success: false,
+          status: 400,
+          message: "project_id is required.",
+        };
+      }
+
+      // Validate project exists
+      const project = await Project.findByPk(data.project_id);
+      if (!project) {
+        return { success: false, status: 404, message: "Project not found" };
+      }
+
+      // Validate parent feature if provided
+      if (data.parent_feature_id) {
+        const parent = await Feature.findByPk(data.parent_feature_id);
+        if (!parent) {
+          return {
+            success: false,
+            status: 404,
+            message: "Parent Feature not found",
+          };
+        }
+        if (parent.project_id !== data.project_id) {
+          return {
+            success: false,
+            status: 400,
+            message: "Parent feature must be in the same project",
+          };
+        }
+        if (parent.department_id !== data.department_id) {
+          return {
+            success: false,
+            status: 400,
+            message: "Parent feature must be in the same department",
+          };
+        }
+      }
+
+      const feature = await auditLogCreateHelperFunction({
+        model: Feature,
+        data,
+        req,
+      });
       return { success: true, status: 201, data: feature };
     } catch (err) {
-      if (err instanceof Sequelize.UniqueConstraintError) {
+      if (
+        err instanceof Sequelize.ValidationError ||
+        err instanceof Sequelize.UniqueConstraintError
+      ) {
         return {
           success: false,
           status: 422,
@@ -41,8 +101,26 @@ class FeatureService {
    * @returns {Promise<Object|null>} - Found feature or null
    */
   async getFeature(req, featureId) {
-    const { Feature } = req.db;
-    const feature = await Feature.findByPk(featureId);
+    const { Feature, UserStory } = req.db;
+    const feature = await Feature.findByPk(featureId, {
+      include: [
+        {
+          association: "userStories",
+          where: { parent_user_story_id: null },
+          required: false,
+          include: [{ association: "subStories" }],
+        },
+        {
+          association: "subFeatures",
+          required: false,
+        },
+        {
+          association: "parentFeature",
+          required: false,
+          attributes: ["id", "name"],
+        },
+      ],
+    });
     if (!feature) {
       return { status: 404, message: "Feature not found", success: false };
     }
@@ -64,7 +142,11 @@ class FeatureService {
         return { status: 404, message: "Feature not found", success: false };
       }
 
-      const updatedData = await auditLogUpdateHelperFunction({model: feature, data, req});
+      const updatedData = await auditLogUpdateHelperFunction({
+        model: feature,
+        data,
+        req,
+      });
       return { status: 200, success: true, data: updatedData };
     } catch (err) {
       if (err instanceof Sequelize.UniqueConstraintError) {
@@ -92,8 +174,7 @@ class FeatureService {
       return { status: 404, success: false, message: "Feature Not Found!" };
     }
 
-
-    await auditLogDeleteHelperFunction({model: feature, req});
+    await auditLogDeleteHelperFunction({ model: feature, req });
 
     return {
       status: 200,
@@ -107,39 +188,48 @@ class FeatureService {
    * @param {Object} options - Optional parameters (req for context)
    * @returns {Promise<Array>} - List of features
    */
-  async getAllFeaturesOfDepartment(req, {department_id, query= {}, project_id = null } ) {
-    const { Feature, ProjectFeature } = req.db;
+  async getAllFeaturesOfDepartment(
+    req,
+    { department_id, query = {}, project_id = null },
+  ) {
+    const { Feature, UserStory } = req.db;
     try {
-
       const whereFilters = { department_id };
 
       if (project_id) {
-        // Exclude features already linked to this project
-        whereFilters.id = {
-          [Op.notIn]: Sequelize.literal(`(
-            SELECT feature_id FROM ${ProjectFeature.getTableName()} WHERE project_id = '${project_id}'
-          )`),
-        };
+        whereFilters.project_id = project_id;
       }
 
       const extrasInQuery = {
-        subQuery: false, 
+        subQuery: false,
         include: [
           {
-            association: "checklists",
+            model: UserStory,
+            as: "userStories",
             attributes: [],
             required: false,
           },
         ],
         attributes: {
           include: [
-            [Sequelize.fn("COUNT", Sequelize.col("checklists.id")), "checklists_count"],
+            [
+              Sequelize.fn(
+                "COUNT",
+                Sequelize.fn("DISTINCT", Sequelize.col("userStories.id")),
+              ),
+              "user_stories_count",
+            ],
           ],
         },
         group: ["Feature.id"],
       };
-      
-      const result = await paginateHelperFunction({model : Feature, whereFilters, query, extrasInQuery });
+
+      const result = await paginateHelperFunction({
+        model: Feature,
+        whereFilters,
+        query,
+        extrasInQuery,
+      });
 
       if (Array.isArray(result.pagination.totalItems)) {
         result.pagination.totalItems = result.pagination.totalItems.length;
@@ -150,9 +240,81 @@ class FeatureService {
       throw new Error(`Error fetching all features: ${error.message}`);
     }
   }
+  /**
+   * Get all features directly belonging to a project (v2)
+   */
+  async getAllFeaturesByProject(req, { project_id, query = {} }) {
+    const { Feature, Project, UserStory } = req.db;
+    try {
+      const project = await Project.findByPk(project_id);
+      if (!project)
+        return { status: 404, message: "Project not found!", success: false };
 
-  async getAllFeaturesOfProject(req, {project_id, query= {} } ) {
+      const whereFilters = { project_id };
 
+      const extrasInQuery = {
+        subQuery: false,
+        include: [
+          {
+            model: UserStory,
+            as: "userStories",
+            attributes: [],
+            required: false,
+          },
+        ],
+        attributes: {
+          include: [
+            [
+              Sequelize.fn(
+                "COUNT",
+                Sequelize.fn("DISTINCT", Sequelize.col("userStories.id")),
+              ),
+              "user_stories_count",
+            ],
+            [
+              Sequelize.literal(`(
+                SELECT COUNT(*) FROM ${UserStory.getTableName()}
+                WHERE feature_id = "Feature"."id" AND status = 'completed' AND deleted_at IS NULL
+              )`),
+              "completed_stories_count",
+            ],
+            [
+              Sequelize.literal(`(
+                SELECT COALESCE(SUM(story_points), 0) FROM ${UserStory.getTableName()}
+                WHERE feature_id = "Feature"."id" AND deleted_at IS NULL
+              )`),
+              "total_points",
+            ],
+            [
+              Sequelize.literal(`(
+                SELECT COALESCE(SUM(story_points), 0) FROM ${UserStory.getTableName()}
+                WHERE feature_id = "Feature"."id" AND status = 'completed' AND deleted_at IS NULL
+              )`),
+              "completed_points",
+            ],
+          ],
+        },
+        group: ["Feature.id"],
+      };
+
+      const result = await paginateHelperFunction({
+        model: Feature,
+        whereFilters,
+        query,
+        extrasInQuery,
+      });
+
+      if (Array.isArray(result.pagination.totalItems)) {
+        result.pagination.totalItems = result.pagination.totalItems.length;
+      }
+
+      return { status: 200, data: result, success: true };
+    } catch (error) {
+      console.log(error);
+      throw new Error(`Error fetching project features: ${error.message}`);
+    }
+  }
+  async getAllFeaturesOfProject(req, { project_id, query = {} }) {
     const { Feature, Project, ProjectFeature } = req.db;
     try {
       const {
@@ -167,7 +329,8 @@ class FeatureService {
 
       const project = await Project.findByPk(project_id);
 
-      if (!project) return {status: 404, message : "Project not found!.", success : false};
+      if (!project)
+        return { status: 404, message: "Project not found!.", success: false };
 
       const result = await paginate(
         ({ offset, limit, sortField, sortOrder, where }) =>
@@ -175,10 +338,9 @@ class FeatureService {
             include: [
               {
                 model: ProjectFeature,
-                as: "projects",
+                as: "projectFeatures",
                 required: true,
-                where : {project_id}
-                
+                where: { project_id },
               },
             ],
             where,
@@ -194,7 +356,7 @@ class FeatureService {
         searchText,
         searchField,
         searchOperator,
-        Feature
+        Feature,
       );
       return { status: 200, data: result, success: true };
     } catch (error) {
@@ -203,15 +365,14 @@ class FeatureService {
     }
   }
 
-
   async addFeatureToProject(req, data) {
-    const { Project, Feature, ProjectFeature, Task } = req.db;
+    const { Project, Feature, ProjectFeature } = req.db;
 
     const { projectId, featureId } = data;
 
     const [project, feature] = await Promise.all([
       Project.findByPk(projectId),
-      Feature.findByPk(featureId, {include : [ {association : "checklists"} ]}),
+      Feature.findByPk(featureId),
     ]);
 
     if (!project) {
@@ -227,7 +388,11 @@ class FeatureService {
     });
 
     if (existingRelation) {
-      return { success: false, status: 409, message: "Feature already added to project " };
+      return {
+        success: false,
+        status: 409,
+        message: "Feature already added to project ",
+      };
     }
 
     const multiOperations = [];
@@ -235,58 +400,40 @@ class FeatureService {
 
     multiOperations.push({
       queryCallBack: async (t) => {
-        mapping =  await ProjectFeature.create({
-          project_id: projectId,
-          feature_id: featureId,
-        }, {...withContext(req), transaction: t});
+        mapping = await ProjectFeature.create(
+          {
+            project_id: projectId,
+            feature_id: featureId,
+          },
+          { ...withContext(req), transaction: t },
+        );
         return mapping;
       },
-      updated_columns: ['project_id', "feature_id"],
+      updated_columns: ["project_id", "feature_id"],
       action: "create",
       model: ProjectFeature,
     });
-    
-    
+
     multiOperations.push({
       queryCallBack: async (t) => {
-        const projectFeatureTaskData = feature.checklists.map((checklist) => ({
-          project_feature_id: mapping.id,
-          project_id: projectId,
-          department_id: feature.department_id,
-          title: checklist.title,
-          description: checklist.description,
-          checklist_id: checklist.id,
-          status: "assign_pending",
-          task_for : "checklist"
-        }));
-
-        const tasks = await Task.bulkCreate(
-          projectFeatureTaskData, 
-          { ...withContext(req), transaction: t }
-        );
-
         const notificationData = {
-          scope : "project_department", 
-          title: `new feature added to ${project.name}`,
-          message : `${feature.name} feature is added to the ${project.name} and for this feature related checklist new task has been created.`,
-          triggeredById : req?.user?.id,
-          projectId : project.id,
-          departmentId: feature.department_id
+          scope: "project_department",
+          title: `New feature added to ${project.name}`,
+          message: `${feature.name} feature has been added to ${project.name}.`,
+          triggeredById: req?.user?.id,
+          projectId: project.id,
+          departmentId: feature.department_id,
         };
 
         await createNotification(req, notificationData);
-
-        return tasks;
       },
-      updated_columns: ["project_feature_id", "project_id", "department_id", "title", "description", "checklist_id", "status"],
-      action: "bulk_create",
-      remarks: "Creating task for features",
-      model: Task,
+      updated_columns: [],
+      action: "notification",
+      remarks: "Notification for feature added to project",
+      model: ProjectFeature,
     });
 
-
-    await queryMultipleWithAuditLog({operations: multiOperations, req});
-    
+    await queryMultipleWithAuditLog({ operations: multiOperations, req });
 
     return {
       success: true,

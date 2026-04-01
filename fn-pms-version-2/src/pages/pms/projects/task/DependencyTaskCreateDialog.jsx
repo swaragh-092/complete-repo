@@ -1,3 +1,9 @@
+// Author: Gururaj
+// Created: 14th Oct 2025
+// Description: Dependency Task Create dialog for creating a blocking or dependent task from within another.
+// Version: 1.0.0
+// Modified:
+
 import { useState, useEffect } from "react";
 import { Dialog, DialogTitle, DialogContent, DialogActions } from "@mui/material";
 import { Button, TextField, CircularProgress } from "@mui/material";

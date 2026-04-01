@@ -47,6 +47,7 @@ export default function AssignChecklistTaskDialog({ open, onClose, onSuccess, ta
     if (!open) return;
 
     if (isLead && task?.project_id && task?.department_id) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setLoadingMembers(true);
       backendRequest({
         endpoint: BACKEND_ENDPOINT.project_members_by_dept(task.project_id, task.department_id),

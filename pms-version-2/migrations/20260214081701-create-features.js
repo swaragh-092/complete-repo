@@ -1,6 +1,8 @@
 'use strict';
 
-const TABLE_PREFIX = process.env.DB_PREFIX + "_";
+// const TABLE_PREFIX = process.env.DB_PREFIX + "_";
+
+const TABLE_PREFIX = "pms_";
 
 module.exports = {
   async up(queryInterface, Sequelize) {

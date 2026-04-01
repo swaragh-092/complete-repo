@@ -137,7 +137,7 @@ class ResponseService {
   static apiResponse({
     res,
     success,
-    status,
+    status = 200,
     usedFor = null,
     action = null,
     data = null,
@@ -148,12 +148,12 @@ class ResponseService {
       success,
       message: message || this.getErrorMessage(status, usedFor, action),
       data,
-      errors
+      errors,
     });
   }
 }
 
-// example usage 
+// example usage
 // ResponseService.apiResponse({res, success : true, status : 200, usedFor : 'Mail', action : 'Sent', data : {}, message : "");
 
 module.exports = ResponseService;

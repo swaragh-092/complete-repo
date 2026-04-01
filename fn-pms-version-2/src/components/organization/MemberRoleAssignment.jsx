@@ -1,3 +1,9 @@
+// Author: Gururaj
+// Created: 19th Jun 2025
+// Description: Component for assigning or updating a member role within an organisation.
+// Version: 1.0.0
+// Modified:
+
 /**
  * Member Role Assignment Component
  * 

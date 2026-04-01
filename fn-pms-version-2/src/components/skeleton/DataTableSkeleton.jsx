@@ -1,3 +1,9 @@
+// Author: Gururaj
+// Created: 19th Jun 2025
+// Description: Skeleton placeholder rendered while a data table is loading.
+// Version: 1.0.0
+// Modified:
+
 import { Box, Skeleton, useTheme } from "@mui/material";
 
 export default function DataTableSkeleton () {

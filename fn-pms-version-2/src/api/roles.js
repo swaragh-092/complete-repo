@@ -1,3 +1,9 @@
+// Author: Gururaj
+// Created: 19th Jun 2025
+// Description: Roles API helpers to fetch and manage organisation roles via the auth service.
+// Version: 1.0.0
+// Modified:
+
 /**
  * Roles API Client
  * 

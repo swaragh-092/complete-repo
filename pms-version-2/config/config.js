@@ -1,3 +1,9 @@
+// Author: Gururaj
+// Created: 16th May 2025
+// Description: Centralised configuration: domain URLs, database credentials, Redis config, and CORS origins.
+// Version: 1.0.0
+// Modified:
+
 require("dotenv").config();
 
 const DOMAIN = {
@@ -7,7 +13,7 @@ const DOMAIN = {
 
 const DATABASE_DETAILS = {
   "default-shared": {
-    name: process.env.DB_NAME || "one",
+    name: process.env.DB_NAME || "pms_v2",
     user: process.env.DB_USER || "postgres",
     password: process.env.DB_PASSWORD || "1234",
     host: process.env.DB_HOST || "localhost",

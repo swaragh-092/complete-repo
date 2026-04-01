@@ -1,3 +1,9 @@
+// Author: Gururaj
+// Created: 16th May 2025
+// Description: Central model registry that loads all Sequelize models and sets up associations.
+// Version: 1.0.0
+// Modified:
+
 'use strict';
 
 const fs = require('fs');

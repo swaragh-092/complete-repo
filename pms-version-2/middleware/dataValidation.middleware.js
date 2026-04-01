@@ -115,26 +115,28 @@ async function getRequiredData(subdomain, moduleCode, req) {
     return JSON.parse(cached);
   }
 
-  console.log(
-    `${DOMAIN.superAdmin}/api/required-data/${req.organization_id}/${subdomain}/${moduleCode}`,
-  );
-  // Call Super Admin (only on cache miss)
+  const superAdminUrl = `${DOMAIN.superAdmin}/api/required-data/${req.organization_id}/${subdomain}/${moduleCode}`;
+  console.log(`Fetching tenant config from Super Admin: ${superAdminUrl}`);
+
+  // Call Super Admin service (only on Redis cache miss)
   let response;
-  // try {
-  //   response = await fetch(
-  //     `${DOMAIN.superAdmin}/api/required-data/${req.organization_id}/${subdomain}/${moduleCode}`,
-  //   );
-  // } catch (err) {
-  // console.log(err);
-  return {}; // todo - handle super admin down scenario gracefully, maybe return default config or an error message indicating the issue.
-  // }
-  console.log(response);
+  try {
+    response = await fetch(superAdminUrl);
+  } catch (err) {
+    // Super Admin service is unreachable (network error, service down, etc.)
+    // Log a warning and return an empty config so the request can still proceed
+    // with default/fallback behaviour rather than failing the entire request.
+    console.warn(
+      `[dataValidation] Super Admin service unreachable at ${superAdminUrl}. ` +
+        `Proceeding with empty tenant config. Error: ${err.message}`,
+    );
+    return {};
+  }
 
   let data;
 
   try {
     data = await response.json();
-    // console.log(data);
   } catch {
     throw {
       status: response.status || 500,
@@ -143,12 +145,16 @@ async function getRequiredData(subdomain, moduleCode, req) {
   }
 
   if (!response.ok) {
-    throw {
-      status: response.status,
-      message: "Admin: " + data?.message || "Super Admin error",
-    };
+    // Super Admin returned a non-2xx status. Log and fall back gracefully
+    // instead of hard-failing the entire request pipeline.
+    console.warn(
+      `[dataValidation] Super Admin returned ${response.status}. ` +
+        `Message: ${data?.message || "No message"}. Continuing with empty config.`,
+    );
+    return {};
   }
 
+  // Persist the successful response in Redis for subsequent requests
   await redis.set(cacheKey, JSON.stringify(data));
   return data;
 }

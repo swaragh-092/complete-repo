@@ -1,3 +1,9 @@
+// Author: Gururaj
+// Created: 19th Jun 2025
+// Description: Application entry point that mounts the React tree with Redux Provider and AuthProvider.
+// Version: 1.0.0
+// Modified:
+
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { Provider } from "react-redux";

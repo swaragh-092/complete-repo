@@ -1,3 +1,9 @@
+// Author: Gururaj
+// Created: 19th Jun 2025
+// Description: Lists and manages workspaces belonging to the current organisation.
+// Version: 1.0.0
+// Modified:
+
 /**
  * @fileoverview Organization Workspaces Component
  * @description List and manage workspaces within an organization

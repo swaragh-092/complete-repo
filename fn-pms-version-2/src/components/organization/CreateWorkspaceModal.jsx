@@ -1,3 +1,9 @@
+// Author: Gururaj
+// Created: 19th Jun 2025
+// Description: Modal dialog for creating a new workspace (department) within the current organisation.
+// Version: 1.0.0
+// Modified:
+
 /**
  * @fileoverview Create Workspace Modal Component
  * @description Enterprise-grade modal for creating new workspaces

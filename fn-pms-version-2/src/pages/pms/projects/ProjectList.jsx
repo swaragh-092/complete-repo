@@ -68,7 +68,7 @@ const displayColumns = [
   },
   {
     field: "overdue_tasks_count",
-    headerName: "Overdue Tasks",
+    headerName: "Overdue User Stories",
     flex: 0.8,
     renderCell: (params) => {
       return params.row.overdue_tasks_count || "0";

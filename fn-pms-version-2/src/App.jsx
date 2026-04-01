@@ -1,3 +1,9 @@
+// Author: Gururaj
+// Created: 19th Jun 2025
+// Description: Root application component with React Router, Redux, Theme, Auth, Org, and Workspace providers.
+// Version: 1.0.0
+// Modified:
+
 import { createBrowserRouter, createRoutesFromElements, RouterProvider, Route, Navigate } from "react-router-dom";
 
 import { CssBaseline, ThemeProvider } from "@mui/material";
@@ -24,9 +30,14 @@ import ProjectDashboard from "./pages/pms/projects/ProjectDashboard";
 import ProjectDetailView, { projectFetchLoader } from "./pages/pms/projects/ProjectDetail";
 import FeaturesList from "./pages/pms/features/FeaturesList";
 import FeatureDetail, { featureFetchLoader } from "./pages/pms/features/FeatureDetialView";
-import TaskPage from "./pages/pms/projects/task/TaskPage";
 import Issue from "./pages/pms/issue/IssueList";
-import DailyLog from "./pages/pms/dailylogs/DailyLog";
+import { IssueDetail } from "./features/issues";
+import { SprintList, SprintBoard, ProjectBoard } from "./features/sprints";
+import { BacklogBoard } from "./features/backlog";
+import ReportsDashboard from "./pages/pms/reports/ReportsDashboard";
+import AdminMonitor from "./pages/pms/admin/AdminMonitor";
+import UserStoryList from "./pages/pms/userStories/UserStoryList";
+import UserStoryDetail, { userStoryFetchLoader } from "./pages/pms/userStories/UserStoryDetail";
 import Notification from "./pages/pms/notification/Notification";
 
 import Login from "./pages/Login";
@@ -81,11 +92,22 @@ const router = createBrowserRouter(
         <Route path={paths.projectDetail().path} element={<ProjectDetailView />} loader={projectFetchLoader} />
 
         <Route path={paths.issues} element={<Issue />} />
-        <Route path={paths.daily_logs} element={<DailyLog />} />
+        <Route path={paths.project_issues().path} element={<Issue />} />
+        <Route path={paths.issue_detail().path} element={<IssueDetail />} />
+
+        <Route path={paths.project_sprints().path} element={<SprintList />} />
+        <Route path={paths.sprint_board().path} element={<SprintBoard />} />
+        <Route path={paths.project_board().path} element={<ProjectBoard />} />
+        <Route path={paths.project_backlog().path} element={<BacklogBoard />} />
+        <Route path={paths.project_reports().path} element={<ReportsDashboard />} />
+
+        <Route path={paths.admin_monitor} element={<AdminMonitor />} />
+
         <Route path={paths.notifications} element={<Notification />} />
-        <Route path={paths.tasks} element={<TaskPage />} />
         <Route path={paths.features} element={<FeaturesList />} />
         <Route path={paths.feature_detail().path} element={<FeatureDetail />} loader={featureFetchLoader} />
+        <Route path={paths.user_stories} element={<UserStoryList />} />
+        <Route path={paths.user_story_detail().path} element={<UserStoryDetail />} loader={userStoryFetchLoader} />
 
         <Route path="/profile" element={<Profile />} />
         <Route path="/settings" element={<Settings />} />

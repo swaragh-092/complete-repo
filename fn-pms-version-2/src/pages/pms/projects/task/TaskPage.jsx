@@ -1,7 +1,13 @@
+// Author: Gururaj
+// Created: 14th Oct 2025
+// Description: Task page container rendering the task list and current-task panel for a project.
+// Version: 1.0.0
+// Modified:
+
 import { Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, IconButton, InputLabel, MenuItem, Select, TextField } from "@mui/material";
 import Heading from "../../../../components/Heading";
 import MyTaskList from "./MyTaskList";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import CurrentTask from "./CurrentTask";
 import backendRequest from "../../../../util/request";
 import BACKEND_ENDPOINT from "../../../../util/urls";
@@ -104,8 +110,13 @@ function CreateSelfTaskDialog({ open, onClose, userProjects, initialProjectId, o
   const [dueDate, setDueDate] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
+  const prevInitialProjectId = useRef(initialProjectId);
   useEffect(() => {
-    if (initialProjectId) setProjectId(initialProjectId);
+    if (initialProjectId && initialProjectId !== prevInitialProjectId.current) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setProjectId(initialProjectId);
+    }
+    prevInitialProjectId.current = initialProjectId;
   }, [initialProjectId]);
 
   const handleClose = () => {

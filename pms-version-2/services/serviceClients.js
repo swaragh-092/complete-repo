@@ -1,3 +1,9 @@
+// Author: Gururaj
+// Created: 14th Oct 2025
+// Description: Lightweight HTTP client factories for communicating with the Auth service.
+// Version: 1.0.0
+// Modified:
+
 "use strict";
 
 /**

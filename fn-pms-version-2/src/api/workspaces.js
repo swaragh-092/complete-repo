@@ -1,3 +1,9 @@
+// Author: Gururaj
+// Created: 19th Jun 2025
+// Description: Workspace API helpers to fetch and manage workspaces/departments via the auth service.
+// Version: 1.0.0
+// Modified:
+
 /**
  * @fileoverview Workspace API Helper
  * @description API functions for workspace management within organizations

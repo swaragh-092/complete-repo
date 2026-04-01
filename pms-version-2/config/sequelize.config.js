@@ -1,16 +1,23 @@
+// Author: Gururaj
+// Created: 16th May 2025
+// Description: Sequelize CLI configuration for database migrations and seeders.
+// Version: 1.0.0
+// Modified:
+
 module.exports = {
   development: {
     username: "postgres",
     password: "1234",
-    database: "one",
-    host: "db-pms",
+    database: "pms_v2",
+    host: "localhost",
+    port: 5411, // or whatever port you exposed
     dialect: "postgres",
     logging: false,
   },
   test: {
     username: "postgres",
     password: "1234",
-    database: "pms_test",
+    database: "pms_v2",
     host: "localhost",
     port: 5411, // or whatever port you exposed
     dialect: "postgres",
@@ -19,7 +26,7 @@ module.exports = {
   production: {
     username: "postgres",
     password: "1234",
-    database: "one",
+    database: "pms_v2",
     host: "db-pms",
     dialect: "postgres",
     logging: false,

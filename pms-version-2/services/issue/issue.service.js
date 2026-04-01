@@ -1,46 +1,131 @@
 // Author: Gururaj
 // Created: 14th oct 2025
 // Description: issue related service.
-// Version: 1.0.0
-// Modified:
+// Version: 2.0.0
+// Modified: Enhanced for Jira-like features
 
 const {
   withContext,
   paginateHelperFunction,
   auditLogCreateHelperFunction,
-  giveValicationErrorFormal,
+  auditLogUpdateHelperFunction,
+  auditLogDeleteHelperFunction,
 } = require("../../util/helper");
-const { createTask } = require("../task/task.service");
-const { createNotification } = require("../notification/notification.service");
+const NotificationService = require("../notification/notification.service");
 const { queryMultipleWithAuditLog } = require("../auditLog.service");
+const { Op } = require("sequelize");
+const WorkflowService = require("./workflow.service");
 
 class IssueService {
-  // Create issue
+  /**
+   * Create a new issue
+   */
   static async createIssue(req, data) {
-    const { Issue, IssueHistory, Project} = req.db;
+    const {
+      Issue,
+      IssueHistory,
+      Project,
+      IssueStatus,
+      IssueLabel,
+      EntityLabel,
+      ProjectMember,
+    } = req.db;
 
-    const project = await Project.findByPk(data.project_id, {
-      include: [
-        {
-          association: "members",
-          where: { user_id: req.user.id }, // check if this user is part of project
-          required: false,
-        },
-      ],
+    // 1. Validate Project
+    const project = await Project.findByPk(data.project_id);
+    if (!project) {
+      return { success: false, status: 404, message: "Project not found" };
+    }
+
+    // Check if user is member and has permission to create issues
+    const member = await ProjectMember.findOne({
+      where: { project_id: data.project_id, user_id: req.user.id },
     });
 
-    if (!project) {
-      return { status: 404, message: "Project not found!", success: false };
+    // to-do later add correct access validation based on roles and permissions
+    // Only testers and team leads can create issues
+    // const ISSUE_CREATE_ROLES = ["tester", "lead"];
+    // if (!member || !ISSUE_CREATE_ROLES.includes(member.project_role)) {
+    //   return {
+    //     success: false,
+    //     status: 403,
+    //     message: "Only testers and team leads can create issues",
+    //   };
+    // }
+
+    // Auto-fill from_department_id if not provided
+    if (!data.from_department_id && member) {
+      data.from_department_id = member.department_id;
+    }
+    // Set to_department_id same as from if missing (internal issue)
+    if (!data.to_department_id && data.from_department_id) {
+      data.to_department_id = data.from_department_id;
     }
 
-    if (!project.members || project.members.length === 0) {
-      return {
-        status: 403,
-        message: "You are not a member of this project",
-        success: false,
-      };
+    // 2. Validate Status (Default to first status 'todo')
+    if (!data.status_id) {
+      const defaultStatus = await IssueStatus.findOne({
+        where: {
+          [Op.or]: [{ project_id: data.project_id }, { project_id: null }],
+          category: "todo",
+        },
+        order: [["position", "ASC"]],
+      });
+      if (defaultStatus) data.status_id = defaultStatus.id;
     }
 
+    // 2.5 Validation Hierarchy
+    const { IssueType } = req.db;
+    const childType = await IssueType.findByPk(data.issue_type_id);
+    if (!childType)
+      return { success: false, status: 400, message: "Invalid issue type" };
+
+    // Level 1: Epic
+    // Level 2: Story
+    // Level 3: Subtask
+
+    if (data.parent_id) {
+      const parent = await Issue.findByPk(data.parent_id, {
+        include: [{ model: IssueType, as: "type" }],
+      });
+      if (!parent)
+        return {
+          success: false,
+          status: 404,
+          message: "Parent issue not found",
+        };
+
+      if (parent.project_id !== data.project_id) {
+        return {
+          success: false,
+          status: 400,
+          message: "Parent must belong to the same project",
+        };
+      }
+
+      const parentLevel = parent.type.hierarchy_level;
+      const childLevel = childType.hierarchy_level;
+
+      // Enforce: Parent Level < Child Level
+      if (childLevel <= parentLevel) {
+        return {
+          success: false,
+          status: 400,
+          message: `Invalid hierarchy level: Child cannot exceed or equal Parent level`,
+        };
+      }
+    } else {
+      // Enforce Level 3 (Subtask) must have parent
+      if (childType.hierarchy_level === 3) {
+        return {
+          success: false,
+          status: 400,
+          message: "Subtasks must be linked to a parent story",
+        };
+      }
+    }
+
+    // 3. Create Issue
     const multiOperations = [];
     let issue;
 
@@ -50,701 +135,581 @@ class IssueService {
           ...withContext(req),
           transaction: t,
         });
+
+        // Handle Labels
+        if (data.labels && Array.isArray(data.labels)) {
+          for (const labelId of data.labels) {
+            await EntityLabel.create(
+              {
+                entity_id: issue.id,
+                entity_type: "issue",
+                label_id: labelId,
+              },
+              { ...withContext(req), transaction: t },
+            );
+          }
+        }
         return issue;
       },
-      updated_columns: Object.keys(data), // You can specify explicitly if needed
+      updated_columns: Object.keys(data),
       action: "create",
       model: Issue,
       remarks: "Creating new issue record",
     });
 
-    //  Create IssueHistory
+    // 4. History Log
     multiOperations.push({
       queryCallBack: async (t) => {
-        const issueHistory = await IssueHistory.create(
+        await IssueHistory.create(
           {
             issue_id: issue.id,
             user_id: req.user.id,
             action_type: "created",
             comment: "Issue created",
           },
-          {
-            ...withContext(req),
-            transaction: t,
-          }
+          { transaction: t },
         );
 
+        // Send Notification
+        /*
         const notificationData = {
           scope: "project_department",
-          title: `issue on ${project.name} project`,
-          message: `New issue is created on the project ${project.name}`,
+          title: `New Issue: ${data.title}`,
+          message: `Created in ${project.name}`,
           triggeredById: req?.user?.id,
           projectId: project.id,
-          departmentId: data.to_department_id,
+          departmentId: data.to_department_id, 
           entityType: "issue",
           entityId: issue.id,
         };
-
         await createNotification(req, notificationData);
-
-        return issueHistory;
+        */
       },
-      updated_columns: ["issue_id", "user_id", "action_type", "comment"],
+      updated_columns: ["issue_id", "user_id", "action_type"],
       action: "create",
       model: IssueHistory,
       remarks: "Recording issue creation history",
     });
 
-    //  Execute all with unified transaction + audit logging
-    await queryMultipleWithAuditLog({
-      operations: multiOperations,
-      req,
-    });
+    await queryMultipleWithAuditLog({ operations: multiOperations, req });
 
-    // Return final result
     return {
       success: true,
       status: 201,
-      message: "Issue created successfully",
       data: issue,
+      message: "Issue created successfully",
     };
   }
 
-  // Accept or reject issue 
-  static async acceptOrRejectIssue(req, issueId, action = "accept", reason = "") {
-    const { Issue, IssueHistory, IssueStats, ProjectMember} = req.db;
+  /**
+   * Update Issue (General)
+   */
+  static async updateIssue(req, issueId, data) {
+    const { Issue, IssueHistory } = req.db;
 
-    const userId = req.user.id;
     const issue = await Issue.findByPk(issueId);
     if (!issue)
-      return { status: 404, success: false, message: "Issue not found" };
-    if (issue.status !== "open" && issue.status !== "re_open")
-      return {
-        status: 400,
-        success: false,
-        message: "This issue already been accepted.",
-      };
-
-    const projectMember = ProjectMember.findOne({
-      where: { user_id: userId, project_id: issue.project_id, department_id : issue.to_department_id },
-    });
-
-    if (!projectMember)
-      return {
-        status: 403,
-        success: false,
-      };
+      return { success: false, status: 404, message: "Issue not found" };
 
     const multiOperations = [];
 
-    const updateData = { status: action === "accept" ? "in_progress" : "reject"}
-    
-    // Update Issue status
+    // Check what changed
+    const changes = [];
+    if (data.priority && data.priority !== issue.priority)
+      changes.push(`Priority changed to ${data.priority}`);
+    if (data.description && data.description !== issue.description)
+      changes.push(`Description updated`);
+    if (data.title && data.title !== issue.title) changes.push(`Title updated`);
+
     multiOperations.push({
       queryCallBack: async (t) => {
-        await issue.update(
-          updateData,
-          { ...withContext(req), transaction: t }
-        );
-        return issue;
+        return await issue.update(data, {
+          transaction: t,
+          ...withContext(req),
+        });
       },
-      updated_columns: Object.keys(updateData),
+      updated_columns: Object.keys(data),
       action: "update",
       model: Issue,
-      remarks: "Marking issue as in_progress",
+      remarks: "Updating issue details",
     });
 
-    // Create IssueHistory
-    multiOperations.push({
-      queryCallBack: async (t) => {
-        const issueHistory = await IssueHistory.create(
-          {
-            issue_id: issueId,
-            user_id: userId,
-            action_type: action === "accept" ? "accepted" : "rejected",
-            comment: reason || `Issue ${action}`,
-          },
-          { ...withContext(req), transaction: t }
-        );
-        return issueHistory;
-      },
-      updated_columns: ["issue_id", "user_id", "action_type", "comment"],
-      action: "create",
-      model: IssueHistory,
-      remarks: "Recording issue acceptance",
-    });
-    if (action === "accept") {
-      // Update or Create IssueStats
+    if (changes.length > 0) {
       multiOperations.push({
         queryCallBack: async (t) => {
-          const [stat, created] = await IssueStats.findOrCreate({
-            where: {
-              user_id: userId,
-              issue_type_id: issue.issue_type_id,
+          await IssueHistory.create(
+            {
+              issue_id: issue.id,
+              user_id: req.user.id,
+              action_type: "updated",
+              comment: changes.join(", "),
             },
-            defaults: { count: 0 },
-            transaction: t,
-            ...withContext(req),
-          });
-
-          if (!created) {
-            await stat.increment("count", { by: 1, transaction: t });
-            await stat.reload({ transaction: t });
-          } else {
-            await stat.update(
-              { count: 1 },
-              { ...withContext(req), transaction: t }
-            );
-          }
-
-          return stat;
+            { transaction: t },
+          );
         },
-        updated_columns: ["user_id", "issue_type_id", "count"],
+        updated_columns: ["issue_id", "action_type", "comment"],
         action: "create",
-        model: IssueStats,
-        remarks: "Updating user issue count stats",
+        model: IssueHistory,
+        remarks: "Recording issue update",
       });
     }
-    
 
-    // Execute all with unified transaction + audit logging
-    const results = await queryMultipleWithAuditLog({
-      operations: multiOperations,
-      req,
-    });
-
-    // Extract final data
-    const updatedIssue = results[0]; // from issue.update
-    const userIssueCount = results[2]; // from IssueStats operation
-
-    // Final response
-    return {
-      status: 200,
-      success: true,
-      message: "Issue accepted successfully",
-      data: { issue: updatedIssue, userIssueCount },
-    };
-  }
-
-  // Reassign issue to another department
-  static async reassignIssue(req, data) {
-    const { Issue, IssueHistory, Project} = req.db;
-
-    const issue = await Issue.findByPk(data.issueId);
-    if (!issue)
-      return { status: 404, success: false, message: "Issue not found" };
-    if (issue.status !== "open")
-      return {
-        status: 409,
-        success: false,
-        message: "Issue already been take can't reassign",
-      };
-
-    const project = await Project.findByPk(issue.project_id, {
-      include: [
-        {
-          association: "members",
-          where: { user_id: req.user.id }, // check if this user is part of project
-          required: false,
-        },
-      ],
-    });
-
-    if (!project.members || project.members.length === 0) {
-      return {
-        status: 403,
-        message: "You are not a member of this project",
-        success: false,
-      };
-    }
-
-    const multiOperations = [];
-
-    //  Update Issue department (reassign)
-    multiOperations.push({
-      queryCallBack: async (t) => {
-        await issue.update(
-          { to_department_id: data.to_department_id },
-          { transaction: t, ...withContext(req) }
-        );
-        return issue;
-      },
-      updated_columns: ["to_department_id"],
-      action: "update",
-      model: Issue,
-      remarks: `Reassigned issue to department ${data.to_department_id}`,
-    });
-
-    // Create IssueHistory entry
-    multiOperations.push({
-      queryCallBack: async (t) => {
-        const issueHistory = await IssueHistory.create(
-          {
-            issue_id: issue.id,
-            user_id: req.user.id,
-            action_type: "reassigned",
-            comment: `Reassigned to department ${data.to_department_id}`,
-          },
-          { transaction: t, ...withContext(req) }
-        );
-
-        //  Send Notification
-        const notificationData = {
-          scope: "project_department",
-          title: "Reassign issue",
-          message: `Issue "${issue.title}" has been reassigned.`,
-          triggeredById: req?.user?.id,
-          projectId: project.id,
-          departmentId: data.to_department_id,
-          entityType: "issue",
-          entityId: issue.id,
-        };
-
-        await createNotification(req, notificationData);
-
-        return issueHistory;
-      },
-      updated_columns: ["issue_id", "user_id", "action_type", "comment"],
-      action: "create",
-      model: IssueHistory,
-      remarks: "Recording issue reassignment history",
-    });
-
-    //  Execute all with unified transaction + audit logging
-    await queryMultipleWithAuditLog({
-      operations: multiOperations,
-      req,
-    });
-
-    // Return final result
+    await queryMultipleWithAuditLog({ operations: multiOperations, req });
     return {
       success: true,
-      status: 200,
-      message: "Issue reassigned successfully",
       data: issue,
+      message: "Issue updated successfully",
     };
   }
 
-  // Mark issue as fixed/resolved
-  static async resolveIssue(req, issueId) {
-    const { Issue, IssueHistory, Project} = req.db;
+  /**
+   * Change Status
+   */
+  static async changeStatus(req, issueId, statusId) {
+    const { Issue, IssueStatus, IssueHistory } = req.db;
 
-    const issue = await Issue.findByPk(issueId, {
-      include: [
-        {
-          association: "tasks",
-          required: false,
-        },
-      ],
-    });
-
+    const issue = await Issue.findByPk(issueId);
     if (!issue)
-      return { status: 404, success: false, message: "Issue not found" };
+      return { success: false, status: 404, message: "Issue not found" };
 
-    if (issue.status !== "in_progress" ) return {status : 409, success: false, message : "Issue Cannot be resolved if not in progress!.."} ;
+    const status = await IssueStatus.findByPk(statusId);
+    if (!status)
+      return { success: false, status: 404, message: "Status not found" };
 
-    const project = await Project.findByPk(issue.project_id, {
-      include: [
-        {
-          association: "members",
-          where: { user_id: req.user.id }, // check if this user is part of project
-          required: false,
-        },
-      ],
-    });
-
-    if (!project) {
-      return { status: 404, message: "Project not found!", success: false };
-    }
-
-    if (!project.members || project.members.length === 0) {
+    // --- Validation: Check Workflow Transitions ---
+    const isValid = await WorkflowService.validateTransition(
+      req,
+      issue,
+      statusId,
+    );
+    if (!isValid) {
       return {
-        status: 403,
-        message: "You are not a member of this project",
         success: false,
-      };
-    }
-
-    const tasks = issue.tasks;
-
-    if (tasks.length === 0) {
-      return {
         status: 400,
-        success: false,
-        message: "Task required! You cannot resolve an issue without at least one task.",
+        message: "Invalid status transition defined by project workflow",
       };
     }
-
-    const hasIncomplete = tasks.some((t) => t.status !== "completed");
-
-    if (hasIncomplete) {
-      return {
-        status: 400,
-        success: false,
-        message: "Cannot resolve without completing all tasks!",
-      };
-    }
-
-    if (issue.status !== "in_progress")
-      return {
-        status: 409,
-        success: false,
-        message:
-          "Issue cannot be resolved because issue is not in progress state",
-      };
+    // ---------------------------------------------
 
     const multiOperations = [];
 
-    // Update issue status to "resolved"
     multiOperations.push({
       queryCallBack: async (t) => {
-        await issue.update(
-          { status: "resolved" },
-          { transaction: t, ...withContext(req) }
-        );
-        return issue;
+        issue.status_id = statusId;
+        // Sync legacy status field based on category
+        if (status.category === "todo") issue.status = "open";
+        else if (status.category === "in_progress")
+          issue.status = "in_progress";
+        else if (status.category === "done") issue.status = "closed";
+
+        return await issue.save({ transaction: t });
       },
-      updated_columns: ["status"],
+      updated_columns: ["status_id", "status"],
       action: "update",
       model: Issue,
-      remarks: "Marking issue as resolved",
+      remarks: `Status changed to ${status.name}`,
     });
 
-    // Create IssueHistory entry for resolution
     multiOperations.push({
       queryCallBack: async (t) => {
-        const issueHistory = await IssueHistory.create(
+        await IssueHistory.create(
           {
             issue_id: issue.id,
             user_id: req.user.id,
-            action_type: "resolved",
-            comment: "Issue resolved",
+            action_type: "status_change",
+            comment: `Status changed to ${status.name}`,
           },
-          { transaction: t, ...withContext(req) }
+          { transaction: t },
         );
-
-        // Send Notification
-        const notificationData = {
-          scope: "project_department",
-          title: "Issue Resolved",
-          message: `Issue "${issue.title}" has been resolved.`,
-          triggeredById: req?.user?.id,
-          projectId: project.id,
-          departmentId: issue.from_department_id,
-          entityType: "issue",
-          entityId: issue.id,
-        };
-
-        await createNotification(req, notificationData);
-
-        return issueHistory;
       },
-      updated_columns: ["issue_id", "user_id", "action_type", "comment"],
+      updated_columns: ["issue_id", "action_type"],
       action: "create",
       model: IssueHistory,
-      remarks: "Recording issue resolution history",
+      remarks: "Logging status change",
     });
 
-    // Execute all with unified transaction + audit logging
-    await queryMultipleWithAuditLog({
-      operations: multiOperations,
-      req,
-    });
+    await queryMultipleWithAuditLog({ operations: multiOperations, req });
 
-    //  Return final result
-    return {
-      success: true,
-      status: 200,
-      message: "Issue resolved successfully",
-      data: issue,
-    };
+    // Notification
+    await NotificationService.notifyStatusChanged(req, issueId, status.name);
+
+    return { success: true, data: issue, message: "Status updated" };
   }
-  //
-  static async closeOrReopenIssue(req, data) {
-    const { Issue, IssueHistory, Project} = req.db;
 
-    const issue = await Issue.findByPk(data.issueId);
+  /**
+   * Assign Issue
+   */
+  static async assignIssue(req, issueId, assigneeId) {
+    const { Issue, ProjectMember, IssueHistory } = req.db;
+
+    const issue = await Issue.findByPk(issueId);
     if (!issue)
-      return { status: 404, success: false, message: "Issue not found" };
+      return { success: false, status: 404, message: "Issue not found" };
 
-    const project = await Project.findByPk(issue.project_id, {
-      include: [
-        {
-          association: "members",
-          where: { user_id: req.user.id }, // check if this user is part of project
-          required: false,
-        },
-      ],
-    });
-
-    if (!project.members || project.members.length === 0) {
-      return {
-        status: 403,
-        message: "You are not a member of this project",
-        success: false,
-      };
+    if (assigneeId) {
+      const assignee = await ProjectMember.findOne({
+        where: { id: assigneeId, project_id: issue.project_id },
+      });
+      if (!assignee)
+        return {
+          success: false,
+          status: 400,
+          message: "Assignee must be a project member",
+        };
     }
 
-    if (issue.status !== "resolved" && issue.status !== "reject")
-      return {
-        status: 409,
-        success: false,
-        message:
-          "Issue cannot be resolved because issue is not in resolved state",
-      };
+    // We can use a simpler update helper here or full transaction flow
+    // Keeping it simple since it's one field
+    issue.assignee_id = assigneeId;
+    await issue.save(withContext(req));
 
-    const updateState = issue.status === "reject" ? "re_open" : ( data.status === "reopen" ? "re_open" : data.status );
-
-    const oldStatusOfIssue = issue.status;
-
-    const multiOperations = [];
-
-    // 1️⃣ Update issue status (closed / reopened)
-    multiOperations.push({
-      queryCallBack: async (t) => {
-        await issue.update(
-          { status: updateState },
-          { transaction: t, ...withContext(req) }
-        );
-        return issue;
+    // History
+    await IssueHistory.create(
+      {
+        issue_id: issue.id,
+        user_id: req.user.id,
+        action_type: "assigned",
+        comment: assigneeId ? `Assigned to member ${assigneeId}` : "Unassigned",
       },
-      updated_columns: ["status"],
-      action: "update",
-      model: Issue,
-      remarks: `Updating issue status to ${updateState}`,
-    });
+      withContext(req),
+    );
 
-    //  Create IssueHistory entry for closure or reopening
-    multiOperations.push({
-      queryCallBack: async (t) => {
-        const commentText = data.comment || (
-            (data.status === "closed" && oldStatusOfIssue !== "reject") 
-              ? "Issue closed"
-              : "Issue re-opened, not yet fixed"
-          );
+    if (assigneeId) {
+      await NotificationService.notifyIssueAssigned(req, issue.id, assigneeId);
+    }
 
-        const issueHistory = await IssueHistory.create(
-          {
-            issue_id: issue.id,
-            user_id: req.user.id,
-            action_type: data.status === "closed" ? "resolved" : "re_opened",
-            comment: commentText,
-          },
-          { transaction: t, ...withContext(req) }
-        );
-
-        // 3️⃣ Send Notification
-        const notificationData = {
-          scope: "project_department",
-          title: "Issue Finalized",
-          message: `Issue "${issue.title}" is ${data.status === "closed" ? "closed" : "re-opened, not yet fixed"}.`,
-          triggeredById: req?.user?.id,
-          projectId: project.id,
-          departmentId: issue.to_department_id,
-          entityType: "issue",
-          entityId: issue.id,
-        };
-
-        await createNotification(req, notificationData);
-
-        return issueHistory;
-      },
-      updated_columns: ["issue_id", "user_id", "action_type", "comment"],
-      action: "create",
-      model: IssueHistory,
-      remarks: "Recording issue finalization (closed/reopened)",
-    });
-
-    // Execute all with unified transaction + audit logging
-    await queryMultipleWithAuditLog({
-      operations: multiOperations,
-      req,
-    });
-
-    // Return final result
-    return {
-      success: true,
-      status: 200,
-      message: `Issue ${data.status === "closed" ? "closed" : "re-opened"} successfully`,
-      data: issue,
-    };
+    return { success: true, message: "Issue assigned successfully" };
   }
 
-  // Get issues by project
-  static async listIssues(req, projectId, query = {}) {
-    const { Issue, IssueType, Project} = req.db;
+  /**
+   * Manage Labels
+   */
+  static async updateLabels(req, issueId, labelIds) {
+    const { EntityLabel, Issue } = req.db;
 
-    const project = await Project.findByPk(projectId, {
-      include: [
-        {
-          association: "members",
-          where: { user_id: req.user.id }, // check if this user is part of project
-          required: false,
-        },
-      ],
+    const issue = await Issue.findByPk(issueId);
+    if (!issue)
+      return { success: false, status: 404, message: "Issue not found" };
+
+    // Simplified: Delete all for this issue and re-add
+    // In a transaction ideally
+    await EntityLabel.destroy({
+      where: { entity_id: issueId, entity_type: "issue" },
+      ...withContext(req),
     });
 
-    if (!project) {
-      return {
-        status: 404,
-        message: "Project not found",
-        success: false,
-      };
+    if (labelIds && labelIds.length > 0) {
+      const bulkData = labelIds.map((lid) => ({
+        entity_id: issueId,
+        entity_type: "issue",
+        label_id: lid,
+      }));
+      await EntityLabel.bulkCreate(bulkData, withContext(req));
     }
 
+    return { success: true, message: "Labels updated" };
+  }
 
-    if (!project.members || project.members.length === 0) {
-      return {
-        status: 403,
-        message: "You are not a member of this project",
-        success: false,
-      };
-    }
+  /**
+   * Delete Issue
+   */
+  static async deleteIssue(req, issueId) {
+    const { Issue } = req.db;
+    // Soft delete via helper
+    return await auditLogDeleteHelperFunction({
+      req,
+      model: Issue,
+      where: { id: issueId },
+      remarks: "Issue deleted",
+    });
+  }
 
-    const issueId = req.params.issueId;
+  /**
+   * List Issues
+   */
+  static async listIssues(req, projectId, query) {
+    const {
+      Issue,
+      IssueType,
+      IssueStatus,
+      ProjectMember,
+      IssueLabel,
+      EntityLabel,
+    } = req.db;
+
+    const where = { project_id: projectId };
+    if (query.status_id) where.status_id = query.status_id;
+    if (query.assignee_id) where.assignee_id = query.assignee_id;
+    if (query.priority) where.priority = query.priority;
+    if (query.issue_type_id) where.issue_type_id = query.issue_type_id;
+
+    const include = [
+      { model: IssueType, as: "type" },
+      { model: IssueStatus, as: "issueStatus" },
+      {
+        model: ProjectMember,
+        as: "assignee",
+        attributes: ["id", "user_id", "project_role"],
+      },
+    ];
 
     const result = await paginateHelperFunction({
       model: Issue,
-      whereFilters: { project_id: projectId, ...(issueId && { id: issueId }) },
-      query,
-      extrasInQuery: { include: [{ model: IssueType, as: "type" }] },
-    });
-
-    return { data: result, status: 200, success: true };
-  }
-
-  // get issue in detail
-  static async getIssue(req, issueId) {
-    const { Issue, IssueHistory, IssueType, Task, Project} = req.db;
-
-    const issue = await Issue.findByPk(issueId, {
-      include: [
-        { model: IssueType, as: "type" },
-        { model: IssueHistory, as: "history" },
-        { model: Task, as: "tasks" },
-      ],
-      order: [["created_at", "DESC"]],
-    });
-
-    if (!issue) return { status: 404, success: false };
-
-    const project = await Project.findByPk(issue.project_id, {
-      include: [
-        {
-          association: "members",
-          where: { user_id: req.user.id }, // check if this user is part of project
-          required: false,
-        },
-      ],
-    });
-
-    if (!project.members || project.members.length === 0) {
-      return {
-        status: 403,
-        message: "You are not a member of this project",
-        success: false,
-      };
-    }
-
-    return { data: issue, status: 200, success: true };
-  }
-
-  static async createTaskForIssueSolving(req, data) {
-    const { Issue, Project} = req.db;
-
-    const issue = await Issue.findByPk(data.issue_id);
-    if (!issue)
-      return { status: 404, success: false, message: "Issue not found" };
-
-
-
-    // todo: check if user is in to department of issue from auth module 
-
-
-
-    const project = await Project.findByPk(issue.project_id, {
-      include: [
-        {
-          association: "members",
-          where: { user_id: req.user.id, department_id : issue.to_department_id }, // check if this user is part of project
-          required: false,
-        },
-      ],
-    });
-
-    if (!project.members || project.members.length === 0) {
-      return {
-        status: 403,
-        message: "You are not a member of this Project for selected Department",
-        success: false,
-      };
-    }
-
-    if (issue.status !== "in_progress")
-      return {
-        status: 409,
-        success: false,
-        message:
-          "Task cant create for this issue because is not in progress state",
-      };
-
-    data.projectIdForCompare = issue.project_id;
-    data.project_member_id = project.members[0].id;
-
-    return await createTask(req, data);
-  }
-
-  static async getIssueTypes(req) {
-    const { IssueType } = req.db;
-
-    const result = await paginateHelperFunction({
-      model: IssueType,
+      whereFilters: where,
       query: req.query,
+      extrasInQuery: { include },
     });
 
     return { success: true, status: 200, data: result };
   }
 
-  static async createIssueType(req, data) {
-    const { IssueType, Sequelize} = req.db;
+  static async getIssueTypes(req) {
+    const { IssueType } = req.db;
+    const types = await IssueType.findAll();
+    return { success: true, data: types };
+  }
 
-    try {
-      const issueType = await auditLogCreateHelperFunction({
-        model: IssueType,
-        data,
-        req,
-      });
-      return { success: true, data: issueType, status: 201 };
-    } catch (err) {
-      if (err instanceof Sequelize.UniqueConstraintError) {
+  static async createIssueType(req, data) {
+    const { IssueType } = req.db;
+    const result = await auditLogCreateHelperFunction({
+      req,
+      model: IssueType,
+      data,
+      remarks: "Create issue type",
+    });
+    return { success: true, status: 201, data: result };
+  }
+
+  static async getIssue(req, issueId) {
+    const { Issue, IssueType, IssueStatus, ProjectMember, UserStory, Project } =
+      req.db;
+    const issue = await Issue.findByPk(issueId, {
+      include: [
+        { model: IssueType, as: "type" },
+        { model: IssueStatus, as: "issueStatus" },
+        { model: Project, as: "project", attributes: ["id", "name"] },
+        {
+          model: ProjectMember,
+          as: "assignee",
+          attributes: ["id", "user_id", "project_role"],
+        },
+        {
+          model: UserStory,
+          as: "userStory",
+          attributes: ["id", "title", "type", "assigned_to", "status"],
+        },
+      ],
+    });
+    if (!issue)
+      return { success: false, status: 404, message: "Issue not found" };
+    return { success: true, data: issue };
+  }
+
+  static async getIssueHistory(req, issueId) {
+    const { IssueHistory } = req.db;
+    const history = await IssueHistory.findAll({
+      where: { issue_id: issueId },
+      order: [["created_at", "DESC"]],
+    });
+    return { success: true, data: history };
+  }
+
+  // Legacy methods support if needed (accept/reject/resolve) - can be mapped to status changes
+  static async acceptOrRejectIssue(req, issueId, type, reason) {
+    // Logic to map accept/reject to status change
+    return { success: false, message: "Please use changeStatus endpoint" };
+  }
+
+  // New Methods for Hierarchy
+
+  /**
+   * Link a child issue to a parent
+   */
+  static async linkParent(req, childId, parentId) {
+    const { Issue, IssueType } = req.db;
+    const child = await Issue.findByPk(childId, {
+      include: [{ model: IssueType, as: "type" }],
+    });
+    if (!child)
+      return { success: false, status: 404, message: "Child issue not found" };
+
+    if (!parentId) {
+      // Unlink
+      if (child.type.hierarchy_level === 3) {
+        // Subtask cannot be orphaned
         return {
           success: false,
-          status: 422,
-          message: "Validation Error",
-          errors: giveValicationErrorFormal(err),
+          status: 400,
+          message: "Subtask must belong to a parent story",
+        };
+      }
+      child.parent_id = null;
+      await child.save(withContext(req));
+      return { success: true, message: "Parent unlinked" };
+    }
+
+    const parent = await Issue.findByPk(parentId, {
+      include: [{ model: IssueType, as: "type" }],
+    });
+    if (!parent)
+      return { success: false, status: 404, message: "Parent issue not found" };
+
+    if (child.project_id !== parent.project_id) {
+      return {
+        success: false,
+        status: 400,
+        message: "Issues must belong to the same project",
+      };
+    }
+
+    // Circular Check
+    if (child.id === parent.id)
+      return {
+        success: false,
+        status: 400,
+        message: "Cannot link issue to itself",
+      };
+
+    // Check if parent is actually a descendant of child (Cycle A->B->A)
+    // Simple check: crawl up parent's parents
+    let current = parent;
+    while (current.parent_id) {
+      if (current.parent_id === child.id) {
+        return {
+          success: false,
+          status: 400,
+          message: "Circular dependency detected",
+        };
+      }
+      current = await Issue.findByPk(current.parent_id);
+    }
+
+    // Level Validation
+    const parentLevel = parent.type.hierarchy_level;
+    const childLevel = child.type.hierarchy_level;
+
+    if (childLevel <= parentLevel) {
+      return {
+        success: false,
+        status: 400,
+        message: "Child issue level must be greater than parent",
+      };
+    }
+
+    child.parent_id = parentId;
+    await child.save(withContext(req));
+
+    return { success: true, message: "Linked successfully" };
+  }
+
+  /**
+   * Get Issue Hierarchy Tree
+   * Assuming small trees (thousands of issues per project), we can fetch all and build tree in-memory or recursively.
+   * For this implementation, let's fetch immediate children or full tree for a root.
+   */
+  static async getIssueTree(req, issueId) {
+    const { Issue, IssueType, IssueStatus, ProjectMember } = req.db;
+
+    // Sequelize self-referential nested includes cause wrong JOIN ORDER in PostgreSQL —
+    // the "children->assignee" JOIN is emitted before the "children" JOIN, so PostgreSQL
+    // throws "missing FROM-clause entry for table children".
+    // Fix: fetch root, children, and grandchildren in completely separate queries with no
+    // self-referential includes at all.
+
+    const detailIncludes = [
+      { model: IssueType, as: "type" },
+      { model: IssueStatus, as: "issueStatus" },
+      {
+        model: ProjectMember,
+        as: "assignee",
+        attributes: ["id", "user_id", "project_role"],
+      },
+    ];
+
+    // 1. Fetch root issue (no children include)
+    const issue = await Issue.findByPk(issueId, { include: detailIncludes });
+    if (!issue)
+      return { success: false, status: 404, message: "Issue not found" };
+
+    // 2. Fetch direct children
+    const children = await Issue.findAll({
+      where: { parent_id: issueId },
+      include: detailIncludes,
+    });
+
+    // 3. Fetch grandchildren for each child
+    for (const child of children) {
+      const grandchildren = await Issue.findAll({
+        where: { parent_id: child.id },
+        include: detailIncludes,
+      });
+      child.dataValues.children = grandchildren;
+    }
+
+    issue.dataValues.children = children;
+
+    return { success: true, data: issue };
+  }
+
+  /**
+   * Link (or unlink) an issue to a user story.
+   * Only team leads (project_role = 'lead') can perform this action.
+   */
+  static async linkUserStory(req, issueId, userStoryId) {
+    const { Issue, UserStory, ProjectMember, IssueHistory } = req.db;
+
+    const issue = await Issue.findByPk(issueId);
+    if (!issue)
+      return { success: false, status: 404, message: "Issue not found" };
+
+    // Permission: only 'lead' role can link issues to user stories
+    const member = await ProjectMember.findOne({
+      where: { project_id: issue.project_id, user_id: req.user.id },
+    });
+    if (!member || member.project_role !== "lead") {
+      return {
+        success: false,
+        status: 403,
+        message: "Only team leads can link issues to user stories",
+      };
+    }
+
+    if (userStoryId) {
+      // Validate the user story exists and belongs to the same project
+      const story = await UserStory.findOne({
+        where: { id: userStoryId, project_id: issue.project_id },
+      });
+      if (!story) {
+        return {
+          success: false,
+          status: 400,
+          message: "User story not found in this project",
         };
       }
     }
 
-    return { success: false, status: 500 };
-  }
+    const previousStoryId = issue.user_story_id;
+    await issue.update(
+      { user_story_id: userStoryId ?? null },
+      withContext(req),
+    );
 
-  // get issue history
-  static async getIssueHistory (req, issueId) {
-    const { Issue } = req.db;
+    await IssueHistory.create({
+      issue_id: issueId,
+      user_id: req.user.id,
+      action_type: "updated",
+      comment: userStoryId
+        ? `Linked to user story ${userStoryId}`
+        : `Unlinked from user story ${previousStoryId}`,
+    }, withContext(req));
 
-    const issue = await Issue.findByPk(issueId,{
-      include : [
-        {
-          association: "history",
-           separate: true,
-            order: [['created_at', 'DESC']]
-        }
-      ],
-    });
-
-    if (!issue) return {status : 404, message : "Issue not found!..", success : false};
-    return {success : true, data : issue, status : 200};
+    return {
+      success: true,
+      status: 200,
+      message: userStoryId
+        ? "Issue linked to user story"
+        : "Issue unlinked from user story",
+    };
   }
 }
 

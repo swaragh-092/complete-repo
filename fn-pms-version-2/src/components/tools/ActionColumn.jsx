@@ -1,3 +1,9 @@
+// Author: Gururaj
+// Created: 19th Jun 2025
+// Description: Reusable data-table action column rendering Edit and Delete icon buttons per row.
+// Version: 1.0.0
+// Modified:
+
 import { Box, CircularProgress, useTheme } from "@mui/material";
 import { colorCodes } from "../../theme";
 import EditIcon from "@mui/icons-material/Edit";

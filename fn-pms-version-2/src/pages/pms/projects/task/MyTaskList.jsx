@@ -1,5 +1,11 @@
+// Author: Gururaj
+// Created: 14th Oct 2025
+// Description: My Tasks widget showing tasks assigned to or created by the current user.
+// Version: 1.0.0
+// Modified:
+
 import BACKEND_ENDPOINT from "../../../../util/urls";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import DataTable from "../../../../components/tools/Datatable";
 import { Box, CircularProgress, useTheme } from "@mui/material";
 import EditDialog from "../../../../components/pms/EditDialog";
@@ -55,7 +61,7 @@ export default function MyTaskList({ typeFilter, refreshCurrentTask, setRefreshC
   const [editDialog, setEditDialog] = useState({ open: false, task: null, type: null });
   const [editingIds, setEditingIds] = useState([]);
 
-  let dependencyClickTimer = null;
+  const dependencyClickTimer = useRef(null);
 
   const handleStartTask = async (taskId) => {
     setEditingIds((prev) => [...prev, taskId]);
@@ -181,10 +187,10 @@ export default function MyTaskList({ typeFilter, refreshCurrentTask, setRefreshC
                   showZero
                   // SINGLE CLICK
                   onClick={() => {
-                    if (dependencyClickTimer) return;
+                    if (dependencyClickTimer.current) return;
 
-                    dependencyClickTimer = setTimeout(() => {
-                      dependencyClickTimer = null;
+                    dependencyClickTimer.current = setTimeout(() => {
+                      dependencyClickTimer.current = null;
 
                       const count = params.row.dependencyTasks?.length || 0;
 
@@ -201,9 +207,9 @@ export default function MyTaskList({ typeFilter, refreshCurrentTask, setRefreshC
                   }}
                   // DOUBLE CLICK (DO NOTHING)
                   onDoubleClick={() => {
-                    if (dependencyClickTimer) {
-                      clearTimeout(dependencyClickTimer);
-                      dependencyClickTimer = null;
+                    if (dependencyClickTimer.current) {
+                      clearTimeout(dependencyClickTimer.current);
+                      dependencyClickTimer.current = null;
                     }
                     setEditDialog({ open: true, task: params.row, type: "dependencyTask" });
                     // intentionally empty (double-click should do nothing)

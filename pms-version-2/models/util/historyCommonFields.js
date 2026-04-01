@@ -1,3 +1,9 @@
+// Author: Gururaj
+// Created: 14th Oct 2025
+// Description: Shared history/audit fields mixin appended to models that record entity snapshots.
+// Version: 1.0.0
+// Modified:
+
 // Author : Gururaj
 // Created: 31th July 2025
 // Description: This is common fields and hooks for history table 

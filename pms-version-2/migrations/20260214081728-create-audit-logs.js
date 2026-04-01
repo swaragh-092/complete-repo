@@ -2,7 +2,8 @@
 
 const {ACTION_ON_HISTORY} = require('../util/constant');
 
-const TABLE_PREFIX = process.env.DB_PREFIX + "_";
+// const TABLE_PREFIX = process.env.DB_PREFIX + "_";
+const TABLE_PREFIX = "pms_";
 
 const tableName = TABLE_PREFIX + "audit_logs";
 

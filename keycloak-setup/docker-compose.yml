@@ -4,7 +4,7 @@
 
 services:
   postgres:
-    image: postgres:15-alpine
+    image: postgres:16-alpine
     environment:
       POSTGRES_DB: keycloak
       POSTGRES_USER: keycloak
@@ -19,13 +19,12 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.50'
+          cpus: "0.50"
           memory: 512M
         reservations:
           memory: 128M
     security_opt:
       - no-new-privileges:true
-    read_only: true
     tmpfs:
       - /tmp
       - /run/postgresql
@@ -35,10 +34,11 @@ services:
         max-size: "10m"
         max-file: "3"
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U keycloak" ]
+      test: ["CMD-SHELL", "pg_isready -U keycloak"]
       interval: 10s
       timeout: 5s
-      retries: 5
+      retries: 10
+      start_period: 60s
 
   keycloak:
     image: quay.io/keycloak/keycloak:latest
@@ -48,19 +48,11 @@ services:
       KC_DB_URL: jdbc:postgresql://postgres:5432/keycloak
       KC_DB_USERNAME: keycloak
       KC_DB_PASSWORD: keycloak123
-      KC_BOOTSTRAP_ADMIN_USERNAME: admin
-      KC_BOOTSTRAP_ADMIN_PASSWORD: admin123
-      KC_LOG_LEVEL: org.keycloak.sessions:DEBUG,org.keycloak.authentication:DEBUG,org.keycloak.events:DEBUG
-      # ═══════════════════════════════════════════════════════════════════
-      # HTTPS Configuration
-      # ═══════════════════════════════════════════════════════════════════
-      KC_HTTPS_CERTIFICATE_FILE: /opt/keycloak/conf/cert.pem
-      KC_HTTPS_CERTIFICATE_KEY_FILE: /opt/keycloak/conf/key.pem
-      KC_HOSTNAME: keycloak.local.test
-      KC_HOSTNAME_URL: https://keycloak.local.test:8443
-      KC_HOSTNAME_STRICT: "false"
-      KC_HOSTNAME_STRICT_HTTPS: "false"
-      KC_HTTP_ENABLED: "true"
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin123
+      KC_HOSTNAME_STRICT: false
+      KC_HTTP_ENABLED: true
+      KC_PROXY_HEADERS: xforwarded
     ports:
       - "8081:8080" # HTTP (keep for compatibility)
       - "8443:8443" # HTTPS (new port for secure connections)
@@ -75,10 +67,10 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '1.00'
-          memory: 768M
+          cpus: "1.00"
+          memory: 1536M
         reservations:
-          memory: 256M
+          memory: 512M
     security_opt:
       - no-new-privileges:true
     logging:
@@ -87,10 +79,15 @@ services:
         max-size: "10m"
         max-file: "3"
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:8080/health" ]
+      test:
+        [
+          "CMD-SHELL",
+          "exec 3<>/dev/tcp/localhost/8080 && echo -e 'GET /health HTTP/1.1\\r\\nHost: localhost\\r\\nConnection: close\\r\\n\\r\\n' >&3 && cat <&3 | grep -q 'HTTP/1.1 200'",
+        ]
       interval: 15s
       timeout: 10s
-      retries: 5
+      retries: 10
+      start_period: 120s
 
   # pgadmin:
   #   image: dpage/pgadmin4
@@ -121,7 +118,6 @@ services:
 
 volumes:
   postgres_data:
-
 
 networks:
   auth-network:

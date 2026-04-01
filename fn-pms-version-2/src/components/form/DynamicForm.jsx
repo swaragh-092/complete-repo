@@ -1,4 +1,10 @@
-import { useState, useEffect } from "react";
+// Author: Gururaj
+// Created: 19th Jun 2025
+// Description: Dynamic form generator that builds MUI form fields from a JSON schema definition.
+// Version: 1.0.0
+// Modified:
+
+import { useState } from "react";
 import { Box, Button } from "@mui/material";
 import InputField from "../../components/formFields/InputField";
 import { errorMessageFormat, formatValidationErrors } from "../../util/helper";
@@ -9,12 +15,15 @@ import Validator from "../../util/validation";
 import SelectField from "../formFields/SelectField";
 import AutoCompleteSelectSearch from "../formFields/AutoCompleteSelectSearch";
 
+//fields = [
+//   { type: "text", name: "name" },
+//   { type: "textarea", name: "description", label: "Description", require: false },
+// ];
+
 export default function DynamicForm({ fields, initialData = {}, onSubmit, onSuccess = () => {} }) {
   const [formData, setFormData] = useState(initialData);
   const [validationErrors, setValidationErrors] = useState({ version: 1 });
   const [isSubmitting, setSubmitting] = useState(false);
-  const [isValid, setIsValid] = useState(false);
-
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -54,40 +63,34 @@ export default function DynamicForm({ fields, initialData = {}, onSubmit, onSucc
     }
   };
 
-  // Check if all required fields are filled and no validation errors
-  useEffect(() => {
-    const allRequiredFilled = fields.every((f) => (f.required !== false ? formData[f.name] !== undefined && formData[f.name] !== "" : true));
-
-    const hasErrors = Object.keys(validationErrors).some((key) => key !== "version" && validationErrors[key]);
-
-    setIsValid(allRequiredFilled && !hasErrors);
-  }, [formData, validationErrors, fields]);
+  // Derive validity from current state (no effect needed)
+  const allRequiredFilled = fields.every((f) => (f.required !== false ? formData[f.name] !== undefined && formData[f.name] !== "" : true));
+  const hasErrors = Object.keys(validationErrors).some((key) => key !== "version" && validationErrors[key]);
+  const isValid = allRequiredFilled && !hasErrors;
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-      {fields.map((field) => (
-        field.type === "select" ?  
-        <SelectField
-          key={field.name}
-          {...field}
-          required={field.required !== false} // default required = true
-          value={formData[field.name] || ""}
-          onChange={handleInputChange}
-          errorMessage={errorMessageFormat(validationErrors[field.name], validationErrors.version)}
-        />
-        :
-        (
-          field.type === "auto_search" ? 
+      {fields.map((field) =>
+        field.type === "select" ? (
+          <SelectField
+            key={field.name}
+            {...field}
+            required={field.required !== false} // default required = true
+            value={formData[field.name] || ""}
+            onChange={handleInputChange}
+            errorMessage={errorMessageFormat(validationErrors[field.name], validationErrors.version)}
+          />
+        ) : field.type === "auto_search" ? (
           <AutoCompleteSelectSearch
             key={field.name}
-            {...field}  // extra required fields other than what normal = [ fetchUrl, mapResponse ( this maps response with option and value ) ] 
+            {...field} // extra required fields other than what normal = [ fetchUrl, mapResponse ( this maps response with option and value ) ]
             // mapResponse={(i) => ({ id: i.id, label: i.name })}  # this is exaple for mapResponse
             required={field.required !== false}
             value={formData[field.name] || ""}
             onChange={handleInputChange}
-            errorMessage={errorMessageFormat(validationErrors[field.name], validationErrors.version)}            
-          /> 
-          :
+            errorMessage={errorMessageFormat(validationErrors[field.name], validationErrors.version)}
+          />
+        ) : (
           <InputField
             key={field.name}
             {...field}
@@ -96,13 +99,11 @@ export default function DynamicForm({ fields, initialData = {}, onSubmit, onSucc
             onChange={handleInputChange}
             errorMessage={errorMessageFormat(validationErrors[field.name], validationErrors.version)}
           />
-        )
-
-        
-      ))}
+        ),
+      )}
 
       <Button onClick={handleSubmit} disabled={isSubmitting || !isValid} variant="contained" color="primary">
-        { isSubmitting ? <CircularProgress size={20} /> : "Submit" }
+        {isSubmitting ? <CircularProgress size={20} /> : "Submit"}
       </Button>
     </Box>
   );

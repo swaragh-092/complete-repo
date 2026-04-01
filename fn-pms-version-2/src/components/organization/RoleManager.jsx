@@ -1,3 +1,9 @@
+// Author: Gururaj
+// Created: 19th Jun 2025
+// Description: Organisation role manager for creating, editing, and deleting RBAC roles and permission sets.
+// Version: 1.0.0
+// Modified:
+
 /**
  * Role Manager Component
  * 

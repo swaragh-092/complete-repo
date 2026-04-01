@@ -1,3 +1,9 @@
+// Author: Gururaj
+// Created: 19th Jun 2025
+// Description: React context and provider for the currently active organisation and multi-org switching.
+// Version: 1.0.0
+// Modified:
+
 /**
  * @fileoverview Organization Context Provider
  * @description React Context for organization state management

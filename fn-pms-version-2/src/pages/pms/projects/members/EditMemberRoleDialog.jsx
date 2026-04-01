@@ -1,19 +1,29 @@
+// Author: Gururaj
+// Created: 14th Oct 2025
+// Description: Edit Member Role dialog for changing a project member role.
+// Version: 1.0.0
+// Modified:
+
 import BACKEND_ENDPOINT from "../../../../util/urls";
 import backendRequest from "../../../../util/request";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { showToast } from "../../../../util/feedback/ToastService";
 import { CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, MenuItem, Select } from "@mui/material";
 import DoButton from "../../../../components/button/DoButton";
 
 export default function EditMemberRoleDialog({ editDialog, setEditDialog, setRefresher }) {
-  const [selectedRole, setSelectedRole] = useState("member");
+  const selectedRoleFromProp = editDialog?.member?.project_role || "member";
+  const [selectedRole, setSelectedRole] = useState(selectedRoleFromProp);
   const [isEditing, setEditing] = useState(false);
 
   // Sync role whenever the dialog opens with a different member
+  const prevMemberId = useRef(editDialog?.member?.id);
   useEffect(() => {
-    if (editDialog?.member?.project_role) {
-      setSelectedRole(editDialog.member.project_role);
+    if (editDialog?.member?.id && editDialog.member.id !== prevMemberId.current) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setSelectedRole(editDialog.member.project_role || "member");
     }
+    prevMemberId.current = editDialog?.member?.id;
   }, [editDialog?.member]);
 
   const handleEditRole = async () => {

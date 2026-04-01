@@ -1,3 +1,9 @@
+// Author: Gururaj
+// Created: 19th Jun 2025
+// Description: User profile page displaying account details and allowing profile updates.
+// Version: 1.0.0
+// Modified:
+
 /**
  * @fileoverview Dashboard Page
  * @description Modern responsive dashboard with MUI components

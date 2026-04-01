@@ -17,24 +17,18 @@ import { Typography, Stack, Chip, Box } from "@mui/material";
 import { useEffect, useRef, useState } from "react";
 import DoButton from "../../../components/button/DoButton";
 import EditDialog from "../../../components/pms/EditDialog";
-import ChecklistLists from "./checklist/ChecklistLists";
+import FeatureUserStories from "./userStories/FeatureUserStories";
 import { useWorkspace } from "../../../context/WorkspaceContext";
 
 export default function FeatureDetail() {
   const response = useLoaderData();
-  const [feature, setFeature] = useState(response?.data);
+  const [featureOverride, setFeatureOverride] = useState(null);
+  const feature = featureOverride ?? response?.data;
 
-  const {
-        workspaces,
-        currentWorkspace,
-        selectWorkspace,
-        loading,
-        isAdmin
-      } = useWorkspace();
+  const { currentWorkspace } = useWorkspace();
 
   const [editFeatureDialog, setEditFeatureDialog] = useState(false);
   const revalidator = useRevalidator();
-
 
   const navigate = useNavigate();
   const prevWorkspaceId = useRef();
@@ -46,11 +40,7 @@ export default function FeatureDetail() {
     // 1. previous id exists
     // 2. current id exists
     // 3. and they are different
-    if (
-      prevWorkspaceId.current &&
-      currentId &&
-      prevWorkspaceId.current !== currentId
-    ) {
+    if (prevWorkspaceId.current && currentId && prevWorkspaceId.current !== currentId) {
       navigate("/features");
     }
 
@@ -58,16 +48,10 @@ export default function FeatureDetail() {
     prevWorkspaceId.current = currentId;
   }, [currentWorkspace?.id]);
 
-  useEffect(() => {
-    if (response?.data) {
-      setFeature(response.data);
-    }
-  }, [response?.data]);
-
   const onEditSuccess = (updatedData) => {
     setEditFeatureDialog(false);
     // temporary local update
-    setFeature((prev) => ({ ...prev, ...updatedData }));
+    setFeatureOverride((prev) => ({ ...(prev ?? response?.data), ...updatedData }));
     // optional re-fetch for fresh data
     revalidator.revalidate();
   };
@@ -81,9 +65,8 @@ export default function FeatureDetail() {
         </Box>
 
         <EditDialog initialData={feature} onSuccess={onEditSuccess} isOpen={editFeatureDialog} formFields={editFormFields} updateBackendEndpoint={BACKEND_ENDPOINT.edit_feature_detail(feature.id)} onClose={() => setEditFeatureDialog(false)} useFor={"feature"} />
-
       </Box>
-      <ChecklistLists featureId={feature.id} />
+      <FeatureUserStories featureId={feature.id} departmentId={feature.department_id} projectId={feature.project_id} />
     </>
   );
 }

@@ -1,3 +1,9 @@
+// Author: Gururaj
+// Created: 19th Jun 2025
+// Description: Client registry service that fetches and caches the SSO client config from the auth service.
+// Version: 1.0.0
+// Modified:
+
 // services/clientRegistryService.js
 // Abstraction layer for client configurations
 // Supports static config (current) and API-backed (future) data sources
@@ -20,9 +26,9 @@
  * Data source types for client registry
  */
 export const DATA_SOURCE = {
-  STATIC: 'static',      // Current: from clientRegistry.js
-  API: 'api',            // Future: from backend API
-  HYBRID: 'hybrid',      // Cache locally, sync from API
+  STATIC: "static", // Current: from clientRegistry.js
+  API: "api", // Future: from backend API
+  HYBRID: "hybrid", // Cache locally, sync from API
 };
 
 // Current data source configuration
@@ -48,7 +54,7 @@ export async function getAllClients() {
     case DATA_SOURCE.STATIC:
     default:
       // Fallback only - most clients will use API
-      return import('../config/clientRegistry').then(m => m.CLIENT_CONFIGS || {});
+      return import("../config/clientRegistry").then((m) => m.CLIENT_CONFIGS || {});
   }
 }
 
@@ -81,9 +87,9 @@ export async function getClient(clientId) {
     // Transform API format to UI format
     const clientConfig = {
       name: apiConfig.name || apiConfig.display_name || clientId,
-      description: apiConfig.description || 'Application',
-      icon: apiConfig.icon || '🔗',
-      primaryColor: apiConfig.primary_color || '#3B82F6',
+      description: apiConfig.description || "Application",
+      icon: apiConfig.icon || "🔗",
+      primaryColor: apiConfig.primary_color || "#3B82F6",
       redirectUrl: apiConfig.redirect_url || apiConfig.callback_url,
       // Include additional fields for organization-aware apps
       requiresOrganization: apiConfig.requires_organization || false,
@@ -98,7 +104,6 @@ export async function getClient(clientId) {
     });
 
     return clientConfig;
-
   } catch (error) {
     console.error(`[ClientRegistry] Error fetching client config for ${clientId}:`, error);
     return null;
@@ -111,18 +116,20 @@ export async function getClient(clientId) {
  * @param {string} [fallbackId='account-ui'] - Fallback client ID
  * @returns {Promise<ClientConfig>}
  */
-export async function getClientWithFallback(clientId, fallbackId = 'account-ui') {
+export async function getClientWithFallback(clientId, fallbackId = "account-ui") {
   const client = await getClient(clientId);
   if (client) return client;
-  
+
   const fallback = await getClient(fallbackId);
-  return fallback || {
-    name: 'Unknown Application',
-    description: 'Unknown client application',
-    icon: '❓',
-    primaryColor: '#6B7280',
-    redirectUrl: '/',
-  };
+  return (
+    fallback || {
+      name: "Unknown Application",
+      description: "Unknown client application",
+      icon: "❓",
+      primaryColor: "#6B7280",
+      redirectUrl: "/",
+    }
+  );
 }
 
 /**
@@ -142,7 +149,7 @@ export async function clientExists(clientId) {
  * @returns {Promise<string[]>}
  */
 export async function getClientIds() {
-  console.warn('[ClientRegistry] getClientIds is not fully supported in API mode');
+  console.warn("[ClientRegistry] getClientIds is not fully supported in API mode");
   return [];
 }
 
@@ -156,7 +163,7 @@ export async function getClientIds() {
  */
 async function fetchClientsFromAPI() {
   // Currently not implemented - would need a /clients endpoint
-  console.warn('[ClientRegistry] fetchClientsFromAPI not implemented');
+  console.warn("[ClientRegistry] fetchClientsFromAPI not implemented");
   return {};
 }
 
@@ -166,13 +173,15 @@ async function fetchClientsFromAPI() {
  */
 async function getHybridClients() {
   // Return cached/static immediately
-  const current = clientCache || CLIENT_CONFIGS;
-  
+  const current = Object.fromEntries(clientCache);
+
   // Sync in background if cache is stale
-  if (!cacheExpiry || Date.now() > cacheExpiry) {
+  const now = Date.now();
+  const isStale = [...clientCache.values()].some((entry) => now > entry.expiry);
+  if (clientCache.size === 0 || isStale) {
     fetchClientsFromAPI().catch(console.error);
   }
-  
+
   return current;
 }
 
@@ -207,9 +216,9 @@ export function getClientSync(clientId) {
   console.warn(`[ClientRegistry] getClientSync: Sync lookup for ${clientId} - use async getClient instead`);
   return {
     name: clientId,
-    description: 'Loading...',
-    icon: '🔗',
-    primaryColor: '#3B82F6',
+    description: "Loading...",
+    icon: "🔗",
+    primaryColor: "#3B82F6",
     redirectUrl: null,
   };
 }
@@ -219,7 +228,7 @@ export function getClientSync(clientId) {
  * @returns {Object<string, ClientConfig>} Empty object - use async version
  */
 export function getAllClientsSync() {
-  console.warn('[ClientRegistry] getAllClientsSync is deprecated - use async getAllClients()');
+  console.warn("[ClientRegistry] getAllClientsSync is deprecated - use async getAllClients()");
   return {};
 }
 

@@ -1,3 +1,9 @@
+// Author: Gururaj
+// Created: 19th Jun 2025
+// Description: Invite Members page that sends email invitations to new team members.
+// Version: 1.0.0
+// Modified:
+
 /**
  * @fileoverview Invite Members Page
  * @description Screen for inviting users to join the organization

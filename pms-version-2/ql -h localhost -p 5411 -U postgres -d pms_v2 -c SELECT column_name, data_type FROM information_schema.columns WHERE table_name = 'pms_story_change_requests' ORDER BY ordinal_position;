@@ -1,0 +1,24 @@
+                                                Table "public.pms_story_change_requests"
+     Column      |                    Type                     | Collation | Nullable |                     Default                      
+-----------------+---------------------------------------------+-----------+----------+--------------------------------------------------
+ id              | uuid                                        |           | not null | 
+ story_id        | uuid                                        |           | not null | 
+ requested_by    | uuid                                        |           | not null | 
+ request_type    | enum_pms_story_change_requests_request_type |           | not null | 
+ requested_value | json                                        |           | not null | 
+ current_value   | json                                        |           |          | 
+ status          | enum_pms_story_change_requests_status       |           | not null | 'pending'::enum_pms_story_change_requests_status
+ reviewed_by     | uuid                                        |           |          | 
+ reviewed_at     | timestamp with time zone                    |           |          | 
+ review_comments | text                                        |           |          | 
+ created_by      | uuid                                        |           |          | 
+ updated_by      | uuid                                        |           |          | 
+ created_at      | timestamp with time zone                    |           | not null | now()
+ updated_at      | timestamp with time zone                    |           | not null | now()
+ deleted_at      | timestamp with time zone                    |           |          | 
+Indexes:
+    "pms_story_change_requests_pkey" PRIMARY KEY, btree (id)
+    "pms_story_change_requests_story_status_idx" btree (story_id, status)
+Foreign-key constraints:
+    "pms_story_change_requests_story_id_fkey" FOREIGN KEY (story_id) REFERENCES pms_user_stories(id) ON DELETE CASCADE
+

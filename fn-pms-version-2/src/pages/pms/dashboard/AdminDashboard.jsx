@@ -1,3 +1,9 @@
+// Author: Gururaj
+// Created: 19th Jun 2025
+// Description: Admin dashboard composing executive snapshot, project health summary, and delivery risk widgets.
+// Version: 1.0.0
+// Modified:
+
 import { Box } from "@mui/material";
 import ProjectHealthSummary from "./ProjectHealthSummary";
 import Heading from "../../../components/Heading";

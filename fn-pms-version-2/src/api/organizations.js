@@ -1,3 +1,9 @@
+// Author: Gururaj
+// Created: 19th Jun 2025
+// Description: Organisation API helpers: CRUD wrappers for the auth-service organisation endpoints.
+// Version: 1.0.0
+// Modified:
+
 /**
  * @fileoverview Organization API Helper
  * @description API functions for organization management

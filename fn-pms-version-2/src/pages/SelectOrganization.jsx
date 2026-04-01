@@ -1,3 +1,9 @@
+// Author: Gururaj
+// Created: 19th Jun 2025
+// Description: Organisation selection page shown when the user belongs to multiple organisations.
+// Version: 1.0.0
+// Modified:
+
 /**
  * @fileoverview Select Organization Page
  * @description Screen for selecting from multiple organizations

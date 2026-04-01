@@ -1,3 +1,9 @@
+// Author: Gururaj
+// Created: 19th Jun 2025
+// Description: Modal dialog for creating a new organisation via the auth service.
+// Version: 1.0.0
+// Modified:
+
 /**
  * @fileoverview Create Organization Modal
  * @description MUI Dialog for creating a new organization (for existing users)

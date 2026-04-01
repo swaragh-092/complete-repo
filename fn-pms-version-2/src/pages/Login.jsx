@@ -1,32 +1,30 @@
+// Author: Gururaj
+// Created: 19th Jun 2025
+// Description: Login page that redirects unauthenticated users to the SSO login flow.
+// Version: 1.0.0
+// Modified:
+
 /**
  * @fileoverview Login Page
  * @description Modern login page with MUI components
  */
 
-import { useEffect, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import { auth } from '@spidy092/auth-client';
-import {
-  Alert,
-  Box,
-  Button,
-  Card,
-  CardContent,
-  CircularProgress,
-  Typography,
-  useTheme,
-} from '@mui/material';
-import { Login as LoginIcon, Warning as WarningIcon } from '@mui/icons-material';
-import '../config/authConfig';
+import { useEffect, useRef, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { auth } from "@spidy092/auth-client";
+import { Alert, Box, Button, Card, CardContent, CircularProgress, Typography, useTheme } from "@mui/material";
+import { Login as LoginIcon, Warning as WarningIcon } from "@mui/icons-material";
+import "../config/authConfig";
 
 export default function Login() {
   const theme = useTheme();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [loading, setLoading] = useState(false);
+  const loginTriggered = useRef(false);
 
-  const sessionExpired = searchParams.get('expired') === 'true';
-  const expiredReason = searchParams.get('reason');
+  const sessionExpired = searchParams.get("expired") === "true";
+  const expiredReason = searchParams.get("reason");
 
   useEffect(() => {
     if (sessionExpired) {
@@ -37,12 +35,14 @@ export default function Login() {
 
     const token = auth.getToken();
     if (token && !auth.isTokenExpired(token)) {
-      navigate('/');
+      navigate("/");
       return;
     }
 
-    setLoading(true);
-    auth.login();
+    if (!loginTriggered.current) {
+      loginTriggered.current = true;
+      auth.login();
+    }
   }, [navigate, sessionExpired]);
 
   const handleLogin = () => {
@@ -52,10 +52,14 @@ export default function Login() {
 
   const getReasonMessage = () => {
     switch (expiredReason) {
-      case 'session_deleted': return 'Your session was terminated by an administrator.';
-      case 'idle_timeout': return 'You were logged out due to inactivity.';
-      case 'logout_from_other_tab': return 'You were logged out from another tab.';
-      default: return 'Your session has expired. Please sign in again.';
+      case "session_deleted":
+        return "Your session was terminated by an administrator.";
+      case "idle_timeout":
+        return "You were logged out due to inactivity.";
+      case "logout_from_other_tab":
+        return "You were logged out from another tab.";
+      default:
+        return "Your session has expired. Please sign in again.";
     }
   };
 
@@ -63,13 +67,11 @@ export default function Login() {
     return (
       <Box
         sx={{
-          minHeight: '100vh',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          background: theme.palette.mode === 'dark'
-            ? 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)'
-            : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          minHeight: "100vh",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          background: theme.palette.mode === "dark" ? "linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)" : "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
           p: 2,
         }}
       >
@@ -77,9 +79,9 @@ export default function Login() {
           elevation={0}
           sx={{
             maxWidth: 420,
-            width: '100%',
+            width: "100%",
             borderRadius: 3,
-            textAlign: 'center',
+            textAlign: "center",
             p: { xs: 2, sm: 3 },
           }}
         >
@@ -89,16 +91,16 @@ export default function Login() {
               sx={{
                 width: 72,
                 height: 72,
-                borderRadius: '50%',
-                bgcolor: 'warning.light',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                mx: 'auto',
+                borderRadius: "50%",
+                bgcolor: "warning.light",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                mx: "auto",
                 mb: 3,
               }}
             >
-              <WarningIcon sx={{ fontSize: 40, color: 'warning.dark' }} />
+              <WarningIcon sx={{ fontSize: 40, color: "warning.dark" }} />
             </Box>
 
             <Typography variant="h5" fontWeight={700} gutterBottom>
@@ -118,16 +120,16 @@ export default function Login() {
               sx={{
                 py: 1.5,
                 borderRadius: 2,
-                textTransform: 'none',
+                textTransform: "none",
                 fontWeight: 600,
-                fontSize: '1rem',
-                background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
-                '&:hover': {
-                  background: 'linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)',
+                fontSize: "1rem",
+                background: "linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)",
+                "&:hover": {
+                  background: "linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)",
                 },
               }}
             >
-              {loading ? <CircularProgress size={24} color="inherit" /> : 'Sign In Again'}
+              {loading ? <CircularProgress size={24} color="inherit" /> : "Sign In Again"}
             </Button>
           </CardContent>
         </Card>
@@ -138,14 +140,12 @@ export default function Login() {
   return (
     <Box
       sx={{
-        minHeight: '100vh',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        background: theme.palette.mode === 'dark'
-          ? 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)'
-          : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        minHeight: "100vh",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        background: theme.palette.mode === "dark" ? "linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)" : "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
         p: 2,
       }}
     >
@@ -153,9 +153,9 @@ export default function Login() {
         elevation={0}
         sx={{
           maxWidth: 420,
-          width: '100%',
+          width: "100%",
           borderRadius: 3,
-          textAlign: 'center',
+          textAlign: "center",
           p: { xs: 2, sm: 3 },
         }}
       >
@@ -166,15 +166,15 @@ export default function Login() {
               width: 72,
               height: 72,
               borderRadius: 2,
-              background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              mx: 'auto',
+              background: "linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              mx: "auto",
               mb: 3,
             }}
           >
-            <LoginIcon sx={{ fontSize: 36, color: 'white' }} />
+            <LoginIcon sx={{ fontSize: 36, color: "white" }} />
           </Box>
 
           <Typography variant="h5" fontWeight={700} gutterBottom>
@@ -184,7 +184,7 @@ export default function Login() {
             Redirecting to secure login...
           </Typography>
 
-          <CircularProgress sx={{ color: 'primary.main' }} />
+          <CircularProgress sx={{ color: "primary.main" }} />
         </CardContent>
       </Card>
     </Box>

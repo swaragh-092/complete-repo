@@ -1,3 +1,9 @@
+// Author: Gururaj
+// Created: 14th Oct 2025
+// Description: Create Helper Task dialog for raising a help request on a running task to another member.
+// Version: 1.0.0
+// Modified:
+
 import { useState, useEffect } from "react";
 import { Dialog, DialogTitle, DialogContent, DialogActions, Box, Typography, Button, Autocomplete, TextField, useTheme } from "@mui/material";
 import InputField from "../../../../components/formFields/InputField";

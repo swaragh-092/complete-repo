@@ -44,7 +44,7 @@ class NotificationService {
       !projectId
     ) {
       throw new Error(
-        "projectId is required for project/department notifications"
+        "projectId is required for project/department notifications",
       );
     }
     if (["department", "project_department"].includes(scope) && !departmentId) {
@@ -85,7 +85,7 @@ class NotificationService {
           entity_id: entityId || null,
           entity_type: entityType || null,
         },
-        { ...withContext(req) }
+        { ...withContext(req) },
       );
       notifications = [notification];
     }
@@ -102,10 +102,18 @@ class NotificationService {
   static async getUserNotifications(req, userId, query = {}) {
     const { Notification, NotificationRead, ProjectMember } = req.db;
 
-    let includeIndivudial = query.includeIndivudial === undefined ? true : query.includeIndivudial === 'true';
-    let includeProject = query.includeProject === undefined ? true : query.includeProject === 'true';
-    let includeDepartment = query.includeDepartment === undefined ? true : query.includeDepartment === 'true';
-
+    let includeIndivudial =
+      query.includeIndivudial === undefined
+        ? true
+        : query.includeIndivudial === "true";
+    let includeProject =
+      query.includeProject === undefined
+        ? true
+        : query.includeProject === "true";
+    let includeDepartment =
+      query.includeDepartment === undefined
+        ? true
+        : query.includeDepartment === "true";
 
     if (!includeIndivudial && !includeProject && !includeDepartment) {
       includeIndivudial = includeProject = includeDepartment = true;
@@ -144,7 +152,7 @@ class NotificationService {
     const where = whereOr.length ? { [Op.or]: whereOr } : {};
 
     // Only unread filter
-    if (query.onlyUnread === true || query.onlyUnread === 'true' ) {
+    if (query.onlyUnread === true || query.onlyUnread === "true") {
       where[Op.and] = [
         { scope: "individual", read_at: null },
         Sequelize.literal(`(
@@ -191,7 +199,6 @@ class NotificationService {
       },
     };
 
-
     const result = await paginateHelperFunction({
       model: Notification,
       whereFilters: where,
@@ -213,15 +220,19 @@ class NotificationService {
     // fetch notification first to check scope
     const notification = await Notification.findByPk(notificationId);
     if (!notification) {
-      return {status: 404, success : false, message : "Notification not found!.."};
+      return {
+        status: 404,
+        success: false,
+        message: "Notification not found!..",
+      };
     }
     let readEntry;
     // for individual scope, ensure only that user can mark it as read
     if (notification.scope === "individual") {
       if (notification.user_id !== req.user.id) {
-        return {status: 401, success : false, };
+        return { status: 401, success: false };
       }
-      await notification.update({read_at: new Date()});
+      await notification.update({ read_at: new Date() });
     } else {
       // check if already exists in NotificationRead
       readEntry = await NotificationRead.findOne({
@@ -236,15 +247,14 @@ class NotificationService {
             user_id: req.user.id,
             read_at: new Date(),
           },
-          { ...withContext(req) }
+          { ...withContext(req) },
         );
       }
     }
 
     // if already exists (with or without read_at), return as is
-    return {success : true, status : 200, data: {notification, readEntry}};
+    return { success: true, status: 200, data: { notification, readEntry } };
   }
-
 
   static async unreadCount(req) {
     const { Notification, ProjectMember } = req.db;
@@ -276,7 +286,7 @@ class NotificationService {
       raw: true,
     });
 
-    projectMemberships.forEach(pm => {
+    projectMemberships.forEach((pm) => {
       visibilityOr.push({
         scope: "project_department",
         project_id: pm.project_id,
@@ -296,30 +306,152 @@ class NotificationService {
       where: {
         [Op.or]: visibilityOr,
       },
-      attributes: ["id"],
+      attributes: ["id", "scope", "read_at"],
       include: [
         {
-          association: "reads",
+          model: req.db.NotificationRead,
+          as: "reads",
           required: false,
-          attributes: [],
           where: { user_id: userId },
         },
       ],
-      group: ["Notification.id"],
-      having: sequelize.literal(`COUNT(reads.id) = 0`),
-      raw: true,
+    });
+
+    let count = 0;
+    unreadRows.forEach((n) => {
+      if (n.scope === "individual") {
+        if (!n.read_at) count++;
+      } else {
+        // For broad scopes, if no read record found, it's unread
+        if (!n.reads || n.reads.length === 0) count++;
+      }
     });
 
     return {
       success: true,
       status: 200,
-      data: {
-        unread_count: unreadRows.length,
-      },
+      data: { unread_count: count },
     };
   }
 
+  // --- Triggers ---
 
+  /**
+   * Notify when an issue is assigned
+   * @param {Object} req
+   * @param {string} issueId
+   * @param {string} assigneeId - ProjectMember ID
+   */
+  static async notifyIssueAssigned(req, issueId, assigneeId) {
+    try {
+      const { Issue, ProjectMember } = req.db;
+      const issue = await Issue.findByPk(issueId);
+      const member = await ProjectMember.findByPk(assigneeId);
+
+      if (!issue || !member) return;
+      if (member.user_id === req.user.id) return; // Don't notify self
+
+      await this.createNotification(req, {
+        scope: "individual",
+        title: "Issue Assigned",
+        message: `You have been assigned to issue #${issue.id.substring(0, 8)}...: ${issue.title}`,
+        triggeredById: req.user.id,
+        userId: member.user_id,
+        entityType: "issue",
+        entityId: issue.id,
+      });
+    } catch (err) {
+      console.error("Notification Error (Assign):", err);
+    }
+  }
+
+  /**
+   * Notify when an issue status changes
+   * @param {Object} req
+   * @param {string} issueId
+   * @param {string} newStatusName
+   */
+  static async notifyStatusChanged(req, issueId, newStatusName) {
+    try {
+      const { Issue, ProjectMember } = req.db;
+      const issue = await Issue.findByPk(issueId);
+      if (!issue) return;
+
+      const recipients = new Set();
+
+      // 1. Notify Creator (Reporter)
+      if (issue.created_by && issue.created_by !== req.user.id) {
+        recipients.add(issue.created_by);
+      }
+
+      // 2. Notify Assignee
+      if (issue.assignee_id) {
+        const member = await ProjectMember.findByPk(issue.assignee_id);
+        if (member && member.user_id !== req.user.id) {
+          recipients.add(member.user_id);
+        }
+      }
+
+      for (const userId of recipients) {
+        await this.createNotification(req, {
+          scope: "individual",
+          title: "Status Changed",
+          message: `Issue #${issue.id.substring(0, 8)}... status updated to ${newStatusName}`,
+          triggeredById: req.user.id,
+          userId: userId,
+          entityType: "issue",
+          entityId: issue.id,
+        });
+      }
+    } catch (err) {
+      console.error("Notification Error (Status):", err);
+    }
+  }
+
+  /**
+   * Notify when a comment is added
+   * @param {Object} req
+   * @param {string} issueId
+   * @param {string} content
+   */
+  static async notifyCommentAdded(req, issueId, content) {
+    try {
+      const { Issue, ProjectMember } = req.db;
+      const issue = await Issue.findByPk(issueId);
+      if (!issue) return;
+
+      const recipients = new Set();
+      const preview =
+        content.length > 50 ? content.substring(0, 50) + "..." : content;
+
+      // 1. Notify Creator
+      if (issue.created_by && issue.created_by !== req.user.id) {
+        recipients.add(issue.created_by);
+      }
+
+      // 2. Notify Assignee
+      if (issue.assignee_id) {
+        const member = await ProjectMember.findByPk(issue.assignee_id);
+        if (member && member.user_id !== req.user.id) {
+          recipients.add(member.user_id);
+        }
+      }
+
+      for (const userId of recipients) {
+        await this.createNotification(req, {
+          scope: "individual",
+          title: "New Comment",
+          message: `New comment on issue #${issue.id.substring(0, 8)}...: ${preview}`,
+          triggeredById: req.user.id,
+          userId: userId,
+          entityType: "issue",
+          entityId: issue.id,
+        });
+      }
+    } catch (err) {
+      console.error("Notification Error (Comment):", err);
+    }
+  }
 }
 
 module.exports = NotificationService;

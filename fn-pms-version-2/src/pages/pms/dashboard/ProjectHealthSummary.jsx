@@ -1,3 +1,9 @@
+// Author: Gururaj
+// Created: 19th Jun 2025
+// Description: Project Health Summary widget showing per-project story completion progress.
+// Version: 1.0.0
+// Modified:
+
 // ...existing code...
 import { Grid, Card, CardActionArea, CardContent, Box, Typography, Chip, LinearProgress, Stack, Avatar, Divider, Skeleton } from "@mui/material";
 import { useNavigate } from "react-router-dom";

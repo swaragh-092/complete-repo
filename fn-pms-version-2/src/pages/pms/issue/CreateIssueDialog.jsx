@@ -19,7 +19,7 @@ import DoButton from "../../../components/button/DoButton";
 import { useWorkspace } from "../../../context/WorkspaceContext";
 
 export default function CreateIssueDialog({ isOpen, onClose, fromDepartmentId, projectId, onSuccess = () => {} }) {
-  const { workspaces, currentWorkspace, selectWorkspace, loading, isAdmin } = useWorkspace();
+  const { workspaces, currentWorkspace } = useWorkspace();
   // ----------------------------------------
   // FORM STATE
   // ----------------------------------------
@@ -29,29 +29,53 @@ export default function CreateIssueDialog({ isOpen, onClose, fromDepartmentId, p
     priority: "medium",
     issue_type_id: "",
     to_department_id: "",
+    user_story_id: "",
   });
 
+  const [validationErrors, setValidationErrors] = useState({ version: 1 });
   const [newIssueText, setNewIssueText] = useState("");
 
   useEffect(() => {
     if (isOpen) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setFormData({
         title: "",
         description: "",
         priority: "medium",
         issue_type_id: "",
         to_department_id: "",
+        user_story_id: "",
       });
 
+       
       setValidationErrors({ version: 1 });
     }
   }, [isOpen]);
-
-  const [validationErrors, setValidationErrors] = useState({ version: 1 });
   const [isValid, setIsValid] = useState(false);
   const [isSubmitting, setSubmitting] = useState(false);
 
   const [departments, setDepartments] = useState([]);
+  const [userStories, setUserStories] = useState([]);
+
+  // ----------------------------------------
+  // Load user stories for the project
+  // ----------------------------------------
+  useEffect(() => {
+    if (!projectId) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setUserStories([]);
+      return;
+    }
+    (async () => {
+      const res = await backendRequest({
+        endpoint: BACKEND_ENDPOINT.user_stories_by_project(projectId),
+      });
+      if (res?.success) {
+        const stories = res.data?.rows || res.data || [];
+        setUserStories(stories.map((s) => ({ value: s.id, label: `${s.type === "task" ? "[Task] " : ""}${s.title}` })));
+      }
+    })();
+  }, [projectId]);
 
   // ----------------------------------------
   // Load departments (dummy now)
@@ -59,6 +83,7 @@ export default function CreateIssueDialog({ isOpen, onClose, fromDepartmentId, p
 
   useEffect(() => {
     if (!workspaces || !currentWorkspace?.id) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setDepartments([]);
       return;
     }
@@ -71,6 +96,7 @@ export default function CreateIssueDialog({ isOpen, onClose, fromDepartmentId, p
         label: workspace.name,
       }));
 
+     
     setDepartments(departments);
   }, [workspaces, currentWorkspace?.id]);
 
@@ -161,6 +187,7 @@ export default function CreateIssueDialog({ isOpen, onClose, fromDepartmentId, p
       title: formData.title.trim(),
       description: formData.description || null,
       priority: formData.priority,
+      ...(formData.user_story_id ? { user_story_id: formData.user_story_id } : {}),
     };
 
     const response = await createIssueBackend(projectId, payload);
@@ -219,6 +246,27 @@ export default function CreateIssueDialog({ isOpen, onClose, fromDepartmentId, p
             ]}
           />
         </Box>
+        {/* ------------------- USER STORY (optional) ------------------- */}
+        {userStories.length > 0 && (
+          <Box marginTop={"10px"}>
+            <SelectField
+              name="user_story_id"
+              label="Link to User Story / Task (optional)"
+              value={formData.user_story_id}
+              onChange={handleInputChange}
+              options={[
+                { value: "", label: "None" },
+                ...userStories.map((s) => ({
+                  value: s.value,
+                  // s.label already includes a "[Task] " prefix for task-type stories,
+                  // applied during the useEffect fetch mapping above.
+                  label: s.label,
+                })),
+              ]}
+              required={false}
+            />
+          </Box>
+        )}
       </DialogContent>
 
       <DialogActions>

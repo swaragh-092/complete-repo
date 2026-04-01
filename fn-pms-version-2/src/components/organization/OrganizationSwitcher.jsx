@@ -1,3 +1,9 @@
+// Author: Gururaj
+// Created: 19th Jun 2025
+// Description: Organisation switcher dropdown used in the sidebar or header.
+// Version: 1.0.0
+// Modified:
+
 import { useState } from 'react';
 import './OrganizationSwitcher.css';
 import authConfig from '../../config/authConfig';

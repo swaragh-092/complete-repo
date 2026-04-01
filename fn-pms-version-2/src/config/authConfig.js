@@ -1,3 +1,9 @@
+// Author: Gururaj
+// Created: 19th Jun 2025
+// Description: Auth client configuration: SSO client ID, redirect URIs, and organisation model setting.
+// Version: 1.0.0
+// Modified:
+
 /**
  * @fileoverview Auth Configuration
  * @description Auth client setup with session security, cross-tab sync, and idle timeout

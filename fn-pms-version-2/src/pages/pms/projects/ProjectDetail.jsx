@@ -11,7 +11,6 @@ import { redirect, useLoaderData, useNavigate, useRevalidator } from "react-rout
 import BACKEND_ENDPOINT, { paths } from "../../../util/urls";
 import Heading from "../../../components/Heading";
 import backendRequest from "../../../util/request";
-import { useAuth } from "@spidy092/auth-client";
 import { useOrganization } from "../../../context/OrganizationContext";
 
 // import { useLoaderData } from "react-router-dom";
@@ -27,50 +26,58 @@ import { colorCodes } from "../../../theme";
 import { showToast } from "../../../util/feedback/ToastService";
 import TaskList from "./task/TaskList";
 import { showConfirmDialog } from "../../../util/feedback/ConfirmService";
-import ListLogs from "./logs/ListLogs";
+import UserStoryCompletionWidget from "./userStories/UserStoryCompletionWidget";
+
+const InfoBox = ({ label, value }) => (
+  <Box
+    sx={{
+      border: "1px solid #e0e0e0",
+      borderRadius: 2,
+      p: 2,
+      minWidth: 200,
+      flex: 1,
+    }}
+  >
+    <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+      {label}
+    </Typography>
+    {typeof value === "string" || typeof value === "number" ? <Typography variant="body1">{value || "-"}</Typography> : value}
+  </Box>
+);
 
 export default function ProjectDetail() {
   const theme = useTheme();
   const colors = colorCodes(theme.palette.mode);
 
   const navigate = useNavigate();
-  const { user } = useAuth();
   const { currentOrganization } = useOrganization();
 
   const [taskRefresh, setTaskRefresher] = useState(true);
   const response = useLoaderData();
-  const [project, setProject] = useState(response?.data);
-  const [canApprove, setCanApprove] = useState(false);
-  const [memberIdCreateTask, setMemberIdCreateTask] = useState(null);
+  const [projectOverride, setProjectOverride] = useState(null);
+  const project = projectOverride ?? response?.data;
+  const setProject = setProjectOverride;
 
   const [isLoading, setLoading] = useState(false);
 
   const [editProjectDialog, setEditProjectDialog] = useState(false);
   const revalidator = useRevalidator();
 
-  useEffect(() => {
-    if (response?.data) {
-      setProject(response.data);
-    }
-  }, [response?.data]);
-
   // Determine if the current user can approve tasks in this project
-  useEffect(() => {
-    if (!project?.id) return;
+  const orgRole = currentOrganization?.role?.name?.toLowerCase();
+  const isOrgApprover = ["owner", "admin"].includes(orgRole);
+  const [isProjectLead, setIsProjectLead] = useState(false);
+  const canApprove = isOrgApprover || isProjectLead;
 
-    const orgRole = currentOrganization?.role?.name?.toLowerCase();
-    const isOrgApprover = ["owner", "admin"].includes(orgRole);
-    if (isOrgApprover) {
-      setCanApprove(true);
-      return;
-    }
+  useEffect(() => {
+    if (!project?.id || isOrgApprover) return;
 
     backendRequest({ endpoint: BACKEND_ENDPOINT.my_project_membership(project.id) }).then((res) => {
       if (res.success && res.data?.project_role === "lead") {
-        setCanApprove(true);
+        setIsProjectLead(true);
       }
     });
-  }, [project?.id, currentOrganization, user]);
+  }, [project?.id, isOrgApprover]);
 
   const onEditSuccess = (updatedData) => {
     setEditProjectDialog(false);
@@ -88,22 +95,6 @@ export default function ProjectDetail() {
       return date;
     }
   };
-  const InfoBox = ({ label, value }) => (
-    <Box
-      sx={{
-        border: "1px solid #e0e0e0",
-        borderRadius: 2,
-        p: 2,
-        minWidth: 200,
-        flex: 1,
-      }}
-    >
-      <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-        {label}
-      </Typography>
-      {typeof value === "string" || typeof value === "number" ? <Typography variant="body1">{value || "-"}</Typography> : value}
-    </Box>
-  );
 
   const handleDeleteProject = async () => {
     setLoading(true);
@@ -145,7 +136,7 @@ export default function ProjectDetail() {
               onclick={async () => {
                 showConfirmDialog({
                   title: "Complete Project",
-                  message: "Are you sure you want to complete this project? Please ensure all validations are met (no open issues, no pending tasks, at least 5 completed tasks).",
+                  message: "Are you sure you want to complete this project? Please ensure all validations are met (no open issues, no pending user stories, at least 5 completed stories).",
                   onConfirm: async () => {
                     setLoading(true);
                     const response = await backendRequest({
@@ -218,12 +209,12 @@ export default function ProjectDetail() {
           },
         }}
       >
-        <ProjectMembersList projectId={project.id} setMemberIdCreateTask={setMemberIdCreateTask} setTaskRefresher={setTaskRefresher} />
+        <ProjectMembersList projectId={project.id} setTaskRefresher={setTaskRefresher} />
         <ProjectFeatures projectId={project.id} setTaskRefresher={setTaskRefresher} />
       </Box>
 
-      <TaskList project_id={project.id} canApprove={canApprove} memberIdCreateTask={memberIdCreateTask} setMemberIdCreateTask={setMemberIdCreateTask} refresh={taskRefresh} setRefresher={setTaskRefresher} />
-      <ListLogs projectId={project.id} />
+      {/* <TaskList project_id={project.id} canApprove={canApprove} refresh={taskRefresh} setRefresher={setTaskRefresher} /> */}
+      {/* <UserStoryCompletionWidget projectId={project.id} /> */}
     </>
   );
 }

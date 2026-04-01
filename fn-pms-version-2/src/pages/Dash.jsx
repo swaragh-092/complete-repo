@@ -1,3 +1,9 @@
+// Author: Gururaj
+// Created: 19th Jun 2025
+// Description: Default landing dashboard that renders the role-appropriate view (Admin or Worker).
+// Version: 1.0.0
+// Modified:
+
 import { useEffect, useState } from "react";
 import { showToast } from "../util/feedback/ToastService";
 import backendRequest from "../util/request";

@@ -1,3 +1,9 @@
+// Author: Gururaj
+// Created: 19th Jun 2025
+// Description: Summary Card component used in the admin dashboard KPI row.
+// Version: 1.0.0
+// Modified:
+
 import { Card, Box, Typography, useTheme } from "@mui/material";
 
 const SummaryCard = ({ title, count, icon, color, onClick }) => {

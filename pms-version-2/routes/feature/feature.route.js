@@ -8,7 +8,12 @@ const express = require("express");
 
 const featureController = require("../../controllers/feature/feature.controller");
 const validationMiddleware = require("../../middleware/validation.middleware");
-const { uuid, enumValue, name, description } = require("../../services/validation");
+const {
+  uuid,
+  enumValue,
+  description,
+} = require("../../services/validation");
+const { body } = require("express-validator");
 
 const router = express.Router();
 // /{moduleCode}/feature/...
@@ -47,12 +52,18 @@ const router = express.Router();
  *       200:
  *         description: Feature created successfully
  */
-router.post("/department/:departmentId", [
-  uuid("departmentId"),
-  name(),
-  description().optional(),
-], validationMiddleware("Feature", "Create"), featureController.createFeature);
-
+router.post(
+  "/department/:departmentId",
+  [
+    uuid("departmentId"),
+    body("name").trim().notEmpty().withMessage("name is required").isLength({ min: 2, max: 100 }).withMessage("name must be 2-100 characters"),
+    description().optional(),
+    uuid("projectId", "body"),
+    body("parentFeatureId").optional().isUUID().withMessage("parentFeatureId must be a valid UUID"),
+  ],
+  validationMiddleware("Feature", "Create"),
+  featureController.createFeature,
+);
 
 /**
  * @swagger
@@ -77,12 +88,12 @@ router.post("/department/:departmentId", [
  *       200:
  *         description: Features retrieved successfully
  */
-router.get("/department/:departmentId",
+router.get(
+  "/department/:departmentId",
   [uuid("departmentId")],
   validationMiddleware("Feature", "Get All"),
-  featureController.getAllFeaturesOfDepartment
+  featureController.getAllFeaturesOfDepartment,
 );
-
 
 /**
  * @swagger
@@ -112,15 +123,12 @@ router.get("/department/:departmentId",
  *       200:
  *         description: Filtered features retrieved successfully
  */
-router.get("/department/:departmentId/project/:projectId",
-  [
-    uuid("departmentId"),
-    uuid("projectId"),
-  ],
+router.get(
+  "/department/:departmentId/project/:projectId",
+  [uuid("departmentId"), uuid("projectId")],
   validationMiddleware("Feature", "Get All"),
-  featureController.getAllFeaturesOfDepartmentProjectFilter
+  featureController.getAllFeaturesOfDepartmentProjectFilter,
 );
-
 
 /**
  * @swagger
@@ -145,10 +153,12 @@ router.get("/department/:departmentId/project/:projectId",
  *       200:
  *         description: Feature retrieved successfully
  */
-router.get("/:featureId", [
-  uuid("featureId"),
-], validationMiddleware("Feature", "Get One"), featureController.getFeatureById);
-
+router.get(
+  "/:featureId",
+  [uuid("featureId")],
+  validationMiddleware("Feature", "Get One"),
+  featureController.getFeatureById,
+);
 
 /**
  * @swagger
@@ -189,13 +199,18 @@ router.get("/:featureId", [
  *       200:
  *         description: Feature updated successfully
  */
-router.put("/:featureId", [
-  uuid("featureId"),
-  name().optional(),
-  description().optional(),
-  enumValue("status", ["active", "inactive"]).optional(),
-], validationMiddleware("Feature", "Update"), featureController.updateFeature);
-
+router.put(
+  "/:featureId",
+  [
+    uuid("featureId"),
+    body("name").optional().trim().notEmpty().withMessage("name cannot be empty").isLength({ min: 2, max: 100 }).withMessage("name must be 2-100 characters"),
+    description().optional(),
+    enumValue("status", ["active", "inactive"]).optional(),
+    body("parentFeatureId").optional().isUUID().withMessage("parentFeatureId must be a valid UUID"),
+  ],
+  validationMiddleware("Feature", "Update"),
+  featureController.updateFeature,
+);
 
 /**
  * @swagger
@@ -220,10 +235,12 @@ router.put("/:featureId", [
  *       200:
  *         description: Feature deleted successfully
  */
-router.delete("/:featureId", [
-  uuid("featureId"),
-], validationMiddleware("Feature", "Delete"), featureController.deleteFeature);
-
+router.delete(
+  "/:featureId",
+  [uuid("featureId")],
+  validationMiddleware("Feature", "Delete"),
+  featureController.deleteFeature,
+);
 
 /**
  * @swagger
@@ -253,15 +270,56 @@ router.delete("/:featureId", [
  *       200:
  *         description: Feature added to project successfully
  */
-router.post("/:featureId/project/:projectId",
-  [
-    uuid("featureId"),
-    uuid("projectId")
-  ],
+router.post(
+  "/:featureId/project/:projectId",
+  [uuid("featureId"), uuid("projectId")],
   validationMiddleware("Feature", "Add to Project"),
-  featureController.addFeatureToProject
+  featureController.addFeatureToProject,
 );
 
+/**
+ * @swagger
+ * /{moduleCode}/feature/project/{projectId}:
+ *   post:
+ *     tags:
+ *       - Feature
+ *     summary: Create a feature directly under a project (v2)
+ *     parameters:
+ *       - in: path
+ *         name: projectId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [name, departmentId]
+ *             properties:
+ *               name:
+ *                 type: string
+ *               description:
+ *                 type: string
+ *               departmentId:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: Feature created for project
+ */
+router.post(
+  "/project/:projectId",
+  [
+    uuid("projectId"),
+    body("name").trim().notEmpty().withMessage("name is required").isLength({ min: 2, max: 100 }).withMessage("name must be 2-100 characters"),
+    description().optional(),
+    uuid("departmentId", "body"),
+    body("parentFeatureId").optional().isUUID().withMessage("parentFeatureId must be a valid UUID"),
+  ],
+  validationMiddleware("Feature", "Create"),
+  featureController.createProjectFeature,
+);
 
 /**
  * @swagger
@@ -269,7 +327,7 @@ router.post("/:featureId/project/:projectId",
  *   get:
  *     tags:
  *       - Feature
- *     summary: Get all features of a project
+ *     summary: Get all features of a project (v2 direct)
  *     parameters:
  *       - in: path
  *         name: moduleCode
@@ -286,11 +344,11 @@ router.post("/:featureId/project/:projectId",
  *       200:
  *         description: Features of project retrieved successfully
  */
-router.get("/project/:projectId",
+router.get(
+  "/project/:projectId",
   [uuid("projectId")],
   validationMiddleware("Project Features", "Get All"),
-  featureController.getAllFeaturesOfProject
+  featureController.getAllFeaturesByProject,
 );
-
 
 module.exports = router;

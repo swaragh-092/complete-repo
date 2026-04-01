@@ -1,3 +1,9 @@
+// Author: Gururaj
+// Created: 29th May 2025
+// Description: Project portfolio overview with multi-project summary for admin/manager roles.
+// Version: 1.0.0
+// Modified:
+
 import { Card, Grid, Typography, Box, Stack, Paper, Divider, useTheme } from "@mui/material";
 import { useEffect, useState } from "react";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid } from "recharts";
@@ -49,7 +55,7 @@ const StatCard = ({ title, value, subtitle, color, label }) => (
 /* ===================== MAIN COMPONENT ===================== */
 const ProjectPortfolioOverview = ({ refresh }) => {
   const theme = useTheme();
-  const colors = colorCodes(theme.palette.mode);
+  const _colors = colorCodes(theme.palette.mode);
 
   const [health, setHealth] = useState([]);
   const [status, setStatus] = useState([]);
@@ -212,7 +218,7 @@ const ProjectPortfolioOverview = ({ refresh }) => {
           <StatCard title="Critical Issues" value={issues.critical} subtitle="Across projects" color="#ef5350" label="ACTION REQUIRED" />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
-          <StatCard title="Overdue Tasks" value={tasks.overdue} subtitle="Need attention" color="#ffa726" label="URGENT" />
+          <StatCard title="Overdue Stories" value={tasks.overdue} subtitle="Need attention" color="#ffa726" label="URGENT" />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
           <StatCard title="At Risk Projects" value={getHealth("At Risk")} subtitle="Monitor closely" color="#ff9800" label="MONITORING" />

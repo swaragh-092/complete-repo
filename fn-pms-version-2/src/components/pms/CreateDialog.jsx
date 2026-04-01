@@ -1,3 +1,9 @@
+// Author: Gururaj
+// Created: 19th Jun 2025
+// Description: Generic PMS create-entity dialog backed by a configurable form schema.
+// Version: 1.0.0
+// Modified:
+
 import { Dialog, DialogTitle, DialogContent, DialogActions, IconButton, Button, Box } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import backedRequest from "../../util/request";

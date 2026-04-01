@@ -33,6 +33,9 @@ export default function  Validator(type, value, oldPasswordValue = null) {
     if (type === "stand_up_duration") {
       return durationNotGT7(value);
     }
+    if (type === "number") {
+      return number(value);
+    }
     return 'no field';
 }
 
@@ -162,3 +165,7 @@ function durationNotGT7(value) {
 }
 
 
+function number(value) {
+    if (!/^\d+$/.test(value)) return "Only numbers are allowed";
+    return null;
+}

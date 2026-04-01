@@ -1,3 +1,9 @@
+// Author: Gururaj
+// Created: 19th Jun 2025
+// Description: Cookie utility helpers to read and write browser cookies used by the auth flow.
+// Version: 1.0.0
+// Modified:
+
 /**
  * Cookie Helper Functions
  * Provides utilities for setting and getting cookies with proper security settings

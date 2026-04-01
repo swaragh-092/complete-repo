@@ -22,14 +22,14 @@ router.get(
 
 router.use("/project", require("./project/project.route"));
 router.use("/project/member", require("./project/projectMember.route"));
-router.use("/project/task", require("./task/task.route"));
-router.use("/project/dependency-task", require("./task/dependencyTask.route"));
-router.use("/project/helper-task", require("./task/helperTask.route"));
+router.use("/board", require("./project/board.route"));
+router.use("/sprint", require("./project/sprint.route"));
+router.use("/backlog", require("./project/backlog.route"));
+router.use("/report", require("./project/report.route")); // Added Report route
 router.use("/feature", require("./feature/feature.route"));
-router.use("/check-list", require("./feature/checklist.route"));
 router.use("/issue", require("./issue/issue.route"));
-router.use("/dailylog", require("./dailylog"));
-router.use("/work", require("./task/taskWorkFlow.route"));
+router.use("/user-story", require("./userStory/userStory.route"));
+router.use("/work-items", require("./issue/unifiedIssue.route"));
 router.use("/notification", require("./notification/notification.route"));
 
 module.exports = router;

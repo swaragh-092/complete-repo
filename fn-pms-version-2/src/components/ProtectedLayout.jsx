@@ -1,3 +1,9 @@
+// Author: Gururaj
+// Created: 19th Jun 2025
+// Description: Authentication gate that redirects unauthenticated or session-expired users to the login page.
+// Version: 1.0.0
+// Modified:
+
 /**
  * @fileoverview Protected Layout Component
  * @description Wrapper for protected routes with org enforcement - MUI version

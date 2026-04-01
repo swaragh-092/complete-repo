@@ -1,182 +1,225 @@
 // Author: Gururaj
 // Created: 14th oct 2025
 // Description: all issue related functionality controller.
-// Version: 1.0.0
-// Modified:
-
+// Version: 2.0.0
+// Modified: Enhanced for Jira-like features
 
 const IssueService = require("../../services/issue/issue.service");
 const ResponseService = require("../../services/Response");
 const { fieldPicker, sendErrorResponse } = require("../../util/helper");
 
 class IssueController {
-  // create new issue
+  // Create new issue
   static async create(req, res) {
     const thisAction = { usedFor: "Issue", action: "create" };
     try {
       const allowedFields = [
-        { field: "projectId", as: "project_id", source: "params" },
+        "project_id",
         "from_department_id",
         "to_department_id",
         "issue_type_id",
+        "user_story_id",
         "title",
         "description",
+        "priority",
+        "status_id",
+        "labels",
+        "parent_id",
       ];
+      // Also allow project_id from params if needed, but usually body is cleaner for complex creation
       const data = fieldPicker(req, allowedFields);
-      const result = await IssueService.createIssue( req, data );
+      if (req.params.projectId) data.project_id = req.params.projectId;
+
+      const result = await IssueService.createIssue(req, data);
       return ResponseService.apiResponse({ res, ...result, ...thisAction });
     } catch (err) {
       return sendErrorResponse(thisAction, err, res);
     }
-  } 
-
-  // accept issue from developer or any of the dept
-  static async accept(req, res) {
-    const thisAction = { usedFor: "Issue", action: "Accept" };
-    try {
-      const result = await IssueService.acceptOrRejectIssue(req, req.params.id);
-      return ResponseService.apiResponse({ res, ...result, ...thisAction });
-    } catch (err) {
-      
-       return sendErrorResponse(thisAction, err, res);
-    }
   }
-  // reject issue from developer or any of the dept
-  static async reject(req, res) {
-    const thisAction = { usedFor: "Issue", action: "Reject" };
+
+  // Update issue details
+  static async update(req, res) {
+    const thisAction = { usedFor: "Issue", action: "update" };
     try {
-      const result = await IssueService.acceptOrRejectIssue(req, req.params.id, "reject", req.body.reject_reason);
+      const allowedFields = [
+        "title",
+        "description",
+        "priority",
+        "issue_type_id",
+        "to_department_id",
+      ];
+      const data = fieldPicker(req, allowedFields);
+      const result = await IssueService.updateIssue(req, req.params.id, data);
       return ResponseService.apiResponse({ res, ...result, ...thisAction });
     } catch (err) {
-      
-       return sendErrorResponse(thisAction, err, res);
+      return sendErrorResponse(thisAction, err, res);
     }
   }
 
-  // reassing issue to seperate department.
-  static async reassign(req, res) {
-    const thisAction = { usedFor: "Issue", action: "Reassign Department" };
+  // Change Status
+  static async changeStatus(req, res) {
+    const thisAction = { usedFor: "Issue", action: "Change Status" };
     try {
-      const data = {issueId : req.params.id, to_department_id : req.params.toDepartmentid};
-      const result = await IssueService.reassignIssue(
+      const { status_id } = req.body;
+      if (!status_id) throw new Error("status_id is required");
+      const result = await IssueService.changeStatus(
         req,
-        data,
+        req.params.id,
+        status_id,
       );
       return ResponseService.apiResponse({ res, ...result, ...thisAction });
     } catch (err) {
-
       return sendErrorResponse(thisAction, err, res);
     }
   }
 
-  // resolve the issue next tester should check is issue cleared or not
-  static async resolve(req, res) {
-    const thisAction = { usedFor: "Issue", action: "Resolve" };
+  // Assign Issue
+  static async assign(req, res) {
+    const thisAction = { usedFor: "Issue", action: "Assign" };
     try {
-      const result = await IssueService.resolveIssue(req, req.params.id);
-      return ResponseService.apiResponse({ res, ...result, ...thisAction });
-    } catch (err) {
-      return sendErrorResponse(thisAction, err, res);
-    }
-  }
-  
-  // when tester check the issue then he concluding is celared or reopen the same issue
-  static async closeOrReOpen(req, res) {
-    const thisAction = { usedFor: "Issue", action: "Finilize" };
-    try {
-      const allowedFields = [
-        { field: "id", as: "issueId", source: "params" },
-        "status",
-        "comment"
-      ];
-      const data = fieldPicker(req, allowedFields);
-      const result = await IssueService.closeOrReopenIssue(req, data);
+      const { assignee_id } = req.body; // Can be null to unassign
+      const result = await IssueService.assignIssue(
+        req,
+        req.params.id,
+        assignee_id,
+      );
       return ResponseService.apiResponse({ res, ...result, ...thisAction });
     } catch (err) {
       return sendErrorResponse(thisAction, err, res);
     }
   }
 
-  // list issues based on project
+  // Update Labels
+  static async updateLabels(req, res) {
+    const thisAction = { usedFor: "Issue", action: "Update Labels" };
+    try {
+      const { labels } = req.body; // Array of label IDs
+      if (!Array.isArray(labels)) throw new Error("labels must be an array");
+      const result = await IssueService.updateLabels(
+        req,
+        req.params.id,
+        labels,
+      );
+      return ResponseService.apiResponse({ res, ...result, ...thisAction });
+    } catch (err) {
+      return sendErrorResponse(thisAction, err, res);
+    }
+  }
+
+  // Delete Issue
+  static async delete(req, res) {
+    const thisAction = { usedFor: "Issue", action: "Delete" };
+    try {
+      const result = await IssueService.deleteIssue(req, req.params.id);
+      return ResponseService.apiResponse({ res, ...result, ...thisAction });
+    } catch (err) {
+      return sendErrorResponse(thisAction, err, res);
+    }
+  }
+
+  // List Issues by Project
   static async listByProject(req, res) {
-    const thisAction = { usedFor: "Issues", action: "Get" };
+    const thisAction = { usedFor: "Issues", action: "List" };
     try {
-      console.log("hai here i am " + req.params.issueId);
-      const result = await IssueService.listIssues(req, req.params.projectId, req.query);
+      // Need projectId
+      if (!req.params.projectId) throw new Error("Project ID required");
+      const result = await IssueService.listIssues(
+        req,
+        req.params.projectId,
+        req.query,
+      );
       return ResponseService.apiResponse({ res, ...result, ...thisAction });
     } catch (err) {
       return sendErrorResponse(thisAction, err, res);
     }
   }
 
-  // get issue by id
-  static async getIssue(req, res) {
-    const thisAction = { usedFor: "Issue", action: "Get" };
+  // Get Single Issue
+  static async get(req, res) {
+    const thisAction = { usedFor: "Issue", action: "Get details" };
     try {
-      const result = await IssueService.getIssue(req, req.params.issueId);
+      const result = await IssueService.getIssue(req, req.params.id);
       return ResponseService.apiResponse({ res, ...result, ...thisAction });
     } catch (err) {
       return sendErrorResponse(thisAction, err, res);
     }
   }
 
-  // get issue history
-  static async getIssueHistory(req, res) {
-    const thisAction = { usedFor: "Issue History", action: "Get" };
+  // Get History
+  static async getHistory(req, res) {
+    const thisAction = { usedFor: "Issue", action: "Get history" };
     try {
-      const result = await IssueService.getIssueHistory(req, req.params.issueId);
+      const result = await IssueService.getIssueHistory(req, req.params.id);
       return ResponseService.apiResponse({ res, ...result, ...thisAction });
     } catch (err) {
       return sendErrorResponse(thisAction, err, res);
     }
   }
 
-  // create task for issue from the department who accepts that issue
-  static async createTaskForIssue(req, res) {
-    const thisAction = { usedFor: "Issue Task", action: "Create" };
+  // Link Parent / Hierarchy
+  static async linkParent(req, res) {
+    const thisAction = { usedFor: "Issue", action: "Link Parent" };
     try {
-      const allowedFileds = [
-        { field: "id", as: "issue_id", source: "params" },
-          "title",
-          "description",
-          "priority",
-          "due_date"
-      ];
-      const data = fieldPicker(req, allowedFileds);
-      const result = await IssueService.createTaskForIssueSolving(req, data);
+      // parent_id can be null to unlink
+      const { parent_id } = req.body;
+      const result = await IssueService.linkParent(
+        req,
+        req.params.id,
+        parent_id,
+      );
       return ResponseService.apiResponse({ res, ...result, ...thisAction });
     } catch (err) {
       return sendErrorResponse(thisAction, err, res);
     }
-  };
+  }
 
-  // get all issue types
+  // Get Issue Tree (Hierarchy)
+  static async getTree(req, res) {
+    const thisAction = { usedFor: "Issue", action: "Get Tree" };
+    try {
+      const result = await IssueService.getIssueTree(req, req.params.id);
+      return ResponseService.apiResponse({ res, ...result, ...thisAction });
+    } catch (err) {
+      return sendErrorResponse(thisAction, err, res);
+    }
+  }
+
+  // Get Issue Types
   static async getIssueTypes(req, res) {
-    const thisAction = { usedFor: "Issue Type", action: "Get" };
+    const thisAction = { usedFor: "Issue Type", action: "Get All" };
     try {
-      const result = await IssueService.getIssueTypes( req );
+      const result = await IssueService.getIssueTypes(req);
       return ResponseService.apiResponse({ res, ...result, ...thisAction });
     } catch (err) {
       return sendErrorResponse(thisAction, err, res);
     }
-  };
+  }
 
-  // create new issue type 
+  // Create Issue Type
   static async createIssueType(req, res) {
     const thisAction = { usedFor: "Issue Type", action: "Create" };
     try {
-      const allowedFields = [
-        "name",
-        "description",
-      ];
-      const data = fieldPicker(req, allowedFields);
-      const result = await IssueService.createIssueType(req, data);
+      const result = await IssueService.createIssueType(req, req.body);
       return ResponseService.apiResponse({ res, ...result, ...thisAction });
     } catch (err) {
-      
       return sendErrorResponse(thisAction, err, res);
     }
-  };
+  }
+  // Link Issue to User Story (team lead only)
+  static async linkUserStory(req, res) {
+    const thisAction = { usedFor: "Issue", action: "Link User Story" };
+    try {
+      const { user_story_id } = req.body; // Can be null to unlink
+      const result = await IssueService.linkUserStory(
+        req,
+        req.params.id,
+        user_story_id ?? null,
+      );
+      return ResponseService.apiResponse({ res, ...result, ...thisAction });
+    } catch (err) {
+      return sendErrorResponse(thisAction, err, res);
+    }
+  }
 }
 
 module.exports = IssueController;

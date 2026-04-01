@@ -1,3 +1,9 @@
+// Author: Gururaj
+// Created: 19th Jun 2025
+// Description: Frontend utility helpers for error message formatting and validation error normalisation.
+// Version: 1.0.0
+// Modified:
+
 export function formatValidationErrors(responseData) {
   if (Array.isArray(responseData?.errors)) {
     const formattedErrors = {};

@@ -1,3 +1,9 @@
+// Author: Gururaj
+// Created: 29th May 2025
+// Description: Application-wide constant values shared across services and controllers.
+// Version: 1.0.0
+// Modified:
+
 const ACTIONS = {
     CREATE: 'Add',
     READ: 'Read',

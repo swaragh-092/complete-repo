@@ -1,3 +1,9 @@
+// Author: Gururaj
+// Created: 19th Jun 2025
+// Description: Quick Actions Panel with shortcuts to create a project, story, or issue.
+// Version: 1.0.0
+// Modified:
+
 import { Card, Grid, Typography, Button } from "@mui/material";
 import { Link as RouterLink } from "react-router-dom";
 // quickActions.config.js

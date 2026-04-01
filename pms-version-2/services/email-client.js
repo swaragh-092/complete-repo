@@ -1,3 +1,9 @@
+// Author: Gururaj
+// Created: 14th Oct 2025
+// Description: Email client that wraps the email micro-service HTTP API for transactional emails.
+// Version: 1.0.0
+// Modified:
+
 'use strict';
 
 /**

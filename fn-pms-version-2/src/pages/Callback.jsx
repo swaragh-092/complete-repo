@@ -1,3 +1,9 @@
+// Author: Gururaj
+// Created: 19th Jun 2025
+// Description: OAuth2 callback page that exchanges the authorisation code for tokens and redirects to the dashboard.
+// Version: 1.0.0
+// Modified:
+
 /**
  * @fileoverview Callback Page
  * @description OAuth callback handler with refresh token support

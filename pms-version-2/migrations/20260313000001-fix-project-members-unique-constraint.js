@@ -11,7 +11,8 @@
  *     (e.g., the same person can work as both Developer and Designer).
  */
 
-const TABLE_PREFIX = process.env.DB_PREFIX + "_";
+// const TABLE_PREFIX = process.env.DB_PREFIX + "_";
+const TABLE_PREFIX = "pms_";
 
 module.exports = {
   async up(queryInterface, Sequelize) {

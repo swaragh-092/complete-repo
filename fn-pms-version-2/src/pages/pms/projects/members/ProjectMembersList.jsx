@@ -1,3 +1,9 @@
+// Author: Gururaj
+// Created: 14th Oct 2025
+// Description: Project members list showing member roles with edit-role functionality.
+// Version: 1.0.0
+// Modified:
+
 import { useEffect, useState } from "react";
 import { Box, Chip, CircularProgress, ToggleButton, ToggleButtonGroup, useTheme } from "@mui/material";
 import Heading from "../../../../components/Heading";
@@ -12,7 +18,6 @@ import { colorCodes } from "../../../../theme";
 import EditIcon from "@mui/icons-material/ModeEditOutline";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditMemberRoleDialog from "./EditMemberRoleDialog";
-import AddIcon from "@mui/icons-material/Add";
 import { useWorkspace } from "../../../../context/WorkspaceContext";
 
 const groupByUserId = (rows) =>
@@ -27,7 +32,7 @@ const groupByUserId = (rows) =>
     }, {}),
   );
 
-export default function ProjectMembersList({ projectId, setMemberIdCreateTask, setTaskRefresher = () => {} }) {
+export default function ProjectMembersList({ projectId, setTaskRefresher = () => {} }) {
   const theme = useTheme();
   const colors = colorCodes(theme.palette.mode);
   const { currentWorkspace } = useWorkspace();
@@ -43,6 +48,7 @@ export default function ProjectMembersList({ projectId, setMemberIdCreateTask, s
   // Refresh the "current" view whenever the top-right workspace selector changes
   useEffect(() => {
     if (viewMode === "current" && currentWorkspace?.id) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setRefresher(true);
     }
   }, [currentWorkspace?.id]);
@@ -158,9 +164,6 @@ export default function ProjectMembersList({ projectId, setMemberIdCreateTask, s
                     }
                     sx={{ cursor: "pointer", color: colors.error.light, "&:hover": { color: colors.error.modrate } }}
                   />
-                </Box>
-                <Box title="Create Task">
-                  <AddIcon onClick={() => setMemberIdCreateTask(params.row.id)} sx={{ cursor: "pointer", color: colors.info.light, "&:hover": { color: colors.info.modrate } }} />
                 </Box>
               </>
             )}

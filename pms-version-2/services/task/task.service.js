@@ -116,6 +116,16 @@ class TaskService {
             status: 403,
           };
 
+        // Hierarchy check: only project leads (project_role === 'lead') may create tasks
+        // for other department members; regular members can only self-assign tasks.
+        if (assigneeMember.project_role !== "lead") {
+          return {
+            success: false,
+            status: 403,
+            message: "Only department leads can assign tasks to other members",
+          };
+        }
+
         assigneeMemberId = assigneeMember.id;
         data.status = "approved";
         data.approved_by = assigneeMember.id;
@@ -128,9 +138,6 @@ class TaskService {
         assignee: assigneeMemberId,
         assigned_to: assignedMember.id,
       };
-
-      // TODO: add hierarchy logic → check if `creator` has permission to assign or create for others
-      // (e.g., compare `creator.role_level` vs `assignee.role_level` if your system tracks hierarchy)
 
       if (parentTask && data.create_helper_task) {
         finalData.helped_for = parentTask.id;
@@ -618,49 +625,6 @@ class TaskService {
       "Result count:",
       result.data.length,
     );
-
-    return { success: true, status: 200, data: result };
-  }
-
-  async getTasksForDailyLog(req, { query = {} }) {
-    const { Task, DailyLog } = req.db;
-
-    const today = new Date().toISOString().split("T")[0];
-
-    // Find all task_ids already logged TODAY by THIS USER
-    const loggedTaskIds = await DailyLog.findAll({
-      attributes: ["task_id"],
-      where: {
-        date: today,
-        user_id: req.user.id, // <<=== Filter for logged-in user
-        deleted_at: null,
-      },
-      raw: true,
-    }).then((rows) => rows.map((r) => r.task_id));
-
-    //  Main task filter
-    const filter = {
-      status: { [Op.in]: ["in_progress", "approved"] },
-      id: { [Op.notIn]: loggedTaskIds }, // exclude tasks logged today by this user
-    };
-
-    const extrasInQuery = {
-      include: [
-        { association: "project", required: true },
-        {
-          association: "assigned",
-          required: true,
-          where: { user_id: req.user.id }, // user assigned filter
-        },
-      ],
-    };
-
-    const result = await paginateHelperFunction({
-      model: Task,
-      whereFilters: filter,
-      query,
-      extrasInQuery,
-    });
 
     return { success: true, status: 200, data: result };
   }
@@ -1221,8 +1185,8 @@ class TaskService {
         status: data.status,
       };
 
-      // TODO: add hierarchy logic → check if `creator` has permission to assign or create for others
-      // (e.g., compare `creator.role_level` vs `assignee.role_level` if your system tracks hierarchy)
+      // Hierarchy enforced above: assigneeMember.project_role is verified === 'lead'
+      // before reaching this point when assigning to another member.
 
       await queryWithLogAudit({
         action: "update",

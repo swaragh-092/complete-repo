@@ -1,3 +1,9 @@
+// Author: Gururaj
+// Created: 19th Jun 2025
+// Description: Delivery Risk Snapshot widget listing projects at risk with overdue story counts.
+// Version: 1.0.0
+// Modified:
+
 import { Grid, Card, Typography, Stack, Box } from "@mui/material";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 import ScheduleIcon from "@mui/icons-material/Schedule";

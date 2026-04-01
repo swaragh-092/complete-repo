@@ -1,3 +1,9 @@
+// Author: Gururaj
+// Created: 29th May 2025
+// Description: AuditLog Sequelize model storing row-level change history for any audited entity.
+// Version: 1.0.0
+// Modified:
+
 // Author : Gururaj
 // Created: 30th July 2025
 // Description: All table audit log for create update and delete

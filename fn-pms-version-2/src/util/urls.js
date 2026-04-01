@@ -22,13 +22,91 @@ const BACKEND_ENDPOINT = {
   },
   has_notifications: { path: domain + "/notification/unread-count", method: "GET" },
 
-  // daily Logs
-  create_stand_up: { path: domain + `/dailylog/task/create`, method: "POST" },
-  my_task_for_standup: { path: domain + `/project/task/my-task/on_going_or_pending`, method: "GET" },
-  get_today_log: { path: domain + `/dailylog`, method: "GET" },
-  get_tasks_no_log: { path: domain + `/dailylog/non-stnadup-tasks`, method: "GET" },
-  logs_project: (projectId) => {
-    return { path: domain + `/dailylog/${projectId}/project`, method: "GET" };
+  // user stories
+  create_user_story: (featureId) => {
+    return { path: domain + `/user-story/feature/${featureId}`, method: "POST" };
+  },
+  user_stories_by_feature: (featureId) => {
+    return { path: domain + `/user-story/feature/${featureId}`, method: "GET" };
+  },
+  user_stories_by_project: (projectId) => {
+    return { path: domain + `/user-story/project/${projectId}`, method: "GET" };
+  },
+  user_stories_by_project_department: (projectId, departmentId) => {
+    return { path: domain + `/user-story/project/${projectId}/department/${departmentId}`, method: "GET" };
+  },
+  user_story_detail: (userStoryId) => {
+    return { path: domain + `/user-story/${userStoryId}`, method: "GET" };
+  },
+  update_user_story: (userStoryId) => {
+    return { path: domain + `/user-story/${userStoryId}`, method: "PUT" };
+  },
+  delete_user_story: (userStoryId) => {
+    return { path: domain + `/user-story/${userStoryId}`, method: "DELETE" };
+  },
+  user_story_completion: (projectId) => {
+    return { path: domain + `/user-story/project/${projectId}/completion`, method: "GET" };
+  },
+  reorder_user_stories: { path: domain + `/user-story/reorder`, method: "PUT" },
+  approve_user_story: (userStoryId) => {
+    return { path: domain + `/user-story/${userStoryId}/approve`, method: "POST" };
+  },
+  advance_user_story_status: (userStoryId) => {
+    return { path: domain + `/user-story/${userStoryId}/advance`, method: "POST" };
+  },
+  revert_user_story_status: (userStoryId) => {
+    return { path: domain + `/user-story/${userStoryId}/revert`, method: "POST" };
+  },
+  request_story_change: (userStoryId) => {
+    return { path: domain + `/user-story/${userStoryId}/change-request`, method: "POST" };
+  },
+  story_change_requests: (userStoryId) => {
+    return { path: domain + `/user-story/${userStoryId}/change-requests`, method: "GET" };
+  },
+  review_change_request: (requestId) => {
+    return { path: domain + `/user-story/change-request/${requestId}/review`, method: "PUT" };
+  },
+  pending_change_requests: { path: domain + `/user-story/change-requests/pending`, method: "GET" },
+  start_timer: (userStoryId) => {
+    return { path: domain + `/user-story/${userStoryId}/timer/start`, method: "POST" };
+  },
+  stop_timer: (userStoryId) => {
+    return { path: domain + `/user-story/${userStoryId}/timer/stop`, method: "POST" };
+  },
+  current_timer: { path: domain + `/user-story/timer/current`, method: "GET" },
+
+  // user story — helper stories
+  create_helper_story: (userStoryId) => {
+    return { path: domain + `/user-story/${userStoryId}/helper`, method: "POST" };
+  },
+  get_helper_stories: (userStoryId) => {
+    return { path: domain + `/user-story/${userStoryId}/helper`, method: "GET" };
+  },
+  accept_reject_helper: (helperStoryId, action) => {
+    return { path: domain + `/user-story/${helperStoryId}/helper/${action}`, method: "POST" };
+  },
+  help_requests: { path: domain + `/user-story/helper/requests`, method: "GET" },
+  remove_helper_story: (helperStoryId) => {
+    return { path: domain + `/user-story/${helperStoryId}/helper/remove`, method: "DELETE" };
+  },
+
+  // user story — dependencies
+  story_dependencies: (userStoryId) => {
+    return { path: domain + `/user-story/${userStoryId}/dependencies`, method: "GET" };
+  },
+  story_parents: (userStoryId) => {
+    return { path: domain + `/user-story/${userStoryId}/parents`, method: "GET" };
+  },
+  add_story_dependency: (userStoryId, dependencyStoryId) => {
+    return { path: domain + `/user-story/${userStoryId}/dependency/${dependencyStoryId}`, method: "POST" };
+  },
+  remove_story_dependency: (userStoryId, dependencyStoryId) => {
+    return { path: domain + `/user-story/${userStoryId}/dependency/${dependencyStoryId}`, method: "DELETE" };
+  },
+
+  // project members
+  project_members: (projectId) => {
+    return { path: domain + `/project/member/${projectId}`, method: "GET" };
   },
 
   // issues
@@ -128,6 +206,9 @@ const BACKEND_ENDPOINT = {
   project_features: (projectId) => {
     return { path: domain + `/feature/project/${projectId}`, method: "GET" };
   },
+  create_project_feature: (projectId) => {
+    return { path: domain + `/feature/project/${projectId}`, method: "POST" };
+  },
 
   // checklist
   checklist: (featureId) => {
@@ -150,8 +231,8 @@ const BACKEND_ENDPOINT = {
   department_features_not_in_project: (departmentId, projectId) => {
     return { path: domain + `/feature/department/${departmentId}/project/${projectId}`, method: "GET" };
   },
-  add_feature_to_project: (featureId, projectId) => {
-    return { path: domain + `/feature/${featureId}/project/${projectId}`, method: "POST" };
+  add_feature_to_project: (departmentId) => {
+    return { path: domain + `/feature/department/${departmentId}`, method: "POST" };
   },
   create_department_features: (departmentId) => {
     return { path: domain + `/feature/department/${departmentId}`, method: "POST" };
@@ -164,9 +245,9 @@ const BACKEND_ENDPOINT = {
   },
 
   // projects
-  project_members: (id) => {
-    return { path: domain + `/project/member/${id}`, method: "GET" };
-  },
+  // project_members: (id) => {
+  //   return { path: domain + `/project/member/${id}`, method: "GET" };
+  // },
   project_members_by_dept: (projectId, departmentId) => {
     return { path: domain + `/project/member/${projectId}/department/${departmentId}`, method: "GET" };
   },
@@ -193,12 +274,6 @@ const BACKEND_ENDPOINT = {
   projects: (health = null) => {
     return { path: domain + `/project${health ? `/health/${health}` : ""}`, method: "GET" };
   },
-
-  // reports
-  productivitySummary: { path: domain + "/dailylog/reports/user-project-report", method: "GET" },
-  statusDistribution: { path: domain + "/dailylog/reports/status-distribution", method: "GET" },
-  dailyLogReport: { path: domain + "/dailylog/reports/report?group_by=date,status&aggregate=sum(actual_duration),count(id)", method: "GET" },
-  exportExcel: { path: domain + "/dailylog/reports/export-excel", method: "GET" },
 
   createProject: { path: domain + "/project/register", method: "POST" },
   update_project: (id) => {
@@ -232,9 +307,6 @@ export default BACKEND_ENDPOINT;
 export const paths = {
   dashboard: "/",
 
-  // tasks
-  tasks: "/tasks",
-
   // projects
   projects: (health = null) => `/projects${health ? `?health=${health}` : ""}`,
   projectDetail: (id = null) => {
@@ -249,9 +321,41 @@ export const paths = {
 
   // issues
   issues: "/issues",
+  project_issues: (projectId = null) => {
+    return { path: "/projects/:projectId/issues", actualPath: projectId ? `/projects/${projectId}/issues` : null };
+  },
+  issue_detail: (projectId = null, issueId = null) => {
+    return { path: "/projects/:projectId/issues/:issueId", actualPath: projectId && issueId ? `/projects/${projectId}/issues/${issueId}` : null };
+  },
+  // sprints
+  project_sprints: (projectId = null) => {
+    return { path: "/projects/:projectId/sprints", actualPath: projectId ? `/projects/${projectId}/sprints` : null };
+  },
+  sprint_board: (projectId = null, sprintId = null) => {
+    return { path: "/projects/:projectId/sprint/:sprintId/board", actualPath: projectId && sprintId ? `/projects/${projectId}/sprint/${sprintId}/board` : null };
+  },
+  project_board: (projectId = null) => {
+    return { path: "/projects/:projectId/board", actualPath: projectId ? `/projects/${projectId}/board` : null };
+  },
 
-  // daily logs
-  daily_logs: "/daily-logs",
+  // backlog
+  project_backlog: (projectId = null) => {
+    return { path: "/projects/:projectId/backlog", actualPath: projectId ? `/projects/${projectId}/backlog` : null };
+  },
+
+  // reports
+  project_reports: (projectId = null) => {
+    return { path: "/projects/:projectId/reports", actualPath: projectId ? `/projects/${projectId}/reports` : null };
+  },
+
+  // admin monitor (owner / admin only)
+  admin_monitor: "/admin/monitor",
+
+  // user stories
+  user_stories: "/user-stories",
+  user_story_detail: (id = null) => {
+    return { path: "/user-story/:id", actualPath: `/user-story/${id}` };
+  },
 
   invite_members: "/invite-members",
 

@@ -1,3 +1,9 @@
+// Author: Gururaj
+// Created: 29th May 2025
+// Description: Project dashboard landing that routes to the member overview or portfolio view.
+// Version: 1.0.0
+// Modified:
+
 import { Box } from "@mui/material";
 import { useState } from "react";
 import ProjectList from "./ProjectList";

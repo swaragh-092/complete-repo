@@ -1,3 +1,9 @@
+// Author: Gururaj
+// Created: 19th Jun 2025
+// Description: Create Organisation onboarding page for initial setup by new tenants.
+// Version: 1.0.0
+// Modified:
+
 /**
  * @fileoverview Create Organization Page
  * @description Screen for creating a new organization or joining via invitation

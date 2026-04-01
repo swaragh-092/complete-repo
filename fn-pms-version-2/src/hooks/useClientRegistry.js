@@ -1,3 +1,9 @@
+// Author: Gururaj
+// Created: 19th Jun 2025
+// Description: Hook that reads the SSO client registry configuration from the auth client.
+// Version: 1.0.0
+// Modified:
+
 // hooks/useClientRegistry.js
 // React hook for consuming client registry service
 

@@ -1,3 +1,9 @@
+// Author: Gururaj
+// Created: 19th Jun 2025
+// Description: Permission constant definitions used by the RBAC permission-checking hook.
+// Version: 1.0.0
+// Modified:
+
 /**
  * RBAC Permission Constants
  * 

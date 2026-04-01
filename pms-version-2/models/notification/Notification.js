@@ -26,7 +26,7 @@ module.exports = (sequelize, DataTypes, tablePrefix, commonFields) => {
         allowNull: false,
       },
       entity_type: {
-        type: DataTypes.ENUM("task", "issue", "project", "feature"),
+        type: DataTypes.ENUM("task", "issue", "project", "feature", "user_story"),
         allowNull: true, // optional, can be null for system notifications
       },
       entity_id: {

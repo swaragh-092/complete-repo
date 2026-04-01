@@ -1,8 +1,14 @@
+// Author: Gururaj
+// Created: 19th Jun 2025
+// Description: Workspace (department) switcher dropdown in the sidebar header.
+// Version: 1.0.0
+// Modified:
+
 /**
  * @fileoverview Workspace Switcher Component
  * @description Enterprise-grade dropdown for switching between workspaces
  * @version 1.0.0
- * 
+ *
  * Features:
  * - Current workspace display
  * - Workspace list with roles
@@ -11,31 +17,13 @@
  * - Keyboard navigation
  */
 
-import { useState } from 'react';
-import {
-  Box,
-  Button,
-  Menu,
-  MenuItem,
-  Typography,
-  Divider,
-  ListItemIcon,
-  ListItemText,
-  Chip,
-  CircularProgress,
-  Tooltip,
-} from '@mui/material';
-import {
-  Workspaces as WorkspaceIcon,
-  Add as AddIcon,
-  Check as CheckIcon,
-  KeyboardArrowDown as ArrowDownIcon,
-} from '@mui/icons-material';
-import { useWorkspace, WORKSPACE_ROLES } from '../context/WorkspaceContext';
-import CreateWorkspaceModal from './organization/CreateWorkspaceModal';
+import { useState } from "react";
+import { Box, Button, Menu, MenuItem, Typography, Divider, ListItemIcon, ListItemText, Chip, CircularProgress, Tooltip } from "@mui/material";
+import { Workspaces as WorkspaceIcon, Add as AddIcon, Check as CheckIcon, KeyboardArrowDown as ArrowDownIcon } from "@mui/icons-material";
+import { useWorkspace, WORKSPACE_ROLES } from "../context/WorkspaceContext";
+import CreateWorkspaceModal from "./organization/CreateWorkspaceModal";
 
-import { useOrganization } from '../context/OrganizationContext';
-
+import { useOrganization } from "../context/OrganizationContext";
 
 // ============================================================================
 // Constants
@@ -47,17 +35,17 @@ import { useOrganization } from '../context/OrganizationContext';
  */
 const ROLE_CONFIG = Object.freeze({
   [WORKSPACE_ROLES.VIEWER]: {
-    label: 'Viewer',
-    color: 'default'
+    label: "Viewer",
+    color: "default",
   },
   [WORKSPACE_ROLES.EDITOR]: {
-    label: 'Editor',
-    color: 'primary'
+    label: "Editor",
+    color: "primary",
   },
   [WORKSPACE_ROLES.ADMIN]: {
-    label: 'Admin',
-    color: 'secondary'
-  }
+    label: "Admin",
+    color: "secondary",
+  },
 });
 
 // ============================================================================
@@ -67,31 +55,20 @@ const ROLE_CONFIG = Object.freeze({
 /**
  * Workspace Switcher Component
  * Provides a dropdown menu for switching between workspaces
- * 
+ *
  * @param {Object} props - Component props
  * @param {boolean} [props.showCreateButton=true] - Whether to show create option
  * @param {string} [props.variant='button'] - Display variant: 'button' | 'compact'
  * @returns {JSX.Element}
  */
-export default function WorkspaceSwitcher({ 
-  showCreateButton = true,
-  variant = 'button'
-}) {
-  const {
-    workspaces,
-    currentWorkspace,
-    selectWorkspace,
-    loading,
-    isAdmin
-  } = useWorkspace();
+export default function WorkspaceSwitcher({ showCreateButton = true, variant = "button" }) {
+  const { workspaces, currentWorkspace, selectWorkspace, loading } = useWorkspace();
 
-  
   const { currentOrganization } = useOrganization();
-  
 
   const [anchorEl, setAnchorEl] = useState(null);
   const [createModalOpen, setCreateModalOpen] = useState(false);
-  
+
   const isOpen = Boolean(anchorEl);
 
   // ============================================================================
@@ -135,7 +112,7 @@ export default function WorkspaceSwitcher({
 
   if (loading && workspaces.length === 0) {
     return (
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 2 }}>
+      <Box sx={{ display: "flex", alignItems: "center", gap: 1, px: 2 }}>
         <CircularProgress size={16} />
         <Typography variant="body2" color="text.secondary">
           Loading...
@@ -157,23 +134,16 @@ export default function WorkspaceSwitcher({
             size="small"
             startIcon={<AddIcon />}
             onClick={() => setCreateModalOpen(true)}
-            sx={{ 
-              textTransform: 'none',
-              borderRadius: 2
+            sx={{
+              textTransform: "none",
+              borderRadius: 2,
             }}
           >
             Create Workspace
           </Button>
         </Tooltip>
-        
-        <CreateWorkspaceModal
-          open={createModalOpen}
-          onClose={() => setCreateModalOpen(false)}
-          onCreated={handleWorkspaceCreated}
-          
-          orgId={currentOrganization?.id}
-          
-        />
+
+        <CreateWorkspaceModal open={createModalOpen} onClose={() => setCreateModalOpen(false)} onCreated={handleWorkspaceCreated} orgId={currentOrganization?.id} />
       </>
     );
   }
@@ -185,35 +155,35 @@ export default function WorkspaceSwitcher({
   return (
     <>
       {/* Trigger Button */}
-      <Tooltip title={currentWorkspace ? `Current: ${currentWorkspace.name}` : 'Select workspace'}>
+      <Tooltip title={currentWorkspace ? `Current: ${currentWorkspace.name}` : "Select workspace"}>
         <Button
           onClick={handleOpen}
-          variant={variant === 'compact' ? 'text' : 'outlined'}
+          variant={variant === "compact" ? "text" : "outlined"}
           size="small"
           startIcon={<WorkspaceIcon />}
           endIcon={<ArrowDownIcon />}
           sx={{
-            textTransform: 'none',
+            textTransform: "none",
             borderRadius: 2,
-            minWidth: variant === 'compact' ? 'auto' : 160,
+            minWidth: variant === "compact" ? "auto" : 160,
             maxWidth: 200,
-            justifyContent: 'space-between',
-            '& .MuiButton-startIcon': {
-              mr: variant === 'compact' ? 0 : 1
-            }
+            justifyContent: "space-between",
+            "& .MuiButton-startIcon": {
+              mr: variant === "compact" ? 0 : 1,
+            },
           }}
         >
-          {variant !== 'compact' && (
+          {variant !== "compact" && (
             <Typography
               variant="body2"
               noWrap
-              sx={{ 
-                flex: 1, 
-                textAlign: 'left',
-                fontWeight: 500
+              sx={{
+                flex: 1,
+                textAlign: "left",
+                fontWeight: 500,
               }}
             >
-              {currentWorkspace?.name || 'Select Workspace'}
+              {currentWorkspace?.name || "Select Workspace"}
             </Typography>
           )}
         </Button>
@@ -225,19 +195,19 @@ export default function WorkspaceSwitcher({
         open={isOpen}
         onClose={handleClose}
         anchorOrigin={{
-          vertical: 'bottom',
-          horizontal: 'left'
+          vertical: "bottom",
+          horizontal: "left",
         }}
         transformOrigin={{
-          vertical: 'top',
-          horizontal: 'left'
+          vertical: "top",
+          horizontal: "left",
         }}
         PaperProps={{
           sx: {
             minWidth: 280,
             maxWidth: 320,
-            maxHeight: 400
-          }
+            maxHeight: 400,
+          },
         }}
       >
         {/* Header */}
@@ -261,19 +231,13 @@ export default function WorkspaceSwitcher({
               selected={isSelected}
               sx={{
                 py: 1.5,
-                '&.Mui-selected': {
-                  bgcolor: 'action.selected'
-                }
+                "&.Mui-selected": {
+                  bgcolor: "action.selected",
+                },
               }}
             >
-              <ListItemIcon sx={{ minWidth: 36 }}>
-                {isSelected ? (
-                  <CheckIcon color="primary" fontSize="small" />
-                ) : (
-                  <WorkspaceIcon color="action" fontSize="small" />
-                )}
-              </ListItemIcon>
-              
+              <ListItemIcon sx={{ minWidth: 36 }}>{isSelected ? <CheckIcon color="primary" fontSize="small" /> : <WorkspaceIcon color="action" fontSize="small" />}</ListItemIcon>
+
               <ListItemText
                 primary={
                   <Typography variant="body2" fontWeight={isSelected ? 600 : 400} noWrap>
@@ -286,14 +250,8 @@ export default function WorkspaceSwitcher({
                   </Typography>
                 }
               />
-              
-              <Chip
-                label={roleConfig.label}
-                size="small"
-                variant="outlined"
-                color={roleConfig.color}
-                sx={{ ml: 1, height: 20, fontSize: '0.7rem' }}
-              />
+
+              <Chip label={roleConfig.label} size="small" variant="outlined" color={roleConfig.color} sx={{ ml: 1, height: 20, fontSize: "0.7rem" }} />
             </MenuItem>
           );
         })}
@@ -302,21 +260,21 @@ export default function WorkspaceSwitcher({
         {showCreateButton && (
           <>
             <Divider sx={{ my: 1 }} />
-            
-            <MenuItem 
+
+            <MenuItem
               onClick={handleCreateClick}
-              sx={{ 
-                color: 'primary.main',
-                '&:hover': {
-                  bgcolor: 'primary.light',
-                  color: 'primary.contrastText'
-                }
+              sx={{
+                color: "primary.main",
+                "&:hover": {
+                  bgcolor: "primary.light",
+                  color: "primary.contrastText",
+                },
               }}
             >
               <ListItemIcon sx={{ minWidth: 36 }}>
                 <AddIcon color="primary" fontSize="small" />
               </ListItemIcon>
-              <ListItemText 
+              <ListItemText
                 primary={
                   <Typography variant="body2" fontWeight={500}>
                     Create New Workspace
@@ -329,14 +287,7 @@ export default function WorkspaceSwitcher({
       </Menu>
 
       {/* Create Modal */}
-      <CreateWorkspaceModal
-        open={createModalOpen}
-        onClose={() => setCreateModalOpen(false)}
-        onCreated={handleWorkspaceCreated}
-        
-        orgId={currentOrganization?.id}
-        
-      />
+      <CreateWorkspaceModal open={createModalOpen} onClose={() => setCreateModalOpen(false)} onCreated={handleWorkspaceCreated} orgId={currentOrganization?.id} />
     </>
   );
 }

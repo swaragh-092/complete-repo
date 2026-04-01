@@ -1,3 +1,9 @@
+// Author: Gururaj
+// Created: 18th Mar 2026
+// Description: Issue history dialog displaying the audit trail of status and field changes for an issue.
+// Version: 1.0.0
+// Modified:
+
 import { useEffect, useState } from "react";
 import { Dialog, DialogTitle, DialogContent, DialogActions, Button, CircularProgress, Box, Typography, Divider, useTheme } from "@mui/material";
 import backendRequest from "../../../util/request";

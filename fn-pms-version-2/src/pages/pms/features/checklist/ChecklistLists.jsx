@@ -1,3 +1,9 @@
+// Author: Gururaj
+// Created: 19th Jun 2025
+// Description: Checklist items view within a feature for listing and managing checklist task entries.
+// Version: 1.0.0
+// Modified:
+
 import ActionColumn from "../../../../components/tools/ActionColumn";
 import { showToast } from "../../../../util/feedback/ToastService";
 import backendRequest from "../../../../util/request";

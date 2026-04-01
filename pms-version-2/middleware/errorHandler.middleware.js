@@ -1,3 +1,9 @@
+// Author: Gururaj
+// Created: 17th Jun 2025
+// Description: Global error handler middleware that maps Sequelize and generic errors to structured API responses.
+// Version: 1.0.0
+// Modified:
+
 /*   
 Author: Homshree 
 Created: 17th June 2025

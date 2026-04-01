@@ -8,7 +8,7 @@ const {
   TenantMapping,
   PendingInvitation,
   Role,
-  sequelize
+  sequelize,
 } = require('../config/database');
 const logger = require('../utils/logger');
 
@@ -24,7 +24,7 @@ class AuthCallbackService {
     logger.info('Checking for pending invitations', {
       userEmail,
       emailVerified,
-      userId: user.id
+      userId: user.id,
     });
 
     try {
@@ -32,25 +32,25 @@ class AuthCallbackService {
       const pendingInvitation = await PendingInvitation.findOne({
         where: {
           email: userEmail,
-          status: 'pending'
+          status: 'pending',
         },
         include: [
           {
             model: Organization,
-            attributes: ['id', 'name', 'tenant_id', 'status']
+            attributes: ['id', 'name', 'tenant_id', 'status'],
           },
           {
             model: Role,
-            attributes: ['id', 'name', 'description']
-          }
-        ]
+            attributes: ['id', 'name', 'description'],
+          },
+        ],
       });
 
       if (!pendingInvitation) {
         logger.info('No pending invitations found', { userEmail });
         return {
           autoAccepted: false,
-          requiresVerification: false
+          requiresVerification: false,
         };
       }
 
@@ -59,14 +59,14 @@ class AuthCallbackService {
         logger.warn('Email verification required for pending invitation', {
           userEmail,
           orgId: pendingInvitation.org_id,
-          orgName: pendingInvitation.Organization.name
+          orgName: pendingInvitation.Organization.name,
         });
 
         return {
           autoAccepted: false,
           requiresVerification: true,
           message: 'Please verify your email address to access your organization',
-          organization: pendingInvitation.Organization
+          organization: pendingInvitation.Organization,
         };
       }
 
@@ -77,40 +77,49 @@ class AuthCallbackService {
         // 1. Ensure user metadata exists
         let userMetadata = await UserMetadata.findOne({
           where: { keycloak_id: user.id },
-          transaction
+          transaction,
         });
 
         if (!userMetadata) {
-          userMetadata = await UserMetadata.create({
-            keycloak_id: user.id,
-            email: userEmail,
-            is_active: true,
-            last_login: new Date()
-          }, { transaction });
+          userMetadata = await UserMetadata.create(
+            {
+              keycloak_id: user.id,
+              email: userEmail,
+              is_active: true,
+              last_login: new Date(),
+            },
+            { transaction }
+          );
         }
 
         // 2. Create organization membership
         const existingMembership = await OrganizationMembership.findOne({
           where: {
             user_id: userMetadata.id,
-            org_id: pendingInvitation.org_id
+            org_id: pendingInvitation.org_id,
           },
-          transaction
+          transaction,
         });
 
         if (!existingMembership) {
-          await OrganizationMembership.create({
-            user_id: userMetadata.id,
-            org_id: pendingInvitation.org_id,
-            role_id: pendingInvitation.role_id
-          }, { transaction });
+          await OrganizationMembership.create(
+            {
+              user_id: userMetadata.id,
+              org_id: pendingInvitation.org_id,
+              role_id: pendingInvitation.role_id,
+            },
+            { transaction }
+          );
         }
 
         // 3. Set as user's primary organization if they don't have one
         if (!userMetadata.org_id) {
-          await userMetadata.update({
-            org_id: pendingInvitation.org_id
-          }, { transaction });
+          await userMetadata.update(
+            {
+              org_id: pendingInvitation.org_id,
+            },
+            { transaction }
+          );
         }
 
         // 4. Update organization status to active
@@ -118,24 +127,30 @@ class AuthCallbackService {
           { status: 'active' },
           {
             where: { id: pendingInvitation.org_id },
-            transaction
+            transaction,
           }
         );
 
         // 5. Create tenant mapping if client requires tenant
         if (client.requires_tenant) {
-          await TenantMapping.upsert({
-            user_id: user.id,
-            tenant_id: pendingInvitation.Organization.tenant_id,
-            client_key: client.client_key
-          }, { transaction });
+          await TenantMapping.upsert(
+            {
+              user_id: user.id,
+              tenant_id: pendingInvitation.Organization.tenant_id,
+              client_key: client.client_key,
+            },
+            { transaction }
+          );
         }
 
         // 6. Mark pending invitation as accepted
-        await pendingInvitation.update({
-          status: 'accepted',
-          accepted_at: new Date()
-        }, { transaction });
+        await pendingInvitation.update(
+          {
+            status: 'accepted',
+            accepted_at: new Date(),
+          },
+          { transaction }
+        );
 
         await transaction.commit();
 
@@ -144,7 +159,7 @@ class AuthCallbackService {
           userId: user.id,
           orgId: pendingInvitation.org_id,
           orgName: pendingInvitation.Organization.name,
-          tenantId: pendingInvitation.Organization.tenant_id
+          tenantId: pendingInvitation.Organization.tenant_id,
         });
 
         return {
@@ -152,31 +167,29 @@ class AuthCallbackService {
           organization: pendingInvitation.Organization,
           role: pendingInvitation.Role,
           tenantId: pendingInvitation.Organization.tenant_id,
-          membership: true
+          membership: true,
         };
-
       } catch (error) {
         await transaction.rollback();
         logger.error('Failed to auto-accept pending invitation', {
           error: error.message,
           userEmail,
-          orgId: pendingInvitation.org_id
+          orgId: pendingInvitation.org_id,
         });
         throw error;
       }
-
     } catch (error) {
       logger.error('Error handling pending invitations', {
         error: error.message,
         userEmail,
-        stack: error.stack
+        stack: error.stack,
       });
 
       // Don't fail authentication, just log and continue
       return {
         autoAccepted: false,
         requiresVerification: false,
-        error: error.message
+        error: error.message,
       };
     }
   }
@@ -189,7 +202,7 @@ class AuthCallbackService {
     if (!client.requires_tenant) {
       return {
         needsTenant: false,
-        availableActions: []
+        availableActions: [],
       };
     }
 
@@ -200,8 +213,8 @@ class AuthCallbackService {
       const existingMapping = await TenantMapping.findOne({
         where: {
           user_id: userKeycloakId,
-          client_key: client.client_key
-        }
+          client_key: client.client_key,
+        },
       });
 
       if (existingMapping) {
@@ -209,7 +222,7 @@ class AuthCallbackService {
         return {
           needsTenant: false,
           tenantId: existingMapping.tenant_id,
-          availableActions: []
+          availableActions: [],
         };
       }
 
@@ -223,20 +236,20 @@ class AuthCallbackService {
             include: [
               {
                 model: Organization,
-                attributes: ['id', 'name', 'tenant_id']
-              }
-            ]
-          }
-        ]
+                attributes: ['id', 'name', 'tenant_id'],
+              },
+            ],
+          },
+        ],
       });
 
       const availableActions = ['create']; // User can always create new org
 
       if (userMetadata?.Memberships?.length > 0) {
         // User has existing organization memberships
-        const orgsWithTenantId = userMetadata.Memberships
-          .filter(m => m.Organization?.tenant_id)
-          .map(m => m.Organization);
+        const orgsWithTenantId = userMetadata.Memberships.filter(
+          (m) => m.Organization?.tenant_id
+        ).map((m) => m.Organization);
 
         if (orgsWithTenantId.length > 0) {
           // Could automatically select first org with tenant_id
@@ -249,19 +262,19 @@ class AuthCallbackService {
         needsTenant: true,
         tenantId: null,
         availableActions,
-        existingOrganizations: userMetadata?.Memberships?.map(m => ({
-          id: m.Organization.id,
-          name: m.Organization.name,
-          tenant_id: m.Organization.tenant_id,
-          role: m.Role?.name
-        })) || []
+        existingOrganizations:
+          userMetadata?.Memberships?.map((m) => ({
+            id: m.Organization.id,
+            name: m.Organization.name,
+            tenant_id: m.Organization.tenant_id,
+            role: m.Role?.name,
+          })) || [],
       };
-
     } catch (error) {
       logger.error('Error checking tenant requirements', {
         error: error.message,
         userKeycloakId,
-        clientKey: client.client_key
+        clientKey: client.client_key,
       });
 
       // Default to requiring tenant creation
@@ -269,7 +282,7 @@ class AuthCallbackService {
         needsTenant: true,
         tenantId: null,
         availableActions: ['create'],
-        error: error.message
+        error: error.message,
       };
     }
   }
@@ -288,7 +301,7 @@ class AuthCallbackService {
           {
             model: Organization,
             as: 'PrimaryOrganization',
-            attributes: ['id', 'name', 'tenant_id', 'status']
+            attributes: ['id', 'name', 'tenant_id', 'status'],
           },
           {
             model: OrganizationMembership,
@@ -296,50 +309,55 @@ class AuthCallbackService {
             include: [
               {
                 model: Organization,
-                attributes: ['id', 'name', 'tenant_id', 'status']
+                as: 'Organization',
+                attributes: ['id', 'name', 'tenant_id', 'status'],
               },
               {
                 model: Role,
-                attributes: ['id', 'name', 'description']
-              }
-            ]
-          }
-        ]
+                as: 'Role',
+                attributes: ['id', 'name', 'description'],
+              },
+            ],
+          },
+        ],
       });
 
       if (!userMetadata) {
         return {
           primaryOrganization: null,
           memberships: [],
-          totalOrganizations: 0
+          totalOrganizations: 0,
         };
       }
 
       // Process memberships
-      const memberships = userMetadata.Memberships?.map(membership => ({
-        id: membership.id,
-        organization: {
-          id: membership.Organization.id,
-          name: membership.Organization.name,
-          tenant_id: membership.Organization.tenant_id,
-          status: membership.Organization.status
-        },
-        role: {
-          id: membership.Role.id,
-          name: membership.Role.name,
-          description: membership.Role.description
-        },
-        membership_type: 'member'
-      })) || [];
+      const memberships =
+        userMetadata.Memberships?.map((membership) => ({
+          id: membership.id,
+          organization: {
+            id: membership.Organization.id,
+            name: membership.Organization.name,
+            tenant_id: membership.Organization.tenant_id,
+            status: membership.Organization.status,
+          },
+          role: {
+            id: membership.Role.id,
+            name: membership.Role.name,
+            description: membership.Role.description,
+          },
+          membership_type: 'member',
+        })) || [];
 
       // Primary organization info
-      const primaryOrganization = userMetadata.PrimaryOrganization ? {
-        id: userMetadata.PrimaryOrganization.id,
-        name: userMetadata.PrimaryOrganization.name,
-        tenant_id: userMetadata.PrimaryOrganization.tenant_id,
-        status: userMetadata.PrimaryOrganization.status,
-        membership_type: 'primary'
-      } : null;
+      const primaryOrganization = userMetadata.PrimaryOrganization
+        ? {
+            id: userMetadata.PrimaryOrganization.id,
+            name: userMetadata.PrimaryOrganization.name,
+            tenant_id: userMetadata.PrimaryOrganization.tenant_id,
+            status: userMetadata.PrimaryOrganization.status,
+            membership_type: 'primary',
+          }
+        : null;
 
       const totalOrganizations = memberships.length + (primaryOrganization ? 1 : 0);
 
@@ -347,27 +365,26 @@ class AuthCallbackService {
         userId,
         primaryOrg: primaryOrganization?.name,
         membershipCount: memberships.length,
-        totalOrganizations
+        totalOrganizations,
       });
 
       return {
         primaryOrganization,
         memberships,
-        totalOrganizations
+        totalOrganizations,
       };
-
     } catch (error) {
       logger.error('Error getting user organization context', {
         error: error.message,
         userId,
-        stack: error.stack
+        stack: error.stack,
       });
 
       return {
         primaryOrganization: null,
         memberships: [],
         totalOrganizations: 0,
-        error: error.message
+        error: error.message,
       };
     }
   }
@@ -384,9 +401,9 @@ class AuthCallbackService {
             model: OrganizationMembership,
             as: 'Memberships',
             where: { org_id: orgId },
-            required: false
-          }
-        ]
+            required: false,
+          },
+        ],
       });
 
       // Check if user is primary member or has membership
@@ -394,12 +411,11 @@ class AuthCallbackService {
       const hasMembershipAccess = userMetadata?.Memberships?.length > 0;
 
       return hasPrimaryAccess || hasMembershipAccess;
-
     } catch (error) {
       logger.error('Error checking organization access', {
         error: error.message,
         userId: user.id,
-        orgId
+        orgId,
       });
       return false;
     }
@@ -411,7 +427,7 @@ class AuthCallbackService {
   static async ensureUserMetadata(user) {
     try {
       let userMetadata = await UserMetadata.findOne({
-        where: { keycloak_id: user.keycloak_id || user.id }
+        where: { keycloak_id: user.keycloak_id || user.id },
       });
 
       if (!userMetadata) {
@@ -419,29 +435,28 @@ class AuthCallbackService {
           keycloak_id: user.keycloak_id || user.id,
           email: user.email,
           is_active: true,
-          last_login: new Date()
+          last_login: new Date(),
         });
 
         logger.info('Created new user metadata', {
           userId: userMetadata.id,
           keycloakId: user.keycloak_id || user.id,
-          email: user.email
+          email: user.email,
         });
       } else {
         // Update last login
         await userMetadata.update({
           last_login: new Date(),
-          email: user.email // Sync email from Keycloak
+          email: user.email, // Sync email from Keycloak
         });
       }
 
       return userMetadata;
-
     } catch (error) {
       logger.error('Error ensuring user metadata', {
         error: error.message,
         keycloakId: user.keycloak_id || user.id,
-        email: user.email
+        email: user.email,
       });
       throw error;
     }

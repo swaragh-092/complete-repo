@@ -1,12 +1,14 @@
-import { Link } from "react-router-dom";
+// Author: Gururaj
+// Created: 14th Oct 2025
+// Description: Task list component showing all project tasks with status chips and action buttons.
+// Version: 1.0.0
+// Modified:
+
 import BACKEND_ENDPOINT from "../../../../util/urls";
 import { useState } from "react";
-import CreateDialog from "../../../../components/pms/CreateDialog";
 import DataTable from "../../../../components/tools/Datatable";
-import { Box, Button, CircularProgress, MenuItem, Select, useTheme } from "@mui/material";
+import { Box, CircularProgress, Chip, useTheme } from "@mui/material";
 import Heading from "../../../../components/Heading";
-import DoButton from "../../../../components/button/DoButton";
-import VisibilityIcon from "@mui/icons-material/Visibility";
 import EditDialog from "../../../../components/pms/EditDialog";
 import { colorCodes } from "../../../../theme";
 import { showConfirmDialog } from "../../../../util/feedback/ConfirmService";
@@ -16,202 +18,132 @@ import CheckIcon from "@mui/icons-material/Check";
 import { showToast } from "../../../../util/feedback/ToastService";
 import backendRequest from "../../../../util/request";
 
-/**
- * Task Data Structure (enriched by backend):
- * {
- *   id, title, description, status, department_id, ...
- *   assigned: {                          // ProjectMember who is assigned the task
- *     id: "project-member-uuid",
- *     user_id: "user-uuid",
- *     user_details: {                    // Enriched from auth-service
- *       id: "user-uuid",
- *       name: "John Doe",
- *       email: "john@example.com"
- *     }
- *   },
- *   creator: {                           // ProjectMember who created the task
- *     id: "project-member-uuid",
- *     user_id: "user-uuid",
- *     user_details: { ... }              // Enriched from auth-service
- *   },
- *   approver: {                          // ProjectMember who approved the task
- *     id: "project-member-uuid",
- *     user_id: "user-uuid",
- *     user_details: { ... }              // Enriched from auth-service
- *   },
- *   department_details: {                // Enriched workspace/department info
- *     id: "workspace-uuid",
- *     name: "Engineering",
- *     description: "...",
- *     slug: "engineering"
- *   }
- * }
- */
-
-const formFields = [
-  { type: "text", name: "title" },
-  { type: "textarea", name: "description", label: "Description" },
-  {
-    type: "select",
-    name: "priority",
-    options: [
-      { label: "High", value: "high" },
-      { label: "Medium", value: "medium" },
-      { label: "Low", value: "low" },
-    ],
-  },
-  { type: "date", name: "due_date", label: "Due Date", validationName: "futureDate" },
-];
-
 const updateFormFields = [
+  { type: "text", name: "title", label: "Title" },
   { type: "textarea", name: "description", label: "Description" },
   {
     type: "select",
     name: "priority",
     options: [
+      { label: "Critical", value: "critical" },
       { label: "High", value: "high" },
       { label: "Medium", value: "medium" },
       { label: "Low", value: "low" },
     ],
   },
+  {
+    type: "select",
+    name: "status",
+    options: [
+      { label: "Defined", value: "defined" },
+      { label: "In Progress", value: "in_progress" },
+      { label: "Review", value: "review" },
+      { label: "Completed", value: "completed" },
+      { label: "Blocked", value: "blocked" },
+    ],
+  },
 ];
 
-export default function TaskList({ project_id, canApprove, memberIdCreateTask, setMemberIdCreateTask, refresh, setRefresher = () => {} }) {
+const statusColors = {
+  defined: "default",
+  in_progress: "info",
+  review: "warning",
+  completed: "success",
+  blocked: "error",
+};
+
+const statusLabels = {
+  defined: "Defined",
+  in_progress: "In Progress",
+  review: "Review",
+  completed: "Completed",
+  blocked: "Blocked",
+};
+
+export default function TaskList({ project_id, canApprove, refresh, setRefresher = () => {} }) {
   const theme = useTheme();
   const colors = colorCodes(theme.palette.mode);
 
-  const [editDialog, setEditDialog] = useState({ open: false, task: null });
+  const [editDialog, setEditDialog] = useState({ open: false, item: null });
   const [editingIds, setEditingIds] = useState([]);
 
-  const handleDeleteTask = async (taskId) => {
-    setEditingIds((prev) => [...prev, taskId]);
-    const response = await deleteTaskRequest(taskId);
+  const handleDelete = async (id) => {
+    setEditingIds((prev) => [...prev, id]);
+    const endpoint = BACKEND_ENDPOINT.delete_user_story(id);
+    const response = await backendRequest({ endpoint });
+    showToast({ message: response.message ?? (response.success ? "Deleted successfully" : "Failed to delete"), type: response.success ? "success" : "error" });
     if (response.success) setRefresher(true);
-    setEditingIds((prev) => prev.filter((id) => id !== taskId)); // remove after done
+    setEditingIds((prev) => prev.filter((i) => i !== id));
   };
 
-  const handleApproveTask = async (taskId) => {
-    setEditingIds((prev) => [...prev, taskId]);
-    const response = await backendRequest({ endpoint: BACKEND_ENDPOINT.approve_task(taskId) });
-    showToast({ message: response.message ?? (response.success ? "Task approved" : "Failed to approve"), type: response.success ? "success" : "error" });
+  const handleApprove = async (id) => {
+    setEditingIds((prev) => [...prev, id]);
+    const response = await backendRequest({ endpoint: BACKEND_ENDPOINT.approve_user_story(id), body: { status: "approved" } });
+    showToast({ message: response.message ?? (response.success ? "Approved" : "Failed to approve"), type: response.success ? "success" : "error" });
     if (response.success) setRefresher(true);
-    setEditingIds((prev) => prev.filter((id) => id !== taskId));
+    setEditingIds((prev) => prev.filter((i) => i !== id));
   };
 
   const displayColumns = [
     { field: "title", headerName: "Title", flex: 1 },
-    { field: "description", headerName: "Discription", flex: 1 },
+    { field: "description", headerName: "Description", flex: 1 },
+    { field: "priority", headerName: "Priority", flex: 0.7 },
     {
-      field: "department_id",
-      headerName: "Department",
-      flex: 1,
-      renderCell: (params) => {
-        return params.row.department_details?.name || params.row.department_id;
-      },
+      field: "status",
+      headerName: "Status",
+      flex: 0.8,
+      renderCell: (params) => <Chip label={statusLabels[params.value] || params.value} color={statusColors[params.value] || "default"} size="small" />,
     },
-    { field: "priority", headerName: "Priority", flex: 1 },
-    { field: "status", headerName: "Status", flex: 1, type: "singleSelect", valueOptions: taskFilter },
-    { field: "due_date", headerName: "Due Date", flex: 1 },
-    { field: "taken_at", headerName: "Start", flex: 1 },
-    { field: "completed_at", headerName: "End", flex: 1 },
     {
-      field: "task_for",
+      field: "type",
       headerName: "Type",
       flex: 0.5,
+      renderCell: (params) => <Chip label={params.value === "task" ? "Task" : "Story"} size="small" variant="outlined" />,
+    },
+    { field: "story_points", headerName: "Points", flex: 0.4 },
+    { field: "due_date", headerName: "Due Date", flex: 0.8 },
+    {
+      field: "feature",
+      headerName: "Feature",
+      flex: 1,
+      renderCell: (params) => params.row.feature?.name || "-",
     },
     {
-      field: "helped_for",
-      headerName: "Helping For",
-      flex: 1,
-      filterable: false,
-      sortable: false,
-      renderCell: (params) => {
-        return params.row.helping_for?.title;
-      },
-    },
-    {
-      field: "assignee",
-      headerName: "Assigned from",
-      flex: 1,
-      filterable: false,
-      sortable: false,
-      renderCell: (params) => {
-        // Debug: Log the structure
-        if (params.rowIndex === 0) {
-          console.log("[TaskList Debug] First task creator structure:", {
-            creator: params.row.creator,
-            assigned: params.row.assigned,
-            approver: params.row.approver,
-            department_details: params.row.department_details,
-          });
-        }
-        return params.row.creator?.user_details?.name || params.row.creator?.user_id || "N/A";
-      },
-    },
-    {
-      field: "assigne_to",
-      headerName: "Assigned For",
-      flex: 1,
-      filterable: false,
-      sortable: false,
-      renderCell: (params) => {
-        return params.row.assigned?.user_details?.name || params.row.assigned?.user_id || "N/A";
-      },
-    },
-    {
-      field: "approved_by",
-      headerName: "Approved By",
-      flex: 1,
-      filterable: false,
-      sortable: false,
-      renderCell: (params) => {
-        return params.row.approver?.user_details?.name || params.row.approved_by || "N/A";
-      },
+      field: "approval_status",
+      headerName: "Approval",
+      flex: 0.7,
+      renderCell: (params) => params.value || "-",
     },
     {
       field: "actions",
       headerName: "Actions",
       minWidth: 100,
-      flex: 0.2,
+      flex: 0.5,
       sortable: false,
       filterable: false,
       renderCell: (params) => {
         const isEditing = editingIds.includes(params.row.id);
-
         return (
-          <Box display="flex" gap="10px" alignItems="center">
+          <Box display="flex" gap="8px" alignItems="center">
             {isEditing ? (
               <CircularProgress size={20} />
             ) : (
               <>
                 <Box title="Edit">
-                  <EditIcon
-                    onClick={() => {
-                      setEditDialog({ open: true, task: params.row });
-                    }}
-                    sx={{
-                      cursor: "pointer",
-                      color: colors.text.dark,
-                      "&:hover": { color: colors.secondary.dark },
-                    }}
-                  />
+                  <EditIcon onClick={() => setEditDialog({ open: true, item: params.row })} sx={{ cursor: "pointer", color: colors.text.dark, "&:hover": { color: colors.secondary.dark } }} />
                 </Box>
 
-                {canApprove && params.row.status === "approve_pending" && (
-                  <Box title="Approve Task">
+                {canApprove && params.row.approval_status === "pending" && (
+                  <Box title="Approve">
                     <CheckIcon
                       onClick={() => {
                         showConfirmDialog({
-                          message: `Approve task "${params.row.title}"?`,
-                          title: "Approve Task",
-                          onConfirm: () => handleApproveTask(params.row.id),
+                          message: `Approve "${params.row.title}"?`,
+                          title: "Approve User Story",
+                          onConfirm: () => handleApprove(params.row.id),
                         });
                       }}
-                      sx={{
-                        cursor: "pointer",
-                        color: colors.primary?.main || colors.primary?.dark,
-                        "&:hover": { color: colors.primary?.dark },
-                      }}
+                      sx={{ cursor: "pointer", color: colors.primary?.main || colors.primary?.dark, "&:hover": { color: colors.primary?.dark } }}
                     />
                   </Box>
                 )}
@@ -220,16 +152,12 @@ export default function TaskList({ project_id, canApprove, memberIdCreateTask, s
                   <DeleteIcon
                     onClick={() => {
                       showConfirmDialog({
-                        message: "Sure of removing member?",
-                        title: "Delete Project Member",
-                        onConfirm: () => handleDeleteTask(params.row.id),
+                        message: `Are you sure you want to delete "${params.row.title}"?`,
+                        title: "Delete User Story",
+                        onConfirm: () => handleDelete(params.row.id),
                       });
                     }}
-                    sx={{
-                      cursor: "pointer",
-                      color: colors.error.light,
-                      "&:hover": { color: colors.error.modrate },
-                    }}
+                    sx={{ cursor: "pointer", color: colors.error.light, "&:hover": { color: colors.error.modrate } }}
                   />
                 </Box>
               </>
@@ -242,51 +170,27 @@ export default function TaskList({ project_id, canApprove, memberIdCreateTask, s
 
   return (
     <Box m="20px">
-      <Heading title="Tasks" level={2} />
+      <Heading title="User Stories & Tasks" level={2} />
 
-      <DataTable columns={displayColumns} fetchEndpoint={BACKEND_ENDPOINT["project_tasks"](project_id)} refresh={refresh} setRefresh={setRefresher} />
+      <DataTable columns={displayColumns} fetchEndpoint={BACKEND_ENDPOINT.user_stories_by_project(project_id)} refresh={refresh} setRefresh={setRefresher} />
 
-      <CreateDialog
-        formFields={formFields}
-        isOpen={memberIdCreateTask}
-        onClose={() => {
-          setMemberIdCreateTask(false);
-        }}
-        usefor={`Task`}
-        onSuccess={() => setRefresher(true)}
-        backendEndpoint={BACKEND_ENDPOINT["create_task"](memberIdCreateTask)}
-      />
       <EditDialog
         formFields={updateFormFields}
         isOpen={editDialog.open}
-        updateBackendEndpoint={BACKEND_ENDPOINT.update_task(editDialog.task?.id)}
-        onClose={() => {
-          setEditDialog({ open: false, task: null });
-        }}
+        updateBackendEndpoint={BACKEND_ENDPOINT.update_user_story(editDialog.item?.id)}
+        onClose={() => setEditDialog({ open: false, item: null })}
         onSuccess={() => {
-          setEditDialog({ open: false, task: null });
+          setEditDialog({ open: false, item: null });
           setRefresher(true);
         }}
-        initialData={{ description: editDialog.task?.description, priority: editDialog.task?.priority }}
-        usefor={`Task`}
+        initialData={{
+          title: editDialog.item?.title,
+          description: editDialog.item?.description,
+          priority: editDialog.item?.priority,
+          status: editDialog.item?.status,
+        }}
+        usedFor="User Story"
       />
     </Box>
   );
 }
-
-const taskFilter = [
-  { label: "On Going", value: "in_progress" },
-  { label: "Completed", value: "completed" },
-  { label: "Pending", value: "approved" },
-  { label: "Blocked", value: "blocked" },
-  { label: "Assign Pending", value: "assign_pending" },
-  { label: "Approve Pending", value: "approve_pending" },
-];
-
-const deleteTaskRequest = async (taskId) => {
-  const endpoint = BACKEND_ENDPOINT.delete_task(taskId);
-  const response = await backendRequest({ endpoint });
-
-  showToast({ message: response.message ?? (response.success ? "Delected Successfully" : "Failed to delete"), type: response.success ? "success" : "error" });
-  return response;
-};

@@ -1,3 +1,9 @@
+// Author: Gururaj
+// Created: 14th Oct 2025
+// Description: Accept Helps panel listing incoming help requests with accept/reject actions.
+// Version: 1.0.0
+// Modified:
+
 import { useTheme } from "@emotion/react";
 import DataTable from "../../../../components/tools/Datatable";
 import BACKEND_ENDPOINT from "../../../../util/urls";

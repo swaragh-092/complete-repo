@@ -1,3 +1,9 @@
+// Author: Gururaj
+// Created: 14th Oct 2025
+// Description: Task Dependencies dialog for viewing and managing blocking/dependent task links.
+// Version: 1.0.0
+// Modified:
+
 import { Dialog, DialogTitle, DialogContent, DialogActions, Button, useTheme, Box, CircularProgress } from "@mui/material";
 
 import DataTable from "../../../../components/tools/Datatable";
@@ -5,13 +11,14 @@ import BACKEND_ENDPOINT from "../../../../util/urls";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { colorCodes } from "../../../../theme";
 import backendRequest from "../../../../util/request";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { showToast } from "../../../../util/feedback/ToastService";
 
 export default function TaskDependenciesDialog({ taskId, onClose, pathName, name, onSuccess = () => {} }) {
   const [deletingTaskId, setDeletingTaskId] = useState([]);
   const [refresh, setRefresh] = useState(true);
   const open = Boolean(taskId);
+  const prevOpen = useRef(false);
 
   const handleOnDeleteDependencyTask = async (dependencyTaskId) => {
     console.log();
@@ -27,7 +34,11 @@ export default function TaskDependenciesDialog({ taskId, onClose, pathName, name
   };
 
   useEffect(() => {
-    if (open) setRefresh(true);
+    if (open && !prevOpen.current) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setRefresh(true);
+    }
+    prevOpen.current = open;
   }, [open]);
 
   const theme = useTheme();

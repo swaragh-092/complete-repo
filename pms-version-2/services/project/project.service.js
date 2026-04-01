@@ -1,3 +1,9 @@
+// Author: Gururaj
+// Created: 29th May 2025
+// Description: Project service with business logic for creating, fetching, updating, and deleting projects within a tenant.
+// Version: 1.0.0
+// Modified:
+
 /*
 Author: Homshree
 Created: 13th June 2025
@@ -12,6 +18,7 @@ const { namespace } = require("../../config/cls");
 const {
   giveValicationErrorFormal,
   paginateHelperFunction,
+  withContext,
   auditLogCreateHelperFunction,
   auditLogUpdateHelperFunction,
   auditLogDeleteHelperFunction,
@@ -29,7 +36,7 @@ class ProjectService {
    * @returns {Promise<Object>} - Created project
    */
   async createProject(req, data) {
-    const { Project } = req.db;
+    const { Project, IssueStatus } = req.db;
 
     // Create project with context
     try {
@@ -38,6 +45,23 @@ class ProjectService {
         data,
         req,
       });
+
+      // Seed default issue statuses for the new project
+      const defaultStatuses = [
+        { name: "To Do", category: "todo", color: "#808080", position: 0 },
+        {
+          name: "In Progress",
+          category: "in_progress",
+          color: "#3b82f6",
+          position: 1,
+        },
+        { name: "Done", category: "done", color: "#22c55e", position: 2 },
+      ];
+      await IssueStatus.bulkCreate(
+        defaultStatuses.map((s) => ({ ...s, project_id: project.id })),
+        withContext(req),
+      );
+
       return { success: true, status: 201, data: project };
     } catch (err) {
       if (err instanceof Sequelize.UniqueConstraintError) {
@@ -132,7 +156,7 @@ class ProjectService {
    * @returns {Promise<Array>} - List of projects
    */
   async getAllProjects({ req, query, extrafilter } = {}) {
-    const { Project, Issue, Task } = req.db;
+    const { Project, Issue, UserStory } = req.db;
     try {
       const organization_id =
         req.organization_id || namespace.get("organization_id");
@@ -152,14 +176,14 @@ class ProjectService {
               )`),
               "critical_high_issues_count",
             ],
-            // Count of overdue incomplete tasks
+            // Count of overdue incomplete stories
             [
               Sequelize.literal(`(
                 SELECT COUNT(*)
-                FROM ${Task.getTableName()} t
+                FROM ${UserStory.getTableName()} t
                 WHERE t.project_id = "Project"."id"
                 AND t.due_date < NOW()
-                AND t.status NOT IN ('completed', 'blocked', 'reject')
+                AND t.status NOT IN ('completed', 'blocked')
                 AND t.deleted_at IS NULL
               )`),
               "overdue_tasks_count",
@@ -190,10 +214,10 @@ class ProjectService {
               Sequelize.literal(`
                 NOT EXISTS (
                   SELECT 1
-                  FROM ${Task.getTableName()} t
+                  FROM ${UserStory.getTableName()} t
                   WHERE t.project_id = "Project"."id"
                     AND t.deleted_at IS NULL
-                    AND t.status NOT IN ('blocked','completed','reject')
+                    AND t.status NOT IN ('blocked','completed')
                     AND t.due_date < NOW()
                 )
               `),
@@ -210,7 +234,7 @@ class ProjectService {
           whereFilters = {
             ...whereFilters,
             [Op.and]: [
-              // At least ONE risky issue OR task
+              // At least ONE risky issue OR story
               Sequelize.literal(`
                 (
                   (
@@ -226,10 +250,10 @@ class ProjectService {
 
                   (
                     SELECT COUNT(1)
-                    FROM ${Task.getTableName()} t
+                    FROM ${UserStory.getTableName()} t
                     WHERE t.project_id = "Project"."id"
                       AND t.deleted_at IS NULL
-                      AND t.status NOT IN ('blocked','completed','reject')
+                      AND t.status NOT IN ('blocked','completed')
                       AND t.due_date < NOW()
                   ) BETWEEN 1 AND 5
                 )
@@ -251,10 +275,10 @@ class ProjectService {
 
                   (
                     SELECT COUNT(1)
-                    FROM ${Task.getTableName()} t
+                    FROM ${UserStory.getTableName()} t
                     WHERE t.project_id = "Project"."id"
                       AND t.deleted_at IS NULL
-                      AND t.status NOT IN ('blocked','completed','reject')
+                      AND t.status NOT IN ('blocked','completed')
                       AND t.due_date < NOW()
                   ) < 6
                 )
@@ -283,10 +307,10 @@ class ProjectService {
               Sequelize.literal(`
                 (
                   SELECT COUNT(1)
-                  FROM ${Task.getTableName()} t
+                  FROM ${UserStory.getTableName()} t
                   WHERE t.project_id = "Project"."id"
                     AND t.deleted_at IS NULL
-                    AND t.status NOT IN ('blocked','completed','reject')
+                    AND t.status NOT IN ('blocked','completed')
                     AND t.due_date < NOW()
                 ) >= 6
               `),
@@ -314,7 +338,7 @@ class ProjectService {
               Sequelize.literal(`
                 (
                   SELECT COUNT(1)
-                  FROM ${Task.getTableName()} t
+                  FROM ${UserStory.getTableName()} t
                   WHERE t.project_id = "Project"."id"
                     AND t.deleted_at IS NULL
                     AND t.updated_at > '${fiveDaysAgo.toISOString()}'
@@ -402,7 +426,7 @@ class ProjectService {
               0,
             ),
             overdue_tasks_count: healthoverview.projects.all.reduce(
-              (sum, p) => sum + parseInt(p.overdue_tasks || 0, 10),
+              (sum, p) => sum + parseInt(p.overdue_user_stories || 0, 10),
               0,
             ),
           }
@@ -433,7 +457,7 @@ class ProjectService {
    * @returns {Promise<Object>} - Completion result with validation details
    */
   async completeProject(req, projectId) {
-    const { Project, Task, Issue } = req.db;
+    const { Project, UserStory, Issue } = req.db;
 
     try {
       const project = await Project.findByPk(projectId);
@@ -477,30 +501,30 @@ class ProjectService {
         };
       }
 
-      // Check for pending/incomplete tasks
-      const pendingTasksCount = await Task.count({
+      // Check for pending/incomplete user stories
+      const pendingStoriesCount = await UserStory.count({
         where: {
           project_id: projectId,
           status: {
-            [Op.notIn]: ["completed", "blocked", "reject"],
+            [Op.notIn]: ["completed", "blocked"],
           },
           deleted_at: null,
         },
       });
 
-      if (pendingTasksCount > 0) {
+      if (pendingStoriesCount > 0) {
         return {
           status: 400,
           success: false,
-          message: `Cannot complete project. There are ${pendingTasksCount} pending tasks.`,
+          message: `Cannot complete project. There are ${pendingStoriesCount} pending user stories.`,
           validation_errors: {
-            pending_tasks: pendingTasksCount,
+            pending_stories: pendingStoriesCount,
           },
         };
       }
 
-      // Check for at least 5 completed tasks
-      const completedTasksCount = await Task.count({
+      // Check for at least 5 completed user stories
+      const completedStoriesCount = await UserStory.count({
         where: {
           project_id: projectId,
           status: "completed",
@@ -508,13 +532,13 @@ class ProjectService {
         },
       });
 
-      if (completedTasksCount < 5) {
+      if (completedStoriesCount < 5) {
         return {
           status: 400,
           success: false,
-          message: `Cannot complete project. Minimum 5 completed tasks required. Currently ${completedTasksCount} tasks completed.`,
+          message: `Cannot complete project. Minimum 5 completed user stories required. Currently ${completedStoriesCount} stories completed.`,
           validation_errors: {
-            completed_tasks: completedTasksCount,
+            completed_stories: completedStoriesCount,
             required: 5,
           },
         };
@@ -545,8 +569,7 @@ class ProjectService {
   }
 
   async getMemberDashboardData(req) {
-    const { Task, ProjectMember, Project, Issue } = req.db;
-    const DailyLog = req.db.DailyLog;
+    const { UserStory, ProjectMember, Project, Issue } = req.db;
     const userId = req.user.id;
     const today = new Date().toISOString().split("T")[0];
 
@@ -570,62 +593,62 @@ class ProjectService {
       .filter((m) => !m.project?.is_completed)
       .map((m) => m.project_id);
 
-    // Task counts by status (tasks assigned to current user)
-    const taskStatusList = [
-      "approve_pending",
-      "approved",
-      "in_progress",
-      "blocked",
-      "assign_pending",
-      "accept_pending",
-    ];
-    const taskCounts =
+    // UserStory counts by status (stories assigned to current user)
+    const activeStatusList = ["defined", "in_progress", "review", "blocked"];
+    // Note: completed stories count might be huge, maybe filter by recent execution?
+    // For dashboard, current queue is most important.
+
+    // We assume assigned_to references the ProjectMember ID to maintain project scope consistency
+    const storyCounts =
       memberIds.length > 0
-        ? await Task.findAll({
+        ? await UserStory.findAll({
             attributes: [
               "status",
-              [Sequelize.fn("COUNT", Sequelize.col("Task.id")), "count"],
+              [Sequelize.fn("COUNT", Sequelize.col("UserStory.id")), "count"],
             ],
             where: {
               assigned_to: { [Op.in]: memberIds },
-              status: { [Op.in]: taskStatusList },
+              status: { [Op.in]: activeStatusList },
             },
             group: ["status"],
             raw: true,
           })
         : [];
 
-    const taskByStatus = {};
-    for (const row of taskCounts) {
-      taskByStatus[row.status] = parseInt(row.count, 10);
+    const storiesByStatus = {};
+    for (const row of storyCounts) {
+      storiesByStatus[row.status] = parseInt(row.count, 10);
     }
 
-    // Overdue tasks (due_date < today, active status)
+    // Overdue stories
     const overdueCount =
       memberIds.length > 0
-        ? await Task.count({
+        ? await UserStory.count({
             where: {
               assigned_to: { [Op.in]: memberIds },
               status: {
-                [Op.in]: ["approved", "in_progress", "accept_pending"],
+                [Op.in]: ["in_progress", "review"],
               },
               due_date: { [Op.lt]: today },
             },
           })
         : 0;
 
-    // Today's log count
-    const todayLogCount = await (DailyLog
-      ? DailyLog.count({ where: { user_id: userId, date: today } })
-      : Promise.resolve(0));
+    // Today's log count (DEPRECATED: Daily Log module removed)
+    const todayLogCount = 0;
 
-    // Tasks with approve_pending (created by me, waiting for me to approve — as lead)
-    const pendingApprovalCount =
+    // Stories needing review (assigned to me or I am the reviewer?)
+    // If I am the assignee/manager, maybe I review?
+    // Simplified: No pending approval specific logic needed unless role-based.
+    const pendingReviewCount =
       memberIds.length > 0
-        ? await Task.count({
+        ? await UserStory.count({
             where: {
-              assignee: { [Op.in]: memberIds },
-              status: "approve_pending",
+              status: "review",
+              // If I am project lead? Or if I am assigned?
+              // Just count stories in review for my projects/departments?
+              // For Member Dashboard, keep it simple.
+              assigned_to: { [Op.in]: memberIds },
             },
           })
         : 0;
@@ -662,21 +685,19 @@ class ProjectService {
       status: 200,
       success: true,
       data: {
-        tasks: {
-          in_progress: taskByStatus["in_progress"] || 0,
-          approve_pending: taskByStatus["approve_pending"] || 0,
-          approved: taskByStatus["approved"] || 0,
-          blocked: taskByStatus["blocked"] || 0,
-          assign_pending: taskByStatus["assign_pending"] || 0,
-          accept_pending: taskByStatus["accept_pending"] || 0,
+        user_stories: {
+          defined: storiesByStatus["defined"] || 0,
+          in_progress: storiesByStatus["in_progress"] || 0,
+          review: storiesByStatus["review"] || 0,
+          blocked: storiesByStatus["blocked"] || 0,
+          completed: storiesByStatus["completed"] || 0,
           overdue: overdueCount,
-          pending_my_approval: pendingApprovalCount,
+          pending_review: pendingReviewCount,
           total_active:
-            (taskByStatus["in_progress"] || 0) +
-            (taskByStatus["approve_pending"] || 0) +
-            (taskByStatus["approved"] || 0) +
-            (taskByStatus["blocked"] || 0) +
-            (taskByStatus["assign_pending"] || 0),
+            (storiesByStatus["in_progress"] || 0) +
+            (storiesByStatus["review"] || 0) +
+            (storiesByStatus["blocked"] || 0) +
+            (storiesByStatus["defined"] || 0),
         },
         issues: {
           open: issueCount,

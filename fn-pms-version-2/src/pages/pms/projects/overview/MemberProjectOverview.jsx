@@ -1,3 +1,9 @@
+// Author: Gururaj
+// Created: 29th May 2025
+// Description: Member project overview showing assigned tasks and progress for the current member.
+// Version: 1.0.0
+// Modified:
+
 import { useEffect, useState } from "react";
 import { Box, Card, Chip, Grid, Paper, Skeleton, Stack, Typography } from "@mui/material";
 import AssignmentOutlinedIcon from "@mui/icons-material/AssignmentOutlined";
@@ -66,31 +72,31 @@ const MemberProjectOverview = ({ refresh }) => {
     },
     {
       label: "In Progress",
-      value: data?.tasks?.in_progress ?? 0,
+      value: data?.user_stories?.in_progress ?? 0,
       color: "#43a047",
       icon: PlayCircleOutlineOutlinedIcon,
     },
     {
-      label: "Awaiting Approval",
-      value: data?.tasks?.approve_pending ?? 0,
+      label: "Awaiting Review",
+      value: data?.user_stories?.review ?? 0,
       color: "#6c757d",
       icon: HourglassEmptyOutlinedIcon,
     },
     {
       label: "Blocked",
-      value: data?.tasks?.blocked ?? 0,
+      value: data?.user_stories?.blocked ?? 0,
       color: "#d32f2f",
       icon: BlockOutlinedIcon,
     },
     {
       label: "Overdue",
-      value: data?.tasks?.overdue ?? 0,
+      value: data?.user_stories?.overdue ?? 0,
       color: "#ff9800",
       icon: WarningAmberOutlinedIcon,
     },
     {
-      label: "Total Active Tasks",
-      value: data?.tasks?.total_active ?? 0,
+      label: "Total Active Stories",
+      value: data?.user_stories?.total_active ?? 0,
       color: "#7b1fa2",
       icon: AssignmentOutlinedIcon,
     },

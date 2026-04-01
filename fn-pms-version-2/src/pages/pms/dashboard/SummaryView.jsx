@@ -1,3 +1,9 @@
+// Author: Gururaj
+// Created: 19th Jun 2025
+// Description: Summary View wrapper composing multiple dashboard widgets into a unified layout.
+// Version: 1.0.0
+// Modified:
+
 import { Grid } from "@mui/material";
 import SummaryCard from "./SummaryCard";
 import { useNavigate } from "react-router-dom";

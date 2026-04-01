@@ -1,3 +1,9 @@
+// Author: Gururaj
+// Created: 14th Oct 2025
+// Description: Add Members dialog for searching workspace users and assigning them to a project with a role.
+// Version: 1.0.0
+// Modified:
+
 /*
   Notes:
   - A user can belong to multiple departments (workspaces) within the same project.

@@ -6,7 +6,7 @@
 // Modified:
 
 import { Autocomplete, TextField, Stack, useTheme, InputAdornment } from "@mui/material";
-import { useState, useEffect, useRef } from "react";
+import { useState, useRef } from "react";
 import { colorCodes } from "../../theme";
 
 export default function MultiSelectField({
@@ -19,18 +19,15 @@ export default function MultiSelectField({
   onChange = null,
   value = [], // expect array for multi-select
   options = [], // Array of { label, value }
-  onSearchInputChange = null, 
+  onSearchInputChange = null,
   defaultSearchText = "", // For search input
 }) {
-  const [error, setError] = useState(errorMessage);
+  const error = errorMessage?.replace(/\d+/g, "") || null;
   const [isHideError, setHideError] = useState(false);
-  const [searchText, setSearchText] = useState(defaultSearchText); 
+  const [searchText, setSearchText] = useState(defaultSearchText);
   const theme = useTheme();
   const colors = colorCodes(theme.palette.mode);
   const debounceTimer = useRef(null);
-  useEffect(() => {
-    setError(errorMessage?.replace(/\d+/g, ""));
-  }, [errorMessage]);
 
   const handleSearchInputChange = (e, inputValue, reason) => {
     if (reason !== "input") return;
@@ -55,13 +52,11 @@ export default function MultiSelectField({
     setHideError(false);
   };
 
-
-   // Keep selected values even if not in options
-    const getSelectedObjects = () => {
-      const merged = [...value];
-      return merged;
-    };
-
+  // Keep selected values even if not in options
+  const getSelectedObjects = () => {
+    const merged = [...value];
+    return merged;
+  };
 
   return (
     <Stack spacing={2} direction="row" width="100%">
@@ -72,7 +67,7 @@ export default function MultiSelectField({
         filterOptions={(x) => x}
         loading={isLoading}
         options={options}
-        inputValue={searchText} 
+        inputValue={searchText}
         value={getSelectedObjects()}
         onChange={handleInputChange}
         onInputChange={handleSearchInputChange}
@@ -85,7 +80,6 @@ export default function MultiSelectField({
             required
             label={label}
             error={!!error}
-            
             helperText={!isHideError && error}
             variant="filled"
             InputProps={{

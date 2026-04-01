@@ -3,154 +3,81 @@
 // Description: HOOK for to get sidebar from backend based on if it change.
 // Version: 1.0.0
 // customHooks/useSidebar.jsx
-// Modified: 
+// Modified:
 
 // this is a dummy sidebar data, will be replaced with actual data from backend once the role permission side bar is ready
 const dummySidebar = [
   {
-    "is_parent": false,
-    "display_name": "Dashboard",
-    "internal_name": "dashboard",
-    "icon": "HomeOutlinedIcon",
-    "order_index": 1,
-    "subNavs": []
+    is_parent: false,
+    display_name: "Dashboard",
+    internal_name: "dashboard",
+    icon: "HomeOutlinedIcon",
+    project_required: false,
   },
   {
-    "is_parent": false,
-    "display_name": "Projects",
-    "internal_name": "projects",
-    "icon": "WorkOutlineIcon",
-    "order_index": 2,
-    "subNavs": []
+    is_parent: false,
+    display_name: "Projects",
+    internal_name: "projects",
+    icon: "WorkOutlineIcon",
+    project_required: false,
   },
+
+  // PROJECT CONTEXT
   {
-    "is_parent": false,
-    "display_name": "Features",
-    "internal_name": "features",
-    "icon": "BlurLinearIcon",
-    "order_index": 3,
-    "subNavs": []
-  },
-  {
-    "is_parent": true,
-    "display_name": "Work",
-    "internal_name": "work",
-    "icon": "GroupWorkIcon",
-    "order_index": 4,
-    "subNavs": [
+    is_parent: true,
+    display_name: "Project",
+    internal_name: "project_section",
+    icon: "FolderIcon",
+    project_required: true,
+    subNavs: [
       {
-        "is_parent": false,
-        "display_name": "Tasks",
-        "internal_name": "tasks",
-        "icon": "LineAxisIcon",
-        "order_index": 4,
-        "subNavs": []
+        display_name: "Backlog",
+        internal_name: "project_backlog",
+        icon: "ListAltIcon",
+        project_required: true,
       },
       {
-        "is_parent": false,
-        "display_name": "Issues",
-        "internal_name": "issues",
-        "icon": "BugReportIcon",
-        "order_index": 5,
-        "subNavs": []
+        display_name: "Sprints",
+        internal_name: "project_sprints",
+        icon: "DirectionsRunIcon",
+        project_required: true,
       },
-    ]
+      {
+        display_name: "Board",
+        internal_name: "project_board",
+        icon: "ViewKanbanIcon",
+        project_required: true,
+      },
+      {
+        display_name: "Issues",
+        internal_name: "project_issues",
+        icon: "BugReportIcon",
+        project_required: true,
+      },
+      {
+        display_name: "Reports",
+        internal_name: "project_reports",
+        icon: "AssessmentIcon",
+        project_required: true,
+      },
+    ],
   },
-  
+
   {
-    "is_parent": false,
-    "display_name": "Logs",
-    "internal_name": "daily_logs",
-    "icon": "DocumentScannerIcon",
-    "order_index": 6,
-    "subNavs": []
+    is_parent: false,
+    display_name: "Notifications",
+    internal_name: "notifications",
+    icon: "NotificationsIcon",
+    project_required: false,
   },
-  {
-    "is_parent": false,
-    "display_name": "Invite Members",
-    "internal_name": "invite_members",
-    "icon": "PersonAddAltIcon",
-    "order_index": 6,
-    "subNavs": []
-  },
-
-
-  // {
-  //   "is_parent": true,
-  //   "display_name": "Data",
-  //   "internal_name": "data",
-  //   "icon": null,
-  //   "order_index": 2,
-  //   "subNavs": [
-  //     {
-  //       "is_parent": false,
-  //       "display_name": "Form",
-  //       "internal_name": "form",
-  //       "icon": "PersonOutlinedIcon",
-  //       "order_index": 0,
-  //       "subNavs": []
-  //     },
-  //     {
-  //       "is_parent": false,
-  //       "display_name": "Contact Info",
-  //       "internal_name": "contacts",
-  //       "icon": "ContactsOutlinedIcon",
-  //       "order_index": 3,
-  //       "subNavs": []
-  //     }
-  //   ]
-  // },
-  // {
-  //   "is_parent": true,
-  //   "display_name": "Tools",
-  //   "internal_name": "tools",
-  //   "icon": null,
-  //   "order_index": 4,
-  //   "subNavs": [
-  //     {
-  //       "is_parent": false,
-  //       "display_name": "FAQs",
-  //       "internal_name": "faq",
-  //       "icon": null,
-  //       "order_index": 5,
-  //       "subNavs": []
-  //     },
-  //     {
-  //       "is_parent": false,
-  //       "display_name": "Chart",
-  //       "internal_name": "chart",
-  //       "icon": "BarChartOutlinedIcon",
-  //       "order_index": 5,
-  //       "subNavs": []
-  //     },
-  //     {
-  //       "is_parent": false,
-  //       "display_name": "Calendar",
-  //       "internal_name": "calendar",
-  //       "icon": "CalendarTodayOutlinedIcon",
-  //       "order_index": 6,
-  //       "subNavs": []
-  //     }
-  //   ]
-  // }
-]
-
-
-
-
-
-
-
-
+];
 
 import { useState, useEffect } from "react";
 
-export function useSidebar(tokenAccessVersion)  {
+export function useSidebar(tokenAccessVersion) {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null); // Optional: for UI error display
-
-  
 
   useEffect(() => {
     const storedVersion = localStorage.getItem("accessVersion");
@@ -174,8 +101,7 @@ export function useSidebar(tokenAccessVersion)  {
 
         // const data = responseData.data;
 
-        const data = {access_version : 3_1, items : dummySidebar};
-
+        const data = { access_version: 3_1, items: dummySidebar };
 
         if (!data.items || !data.access_version) {
           throw new Error("Sidebar response is missing required fields.");
@@ -203,7 +129,6 @@ export function useSidebar(tokenAccessVersion)  {
       }
     };
 
-    
     // load sidebar only if the sidebar is not there or if the sidebar version is changed to previous version
     if (!storedSidebar || storedVersion !== tokenAccessVersion) {
       // console.log("Sidebar not found or version mismatch. Fetching new sidebar.");
@@ -220,6 +145,4 @@ export function useSidebar(tokenAccessVersion)  {
   }, [tokenAccessVersion]);
 
   return { items, loading, error };
-};
-
-
+}

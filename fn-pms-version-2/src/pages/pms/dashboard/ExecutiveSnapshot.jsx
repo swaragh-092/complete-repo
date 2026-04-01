@@ -1,3 +1,9 @@
+// Author: Gururaj
+// Created: 19th Jun 2025
+// Description: Executive Snapshot widget with high-level KPI cards: open projects, stories done, velocity.
+// Version: 1.0.0
+// Modified:
+
 import { Grid, Card, Box, Typography, Stack, Skeleton } from "@mui/material";
 import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 import TrendingDownIcon from "@mui/icons-material/TrendingDown";
@@ -22,9 +28,7 @@ const SNAPSHOT_META = {
     route: paths.projects("critical"),
   },
 };
-const SnapshotCard = ({ label, count, trend, color, onClick, title }) => {
-  const isPositive = trend >= 0;
-
+const SnapshotCard = ({ label, count, onClick, title }) => {
   return (
     <Card
       onClick={onClick}
@@ -94,49 +98,25 @@ const ExecutiveSnapshot = ({ data, loading }) => {
 
   return (
     <>
-      {loading ?
-        <Box
-          sx={{ display: 'flex', gap: 2, padding: 1 }}
-        >
-        <Skeleton
-          sx={{ bgcolor: 'grey.100' }}
-          variant="rectangular"
-          width={210}
-          height={100}
-        />
-        <Skeleton
-          sx={{ bgcolor: 'grey.100' }}
-          variant="rectangular"
-          width={210}
-          height={100}
-        />
-        <Skeleton
-          sx={{ bgcolor: 'grey.100' }}
-          variant="rectangular"
-          width={210}
-          height={100}
-        />
+      {loading ? (
+        <Box sx={{ display: "flex", gap: 2, padding: 1 }}>
+          <Skeleton sx={{ bgcolor: "grey.100" }} variant="rectangular" width={210} height={100} />
+          <Skeleton sx={{ bgcolor: "grey.100" }} variant="rectangular" width={210} height={100} />
+          <Skeleton sx={{ bgcolor: "grey.100" }} variant="rectangular" width={210} height={100} />
         </Box>
-        :
+      ) : (
         <Grid container spacing={3}>
           {Object.entries(EXECUTIVE_SNAPSHOT_DATA).map(([key, data]) => {
             const meta = SNAPSHOT_META[key];
 
             return (
               <Grid paddingBottom={3} item xs={12} sm={6} md={3} key={key}>
-                <SnapshotCard 
-                  label={data.label} 
-                  count={data.count} 
-                  trend={data.trend} 
-                  color={meta.color} 
-                  title={data.title}
-                  onClick={() => navigate(meta.route)} 
-                />
+                <SnapshotCard label={data.label} count={data.count} trend={data.trend} color={meta.color} title={data.title} onClick={() => navigate(meta.route)} />
               </Grid>
             );
           })}
         </Grid>
-      }
+      )}
     </>
   );
 };
