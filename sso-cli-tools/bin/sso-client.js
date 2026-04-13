@@ -19,6 +19,8 @@ import { statusCommand } from '../lib/commands/status.js';
 import { linkUiCommand } from '../lib/commands/linkUi.js';
 import { setupCommand } from '../lib/commands/setup.js';
 import { initCommand } from '../lib/commands/init.js';
+import { registerCommand } from '../lib/commands/register.js';
+import { pullEnvCommand } from '../lib/commands/pull-env.js';
 
 // Get current directory (ES modules compatibility)
 const __filename = fileURLToPath(import.meta.url);
@@ -537,6 +539,20 @@ program
   .command('init')
   .description('� Initialize SSO client (with optional organization support)')
   .action(async () => await initCommand({}, createViteFiles));
+
+// Register command - for already-developed or production apps (no scaffolding)
+program
+  .command('register')
+  .description('Register an existing application with SSO (no file scaffolding)')
+  .action(async () => await registerCommand());
+
+// Pull-env command - fetch approved credentials and write complete .env
+program
+  .command('pull-env')
+  .description('Fetch approved SSO credentials and write them to .env')
+  .argument('[clientKey]', 'Client key (auto-detected from .env if not provided)')
+  .requiredOption('--email <developerEmail>', 'Developer email used during registration')
+  .action(async (clientKey, options) => await pullEnvCommand(clientKey, options));
 
 
 // ============================================================================

@@ -5,10 +5,7 @@
 // Modified:
 // file : src/util/urls.js
 
-// const domain = "http://localhost:8089/pms";
-// For local PMS server testing: "http://localhost:3015/pms_mod" (won't work with cookies from .local.test domain)
-// Use gateway for proper cookie handling (access_token on .local.test domain)
-const domain = "https://pms.local.test/pms_mod";
+const domain = import.meta.env.VITE_API_BASE_URL;
 
 const BACKEND_ENDPOINT = {
   // dashboard

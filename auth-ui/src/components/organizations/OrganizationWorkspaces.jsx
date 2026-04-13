@@ -34,6 +34,8 @@ export default function OrganizationWorkspaces({ orgId, orgName, currentUserRole
   const queryClient = useQueryClient();
   const [createModalOpen, setCreateModalOpen] = useState(false);
 
+  console.log("orgId in OrganizationWorkspaces:", orgId);
+
   // In Admin Panel (auth-ui), superadmins always have permission to create workspaces
   // The role check is more relevant for client apps. Here we default to true.
   const roleNormalized = (currentUserRole || '').toLowerCase();

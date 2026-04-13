@@ -2,8 +2,10 @@
 -- PostgreSQL database dump
 --
 
--- Dumped from database version 15.13 (Debian 15.13-1.pgdg120+1)
--- Dumped by pg_dump version 15.13 (Debian 15.13-1.pgdg120+1)
+\restrict icHDmFlRLCgA4NV9v8V2eCiJLQYr6v0OVcbwwFP9I7wh46OzQiPPkeoStAKwNph
+
+-- Dumped from database version 16.13
+-- Dumped by pg_dump version 16.13
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -16,357 +18,6 @@ SET xmloption = content;
 SET client_min_messages = warning;
 SET row_security = off;
 
-ALTER TABLE IF EXISTS ONLY public.identity_provider_config DROP CONSTRAINT IF EXISTS fkdc4897cf864c4e43;
-ALTER TABLE IF EXISTS ONLY public.policy_config DROP CONSTRAINT IF EXISTS fkdc34197cf864c4e43;
-ALTER TABLE IF EXISTS ONLY public.user_group_membership DROP CONSTRAINT IF EXISTS fk_user_group_user;
-ALTER TABLE IF EXISTS ONLY public.user_federation_config DROP CONSTRAINT IF EXISTS fk_t13hpu1j94r2ebpekr39x5eu5;
-ALTER TABLE IF EXISTS ONLY public.realm_supported_locales DROP CONSTRAINT IF EXISTS fk_supported_locales_realm;
-ALTER TABLE IF EXISTS ONLY public.role_attribute DROP CONSTRAINT IF EXISTS fk_role_attribute_id;
-ALTER TABLE IF EXISTS ONLY public.resource_uris DROP CONSTRAINT IF EXISTS fk_resource_server_uris;
-ALTER TABLE IF EXISTS ONLY public.required_action_provider DROP CONSTRAINT IF EXISTS fk_req_act_realm;
-ALTER TABLE IF EXISTS ONLY public.default_client_scope DROP CONSTRAINT IF EXISTS fk_r_def_cli_scope_realm;
-ALTER TABLE IF EXISTS ONLY public.protocol_mapper_config DROP CONSTRAINT IF EXISTS fk_pmconfig;
-ALTER TABLE IF EXISTS ONLY public.credential DROP CONSTRAINT IF EXISTS fk_pfyr0glasqyl0dei3kl69r6v0;
-ALTER TABLE IF EXISTS ONLY public.protocol_mapper DROP CONSTRAINT IF EXISTS fk_pcm_realm;
-ALTER TABLE IF EXISTS ONLY public.scope_mapping DROP CONSTRAINT IF EXISTS fk_ouse064plmlr732lxjcn1q5f1;
-ALTER TABLE IF EXISTS ONLY public.web_origins DROP CONSTRAINT IF EXISTS fk_lojpho213xcx4wnkog82ssrfy;
-ALTER TABLE IF EXISTS ONLY public.idp_mapper_config DROP CONSTRAINT IF EXISTS fk_idpmconfig;
-ALTER TABLE IF EXISTS ONLY public.identity_provider_mapper DROP CONSTRAINT IF EXISTS fk_idpm_realm;
-ALTER TABLE IF EXISTS ONLY public.realm_events_listeners DROP CONSTRAINT IF EXISTS fk_h846o4h0w8epx5nxev9f5y69j;
-ALTER TABLE IF EXISTS ONLY public.realm_enabled_event_types DROP CONSTRAINT IF EXISTS fk_h846o4h0w8epx5nwedrf5y69j;
-ALTER TABLE IF EXISTS ONLY public.group_role_mapping DROP CONSTRAINT IF EXISTS fk_group_role_group;
-ALTER TABLE IF EXISTS ONLY public.group_attribute DROP CONSTRAINT IF EXISTS fk_group_attribute_group;
-ALTER TABLE IF EXISTS ONLY public.user_consent DROP CONSTRAINT IF EXISTS fk_grntcsnt_user;
-ALTER TABLE IF EXISTS ONLY public.user_consent_client_scope DROP CONSTRAINT IF EXISTS fk_grntcsnt_clsc_usc;
-ALTER TABLE IF EXISTS ONLY public.composite_role DROP CONSTRAINT IF EXISTS fk_gr7thllb9lu8q4vqa4524jjy8;
-ALTER TABLE IF EXISTS ONLY public.resource_server_scope DROP CONSTRAINT IF EXISTS fk_frsrso213xcx4wnkog82ssrfy;
-ALTER TABLE IF EXISTS ONLY public.resource_scope DROP CONSTRAINT IF EXISTS fk_frsrps213xcx4wnkog82ssrfy;
-ALTER TABLE IF EXISTS ONLY public.resource_policy DROP CONSTRAINT IF EXISTS fk_frsrpp213xcx4wnkog82ssrfy;
-ALTER TABLE IF EXISTS ONLY public.resource_policy DROP CONSTRAINT IF EXISTS fk_frsrpos53xcx4wnkog82ssrfy;
-ALTER TABLE IF EXISTS ONLY public.resource_scope DROP CONSTRAINT IF EXISTS fk_frsrpos13xcx4wnkog82ssrfy;
-ALTER TABLE IF EXISTS ONLY public.resource_server_policy DROP CONSTRAINT IF EXISTS fk_frsrpo213xcx4wnkog82ssrfy;
-ALTER TABLE IF EXISTS ONLY public.resource_server_perm_ticket DROP CONSTRAINT IF EXISTS fk_frsrpo2128cx4wnkog82ssrfy;
-ALTER TABLE IF EXISTS ONLY public.scope_policy DROP CONSTRAINT IF EXISTS fk_frsrpass3xcx4wnkog82ssrfy;
-ALTER TABLE IF EXISTS ONLY public.associated_policy DROP CONSTRAINT IF EXISTS fk_frsrpas14xcx4wnkog82ssrfy;
-ALTER TABLE IF EXISTS ONLY public.resource_server_perm_ticket DROP CONSTRAINT IF EXISTS fk_frsrho213xcx4wnkog84sspmt;
-ALTER TABLE IF EXISTS ONLY public.resource_server_perm_ticket DROP CONSTRAINT IF EXISTS fk_frsrho213xcx4wnkog83sspmt;
-ALTER TABLE IF EXISTS ONLY public.resource_server_resource DROP CONSTRAINT IF EXISTS fk_frsrho213xcx4wnkog82ssrfy;
-ALTER TABLE IF EXISTS ONLY public.resource_server_perm_ticket DROP CONSTRAINT IF EXISTS fk_frsrho213xcx4wnkog82sspmt;
-ALTER TABLE IF EXISTS ONLY public.scope_policy DROP CONSTRAINT IF EXISTS fk_frsrasp13xcx4wnkog82ssrfy;
-ALTER TABLE IF EXISTS ONLY public.associated_policy DROP CONSTRAINT IF EXISTS fk_frsr5s213xcx4wnkog82ssrfy;
-ALTER TABLE IF EXISTS ONLY public.user_federation_mapper DROP CONSTRAINT IF EXISTS fk_fedmapperpm_realm;
-ALTER TABLE IF EXISTS ONLY public.user_federation_mapper DROP CONSTRAINT IF EXISTS fk_fedmapperpm_fedprv;
-ALTER TABLE IF EXISTS ONLY public.user_federation_mapper_config DROP CONSTRAINT IF EXISTS fk_fedmapper_cfg;
-ALTER TABLE IF EXISTS ONLY public.realm_default_groups DROP CONSTRAINT IF EXISTS fk_def_groups_realm;
-ALTER TABLE IF EXISTS ONLY public.component DROP CONSTRAINT IF EXISTS fk_component_realm;
-ALTER TABLE IF EXISTS ONLY public.component_config DROP CONSTRAINT IF EXISTS fk_component_config;
-ALTER TABLE IF EXISTS ONLY public.client_initial_access DROP CONSTRAINT IF EXISTS fk_client_init_acc_realm;
-ALTER TABLE IF EXISTS ONLY public.protocol_mapper DROP CONSTRAINT IF EXISTS fk_cli_scope_mapper;
-ALTER TABLE IF EXISTS ONLY public.client_scope_role_mapping DROP CONSTRAINT IF EXISTS fk_cl_scope_rm_scope;
-ALTER TABLE IF EXISTS ONLY public.client_scope_attributes DROP CONSTRAINT IF EXISTS fk_cl_scope_attr_scope;
-ALTER TABLE IF EXISTS ONLY public.user_role_mapping DROP CONSTRAINT IF EXISTS fk_c4fqv34p1mbylloxang7b1q3l;
-ALTER TABLE IF EXISTS ONLY public.authenticator_config DROP CONSTRAINT IF EXISTS fk_auth_realm;
-ALTER TABLE IF EXISTS ONLY public.authentication_flow DROP CONSTRAINT IF EXISTS fk_auth_flow_realm;
-ALTER TABLE IF EXISTS ONLY public.authentication_execution DROP CONSTRAINT IF EXISTS fk_auth_exec_realm;
-ALTER TABLE IF EXISTS ONLY public.authentication_execution DROP CONSTRAINT IF EXISTS fk_auth_exec_flow;
-ALTER TABLE IF EXISTS ONLY public.composite_role DROP CONSTRAINT IF EXISTS fk_a63wvekftu8jo1pnj81e7mce2;
-ALTER TABLE IF EXISTS ONLY public.realm_attribute DROP CONSTRAINT IF EXISTS fk_8shxd6l3e9atqukacxgpffptw;
-ALTER TABLE IF EXISTS ONLY public.realm_smtp_config DROP CONSTRAINT IF EXISTS fk_70ej8xdxgxd0b9hh6180irr0o;
-ALTER TABLE IF EXISTS ONLY public.keycloak_role DROP CONSTRAINT IF EXISTS fk_6vyqfe4cn4wlq8r6kt5vdsj5c;
-ALTER TABLE IF EXISTS ONLY public.user_required_action DROP CONSTRAINT IF EXISTS fk_6qj3w1jw9cvafhe19bwsiuvmd;
-ALTER TABLE IF EXISTS ONLY public.user_attribute DROP CONSTRAINT IF EXISTS fk_5hrm2vlf9ql5fu043kqepovbr;
-ALTER TABLE IF EXISTS ONLY public.resource_attribute DROP CONSTRAINT IF EXISTS fk_5hrm2vlf9ql5fu022kqepovbr;
-ALTER TABLE IF EXISTS ONLY public.realm_required_credential DROP CONSTRAINT IF EXISTS fk_5hg65lybevavkqfki3kponh9v;
-ALTER TABLE IF EXISTS ONLY public.user_federation_provider DROP CONSTRAINT IF EXISTS fk_1fj32f6ptolw2qy60cd8n01e8;
-ALTER TABLE IF EXISTS ONLY public.redirect_uris DROP CONSTRAINT IF EXISTS fk_1burs8pb4ouj97h5wuppahv9f;
-ALTER TABLE IF EXISTS ONLY public.client_node_registrations DROP CONSTRAINT IF EXISTS fk4129723ba992f594;
-ALTER TABLE IF EXISTS ONLY public.federated_identity DROP CONSTRAINT IF EXISTS fk404288b92ef007a6;
-ALTER TABLE IF EXISTS ONLY public.client_attributes DROP CONSTRAINT IF EXISTS fk3c47c64beacca966;
-ALTER TABLE IF EXISTS ONLY public.identity_provider DROP CONSTRAINT IF EXISTS fk2b4ebc52ae5c3b34;
-DROP INDEX IF EXISTS public.user_attr_long_values_lower_case;
-DROP INDEX IF EXISTS public.user_attr_long_values;
-DROP INDEX IF EXISTS public.idx_web_orig_client;
-DROP INDEX IF EXISTS public.idx_usr_fed_prv_realm;
-DROP INDEX IF EXISTS public.idx_usr_fed_map_realm;
-DROP INDEX IF EXISTS public.idx_usr_fed_map_fed_prv;
-DROP INDEX IF EXISTS public.idx_user_service_account;
-DROP INDEX IF EXISTS public.idx_user_role_mapping;
-DROP INDEX IF EXISTS public.idx_user_reqactions;
-DROP INDEX IF EXISTS public.idx_user_group_mapping;
-DROP INDEX IF EXISTS public.idx_user_email;
-DROP INDEX IF EXISTS public.idx_user_credential;
-DROP INDEX IF EXISTS public.idx_user_consent;
-DROP INDEX IF EXISTS public.idx_user_attribute_name;
-DROP INDEX IF EXISTS public.idx_user_attribute;
-DROP INDEX IF EXISTS public.idx_usconsent_scope_id;
-DROP INDEX IF EXISTS public.idx_usconsent_clscope;
-DROP INDEX IF EXISTS public.idx_update_time;
-DROP INDEX IF EXISTS public.idx_scope_policy_policy;
-DROP INDEX IF EXISTS public.idx_scope_mapping_role;
-DROP INDEX IF EXISTS public.idx_role_clscope;
-DROP INDEX IF EXISTS public.idx_role_attribute;
-DROP INDEX IF EXISTS public.idx_rev_token_on_expire;
-DROP INDEX IF EXISTS public.idx_res_srv_scope_res_srv;
-DROP INDEX IF EXISTS public.idx_res_srv_res_res_srv;
-DROP INDEX IF EXISTS public.idx_res_serv_pol_res_serv;
-DROP INDEX IF EXISTS public.idx_res_scope_scope;
-DROP INDEX IF EXISTS public.idx_res_policy_policy;
-DROP INDEX IF EXISTS public.idx_req_act_prov_realm;
-DROP INDEX IF EXISTS public.idx_redir_uri_client;
-DROP INDEX IF EXISTS public.idx_realm_supp_local_realm;
-DROP INDEX IF EXISTS public.idx_realm_master_adm_cli;
-DROP INDEX IF EXISTS public.idx_realm_evt_types_realm;
-DROP INDEX IF EXISTS public.idx_realm_evt_list_realm;
-DROP INDEX IF EXISTS public.idx_realm_def_grp_realm;
-DROP INDEX IF EXISTS public.idx_realm_clscope;
-DROP INDEX IF EXISTS public.idx_realm_attr_realm;
-DROP INDEX IF EXISTS public.idx_protocol_mapper_client;
-DROP INDEX IF EXISTS public.idx_perm_ticket_requester;
-DROP INDEX IF EXISTS public.idx_perm_ticket_owner;
-DROP INDEX IF EXISTS public.idx_org_domain_org_id;
-DROP INDEX IF EXISTS public.idx_offline_uss_by_user;
-DROP INDEX IF EXISTS public.idx_offline_uss_by_last_session_refresh;
-DROP INDEX IF EXISTS public.idx_offline_uss_by_broker_session_id;
-DROP INDEX IF EXISTS public.idx_keycloak_role_realm;
-DROP INDEX IF EXISTS public.idx_keycloak_role_client;
-DROP INDEX IF EXISTS public.idx_idp_realm_org;
-DROP INDEX IF EXISTS public.idx_idp_for_login;
-DROP INDEX IF EXISTS public.idx_ident_prov_realm;
-DROP INDEX IF EXISTS public.idx_id_prov_mapp_realm;
-DROP INDEX IF EXISTS public.idx_group_role_mapp_group;
-DROP INDEX IF EXISTS public.idx_group_attr_group;
-DROP INDEX IF EXISTS public.idx_group_att_by_name_value;
-DROP INDEX IF EXISTS public.idx_fu_role_mapping_ru;
-DROP INDEX IF EXISTS public.idx_fu_role_mapping;
-DROP INDEX IF EXISTS public.idx_fu_required_action_ru;
-DROP INDEX IF EXISTS public.idx_fu_required_action;
-DROP INDEX IF EXISTS public.idx_fu_group_membership_ru;
-DROP INDEX IF EXISTS public.idx_fu_group_membership;
-DROP INDEX IF EXISTS public.idx_fu_credential_ru;
-DROP INDEX IF EXISTS public.idx_fu_credential;
-DROP INDEX IF EXISTS public.idx_fu_consent_ru;
-DROP INDEX IF EXISTS public.idx_fu_consent;
-DROP INDEX IF EXISTS public.idx_fu_cnsnt_ext;
-DROP INDEX IF EXISTS public.idx_fu_attribute;
-DROP INDEX IF EXISTS public.idx_fedidentity_user;
-DROP INDEX IF EXISTS public.idx_fedidentity_feduser;
-DROP INDEX IF EXISTS public.idx_event_time;
-DROP INDEX IF EXISTS public.idx_defcls_scope;
-DROP INDEX IF EXISTS public.idx_defcls_realm;
-DROP INDEX IF EXISTS public.idx_composite_child;
-DROP INDEX IF EXISTS public.idx_composite;
-DROP INDEX IF EXISTS public.idx_component_realm;
-DROP INDEX IF EXISTS public.idx_component_provider_type;
-DROP INDEX IF EXISTS public.idx_compo_config_compo;
-DROP INDEX IF EXISTS public.idx_clscope_role;
-DROP INDEX IF EXISTS public.idx_clscope_protmap;
-DROP INDEX IF EXISTS public.idx_clscope_cl;
-DROP INDEX IF EXISTS public.idx_clscope_attrs;
-DROP INDEX IF EXISTS public.idx_client_init_acc_realm;
-DROP INDEX IF EXISTS public.idx_client_id;
-DROP INDEX IF EXISTS public.idx_client_att_by_name_value;
-DROP INDEX IF EXISTS public.idx_cl_clscope;
-DROP INDEX IF EXISTS public.idx_auth_flow_realm;
-DROP INDEX IF EXISTS public.idx_auth_exec_realm_flow;
-DROP INDEX IF EXISTS public.idx_auth_exec_flow;
-DROP INDEX IF EXISTS public.idx_auth_config_realm;
-DROP INDEX IF EXISTS public.idx_assoc_pol_assoc_pol_id;
-DROP INDEX IF EXISTS public.idx_admin_event_time;
-DROP INDEX IF EXISTS public.fed_user_attr_long_values_lower_case;
-DROP INDEX IF EXISTS public.fed_user_attr_long_values;
-ALTER TABLE IF EXISTS ONLY public.user_entity DROP CONSTRAINT IF EXISTS uk_ru8tt6t700s9v50bu18ws5ha6;
-ALTER TABLE IF EXISTS ONLY public.realm DROP CONSTRAINT IF EXISTS uk_orvsdmla56612eaefiq6wl5oi;
-ALTER TABLE IF EXISTS ONLY public.org DROP CONSTRAINT IF EXISTS uk_org_name;
-ALTER TABLE IF EXISTS ONLY public.org DROP CONSTRAINT IF EXISTS uk_org_group;
-ALTER TABLE IF EXISTS ONLY public.org DROP CONSTRAINT IF EXISTS uk_org_alias;
-ALTER TABLE IF EXISTS ONLY public.user_consent DROP CONSTRAINT IF EXISTS uk_local_consent;
-ALTER TABLE IF EXISTS ONLY public.resource_server_scope DROP CONSTRAINT IF EXISTS uk_frsrst700s9v50bu18ws5ha6;
-ALTER TABLE IF EXISTS ONLY public.resource_server_policy DROP CONSTRAINT IF EXISTS uk_frsrpt700s9v50bu18ws5ha6;
-ALTER TABLE IF EXISTS ONLY public.resource_server_perm_ticket DROP CONSTRAINT IF EXISTS uk_frsr6t700s9v50bu18ws5pmt;
-ALTER TABLE IF EXISTS ONLY public.resource_server_resource DROP CONSTRAINT IF EXISTS uk_frsr6t700s9v50bu18ws5ha6;
-ALTER TABLE IF EXISTS ONLY public.user_consent DROP CONSTRAINT IF EXISTS uk_external_consent;
-ALTER TABLE IF EXISTS ONLY public.user_entity DROP CONSTRAINT IF EXISTS uk_dykn684sl8up1crfei6eckhd7;
-ALTER TABLE IF EXISTS ONLY public.client_scope DROP CONSTRAINT IF EXISTS uk_cli_scope;
-ALTER TABLE IF EXISTS ONLY public.client DROP CONSTRAINT IF EXISTS uk_b71cjlbenv945rb6gcon438at;
-ALTER TABLE IF EXISTS ONLY public.identity_provider DROP CONSTRAINT IF EXISTS uk_2daelwnibji49avxsrtuf6xj33;
-ALTER TABLE IF EXISTS ONLY public.keycloak_group DROP CONSTRAINT IF EXISTS sibling_names;
-ALTER TABLE IF EXISTS ONLY public.resource_attribute DROP CONSTRAINT IF EXISTS res_attr_pk;
-ALTER TABLE IF EXISTS ONLY public.realm_localizations DROP CONSTRAINT IF EXISTS realm_localizations_pkey;
-ALTER TABLE IF EXISTS ONLY public.default_client_scope DROP CONSTRAINT IF EXISTS r_def_cli_scope_bind;
-ALTER TABLE IF EXISTS ONLY public.client_scope_role_mapping DROP CONSTRAINT IF EXISTS pk_template_scope;
-ALTER TABLE IF EXISTS ONLY public.resource_server DROP CONSTRAINT IF EXISTS pk_resource_server;
-ALTER TABLE IF EXISTS ONLY public.client_scope DROP CONSTRAINT IF EXISTS pk_cli_template;
-ALTER TABLE IF EXISTS ONLY public.client_scope_attributes DROP CONSTRAINT IF EXISTS pk_cl_tmpl_attr;
-ALTER TABLE IF EXISTS ONLY public.databasechangeloglock DROP CONSTRAINT IF EXISTS databasechangeloglock_pkey;
-ALTER TABLE IF EXISTS ONLY public.web_origins DROP CONSTRAINT IF EXISTS constraint_web_origins;
-ALTER TABLE IF EXISTS ONLY public.user_group_membership DROP CONSTRAINT IF EXISTS constraint_user_group;
-ALTER TABLE IF EXISTS ONLY public.user_attribute DROP CONSTRAINT IF EXISTS constraint_user_attribute_pk;
-ALTER TABLE IF EXISTS ONLY public.revoked_token DROP CONSTRAINT IF EXISTS constraint_rt;
-ALTER TABLE IF EXISTS ONLY public.role_attribute DROP CONSTRAINT IF EXISTS constraint_role_attribute_pk;
-ALTER TABLE IF EXISTS ONLY public.resource_uris DROP CONSTRAINT IF EXISTS constraint_resour_uris_pk;
-ALTER TABLE IF EXISTS ONLY public.user_required_action DROP CONSTRAINT IF EXISTS constraint_required_action;
-ALTER TABLE IF EXISTS ONLY public.required_action_provider DROP CONSTRAINT IF EXISTS constraint_req_act_prv_pk;
-ALTER TABLE IF EXISTS ONLY public.required_action_config DROP CONSTRAINT IF EXISTS constraint_req_act_cfg_pk;
-ALTER TABLE IF EXISTS ONLY public.redirect_uris DROP CONSTRAINT IF EXISTS constraint_redirect_uris;
-ALTER TABLE IF EXISTS ONLY public.protocol_mapper_config DROP CONSTRAINT IF EXISTS constraint_pmconfig;
-ALTER TABLE IF EXISTS ONLY public.protocol_mapper DROP CONSTRAINT IF EXISTS constraint_pcm;
-ALTER TABLE IF EXISTS ONLY public.offline_user_session DROP CONSTRAINT IF EXISTS constraint_offl_us_ses_pk2;
-ALTER TABLE IF EXISTS ONLY public.offline_client_session DROP CONSTRAINT IF EXISTS constraint_offl_cl_ses_pk3;
-ALTER TABLE IF EXISTS ONLY public.migration_model DROP CONSTRAINT IF EXISTS constraint_migmod;
-ALTER TABLE IF EXISTS ONLY public.jgroups_ping DROP CONSTRAINT IF EXISTS constraint_jgroups_ping;
-ALTER TABLE IF EXISTS ONLY public.idp_mapper_config DROP CONSTRAINT IF EXISTS constraint_idpmconfig;
-ALTER TABLE IF EXISTS ONLY public.identity_provider_mapper DROP CONSTRAINT IF EXISTS constraint_idpm;
-ALTER TABLE IF EXISTS ONLY public.group_role_mapping DROP CONSTRAINT IF EXISTS constraint_group_role;
-ALTER TABLE IF EXISTS ONLY public.group_attribute DROP CONSTRAINT IF EXISTS constraint_group_attribute_pk;
-ALTER TABLE IF EXISTS ONLY public.keycloak_group DROP CONSTRAINT IF EXISTS constraint_group;
-ALTER TABLE IF EXISTS ONLY public.user_consent DROP CONSTRAINT IF EXISTS constraint_grntcsnt_pm;
-ALTER TABLE IF EXISTS ONLY public.user_consent_client_scope DROP CONSTRAINT IF EXISTS constraint_grntcsnt_clsc_pm;
-ALTER TABLE IF EXISTS ONLY public.fed_user_consent_cl_scope DROP CONSTRAINT IF EXISTS constraint_fgrntcsnt_clsc_pm;
-ALTER TABLE IF EXISTS ONLY public.user_federation_mapper DROP CONSTRAINT IF EXISTS constraint_fedmapperpm;
-ALTER TABLE IF EXISTS ONLY public.user_federation_mapper_config DROP CONSTRAINT IF EXISTS constraint_fedmapper_cfg_pm;
-ALTER TABLE IF EXISTS ONLY public.user_entity DROP CONSTRAINT IF EXISTS constraint_fb;
-ALTER TABLE IF EXISTS ONLY public.scope_policy DROP CONSTRAINT IF EXISTS constraint_farsrsps;
-ALTER TABLE IF EXISTS ONLY public.resource_scope DROP CONSTRAINT IF EXISTS constraint_farsrsp;
-ALTER TABLE IF EXISTS ONLY public.resource_server_scope DROP CONSTRAINT IF EXISTS constraint_farsrs;
-ALTER TABLE IF EXISTS ONLY public.resource_policy DROP CONSTRAINT IF EXISTS constraint_farsrpp;
-ALTER TABLE IF EXISTS ONLY public.associated_policy DROP CONSTRAINT IF EXISTS constraint_farsrpap;
-ALTER TABLE IF EXISTS ONLY public.resource_server_policy DROP CONSTRAINT IF EXISTS constraint_farsrp;
-ALTER TABLE IF EXISTS ONLY public.resource_server_resource DROP CONSTRAINT IF EXISTS constraint_farsr;
-ALTER TABLE IF EXISTS ONLY public.resource_server_perm_ticket DROP CONSTRAINT IF EXISTS constraint_fapmt;
-ALTER TABLE IF EXISTS ONLY public.user_federation_config DROP CONSTRAINT IF EXISTS constraint_f9;
-ALTER TABLE IF EXISTS ONLY public.credential DROP CONSTRAINT IF EXISTS constraint_f;
-ALTER TABLE IF EXISTS ONLY public.realm_smtp_config DROP CONSTRAINT IF EXISTS constraint_e;
-ALTER TABLE IF EXISTS ONLY public.policy_config DROP CONSTRAINT IF EXISTS constraint_dpc;
-ALTER TABLE IF EXISTS ONLY public.identity_provider_config DROP CONSTRAINT IF EXISTS constraint_d;
-ALTER TABLE IF EXISTS ONLY public.composite_role DROP CONSTRAINT IF EXISTS constraint_composite_role;
-ALTER TABLE IF EXISTS ONLY public.user_role_mapping DROP CONSTRAINT IF EXISTS constraint_c;
-ALTER TABLE IF EXISTS ONLY public.authenticator_config DROP CONSTRAINT IF EXISTS constraint_auth_pk;
-ALTER TABLE IF EXISTS ONLY public.authentication_flow DROP CONSTRAINT IF EXISTS constraint_auth_flow_pk;
-ALTER TABLE IF EXISTS ONLY public.authentication_execution DROP CONSTRAINT IF EXISTS constraint_auth_exec_pk;
-ALTER TABLE IF EXISTS ONLY public.authenticator_config_entry DROP CONSTRAINT IF EXISTS constraint_auth_cfg_pk;
-ALTER TABLE IF EXISTS ONLY public.admin_event_entity DROP CONSTRAINT IF EXISTS constraint_admin_event_entity;
-ALTER TABLE IF EXISTS ONLY public.keycloak_role DROP CONSTRAINT IF EXISTS constraint_a;
-ALTER TABLE IF EXISTS ONLY public.realm_required_credential DROP CONSTRAINT IF EXISTS constraint_92;
-ALTER TABLE IF EXISTS ONLY public.realm_attribute DROP CONSTRAINT IF EXISTS constraint_9;
-ALTER TABLE IF EXISTS ONLY public.client_node_registrations DROP CONSTRAINT IF EXISTS constraint_84;
-ALTER TABLE IF EXISTS ONLY public.scope_mapping DROP CONSTRAINT IF EXISTS constraint_81;
-ALTER TABLE IF EXISTS ONLY public.client DROP CONSTRAINT IF EXISTS constraint_7;
-ALTER TABLE IF EXISTS ONLY public.user_federation_provider DROP CONSTRAINT IF EXISTS constraint_5c;
-ALTER TABLE IF EXISTS ONLY public.realm DROP CONSTRAINT IF EXISTS constraint_4a;
-ALTER TABLE IF EXISTS ONLY public.federated_identity DROP CONSTRAINT IF EXISTS constraint_40;
-ALTER TABLE IF EXISTS ONLY public.event_entity DROP CONSTRAINT IF EXISTS constraint_4;
-ALTER TABLE IF EXISTS ONLY public.client_attributes DROP CONSTRAINT IF EXISTS constraint_3c;
-ALTER TABLE IF EXISTS ONLY public.identity_provider DROP CONSTRAINT IF EXISTS constraint_2b;
-ALTER TABLE IF EXISTS ONLY public.realm_supported_locales DROP CONSTRAINT IF EXISTS constr_realm_supported_locales;
-ALTER TABLE IF EXISTS ONLY public.realm_events_listeners DROP CONSTRAINT IF EXISTS constr_realm_events_listeners;
-ALTER TABLE IF EXISTS ONLY public.realm_enabled_event_types DROP CONSTRAINT IF EXISTS constr_realm_enabl_event_types;
-ALTER TABLE IF EXISTS ONLY public.realm_default_groups DROP CONSTRAINT IF EXISTS constr_realm_default_groups;
-ALTER TABLE IF EXISTS ONLY public.federated_user DROP CONSTRAINT IF EXISTS constr_federated_user;
-ALTER TABLE IF EXISTS ONLY public.fed_user_role_mapping DROP CONSTRAINT IF EXISTS constr_fed_user_role;
-ALTER TABLE IF EXISTS ONLY public.fed_user_group_membership DROP CONSTRAINT IF EXISTS constr_fed_user_group;
-ALTER TABLE IF EXISTS ONLY public.fed_user_credential DROP CONSTRAINT IF EXISTS constr_fed_user_cred_pk;
-ALTER TABLE IF EXISTS ONLY public.fed_user_consent DROP CONSTRAINT IF EXISTS constr_fed_user_consent_pk;
-ALTER TABLE IF EXISTS ONLY public.fed_user_attribute DROP CONSTRAINT IF EXISTS constr_fed_user_attr_pk;
-ALTER TABLE IF EXISTS ONLY public.fed_user_required_action DROP CONSTRAINT IF EXISTS constr_fed_required_action;
-ALTER TABLE IF EXISTS ONLY public.component DROP CONSTRAINT IF EXISTS constr_component_pk;
-ALTER TABLE IF EXISTS ONLY public.component_config DROP CONSTRAINT IF EXISTS constr_component_config_pk;
-ALTER TABLE IF EXISTS ONLY public.broker_link DROP CONSTRAINT IF EXISTS constr_broker_link_pk;
-ALTER TABLE IF EXISTS ONLY public.realm_default_groups DROP CONSTRAINT IF EXISTS con_group_id_def_groups;
-ALTER TABLE IF EXISTS ONLY public.client_initial_access DROP CONSTRAINT IF EXISTS cnstr_client_init_acc_pk;
-ALTER TABLE IF EXISTS ONLY public.client_scope_client DROP CONSTRAINT IF EXISTS c_cli_scope_bind;
-ALTER TABLE IF EXISTS ONLY public.client_auth_flow_bindings DROP CONSTRAINT IF EXISTS c_cli_flow_bind;
-ALTER TABLE IF EXISTS ONLY public.keycloak_role DROP CONSTRAINT IF EXISTS "UK_J3RWUVD56ONTGSUHOGM184WW2-2";
-ALTER TABLE IF EXISTS ONLY public.server_config DROP CONSTRAINT IF EXISTS "SERVER_CONFIG_pkey";
-ALTER TABLE IF EXISTS ONLY public.org DROP CONSTRAINT IF EXISTS "ORG_pkey";
-ALTER TABLE IF EXISTS ONLY public.org_domain DROP CONSTRAINT IF EXISTS "ORG_DOMAIN_pkey";
-DROP TABLE IF EXISTS public.web_origins;
-DROP TABLE IF EXISTS public.user_role_mapping;
-DROP TABLE IF EXISTS public.user_required_action;
-DROP TABLE IF EXISTS public.user_group_membership;
-DROP TABLE IF EXISTS public.user_federation_provider;
-DROP TABLE IF EXISTS public.user_federation_mapper_config;
-DROP TABLE IF EXISTS public.user_federation_mapper;
-DROP TABLE IF EXISTS public.user_federation_config;
-DROP TABLE IF EXISTS public.user_entity;
-DROP TABLE IF EXISTS public.user_consent_client_scope;
-DROP TABLE IF EXISTS public.user_consent;
-DROP TABLE IF EXISTS public.user_attribute;
-DROP TABLE IF EXISTS public.server_config;
-DROP TABLE IF EXISTS public.scope_policy;
-DROP TABLE IF EXISTS public.scope_mapping;
-DROP TABLE IF EXISTS public.role_attribute;
-DROP TABLE IF EXISTS public.revoked_token;
-DROP TABLE IF EXISTS public.resource_uris;
-DROP TABLE IF EXISTS public.resource_server_scope;
-DROP TABLE IF EXISTS public.resource_server_resource;
-DROP TABLE IF EXISTS public.resource_server_policy;
-DROP TABLE IF EXISTS public.resource_server_perm_ticket;
-DROP TABLE IF EXISTS public.resource_server;
-DROP TABLE IF EXISTS public.resource_scope;
-DROP TABLE IF EXISTS public.resource_policy;
-DROP TABLE IF EXISTS public.resource_attribute;
-DROP TABLE IF EXISTS public.required_action_provider;
-DROP TABLE IF EXISTS public.required_action_config;
-DROP TABLE IF EXISTS public.redirect_uris;
-DROP TABLE IF EXISTS public.realm_supported_locales;
-DROP TABLE IF EXISTS public.realm_smtp_config;
-DROP TABLE IF EXISTS public.realm_required_credential;
-DROP TABLE IF EXISTS public.realm_localizations;
-DROP TABLE IF EXISTS public.realm_events_listeners;
-DROP TABLE IF EXISTS public.realm_enabled_event_types;
-DROP TABLE IF EXISTS public.realm_default_groups;
-DROP TABLE IF EXISTS public.realm_attribute;
-DROP TABLE IF EXISTS public.realm;
-DROP TABLE IF EXISTS public.protocol_mapper_config;
-DROP TABLE IF EXISTS public.protocol_mapper;
-DROP TABLE IF EXISTS public.policy_config;
-DROP TABLE IF EXISTS public.org_domain;
-DROP TABLE IF EXISTS public.org;
-DROP TABLE IF EXISTS public.offline_user_session;
-DROP TABLE IF EXISTS public.offline_client_session;
-DROP TABLE IF EXISTS public.migration_model;
-DROP TABLE IF EXISTS public.keycloak_role;
-DROP TABLE IF EXISTS public.keycloak_group;
-DROP TABLE IF EXISTS public.jgroups_ping;
-DROP TABLE IF EXISTS public.idp_mapper_config;
-DROP TABLE IF EXISTS public.identity_provider_mapper;
-DROP TABLE IF EXISTS public.identity_provider_config;
-DROP TABLE IF EXISTS public.identity_provider;
-DROP TABLE IF EXISTS public.group_role_mapping;
-DROP TABLE IF EXISTS public.group_attribute;
-DROP TABLE IF EXISTS public.federated_user;
-DROP TABLE IF EXISTS public.federated_identity;
-DROP TABLE IF EXISTS public.fed_user_role_mapping;
-DROP TABLE IF EXISTS public.fed_user_required_action;
-DROP TABLE IF EXISTS public.fed_user_group_membership;
-DROP TABLE IF EXISTS public.fed_user_credential;
-DROP TABLE IF EXISTS public.fed_user_consent_cl_scope;
-DROP TABLE IF EXISTS public.fed_user_consent;
-DROP TABLE IF EXISTS public.fed_user_attribute;
-DROP TABLE IF EXISTS public.event_entity;
-DROP TABLE IF EXISTS public.default_client_scope;
-DROP TABLE IF EXISTS public.databasechangeloglock;
-DROP TABLE IF EXISTS public.databasechangelog;
-DROP TABLE IF EXISTS public.credential;
-DROP TABLE IF EXISTS public.composite_role;
-DROP TABLE IF EXISTS public.component_config;
-DROP TABLE IF EXISTS public.component;
-DROP TABLE IF EXISTS public.client_scope_role_mapping;
-DROP TABLE IF EXISTS public.client_scope_client;
-DROP TABLE IF EXISTS public.client_scope_attributes;
-DROP TABLE IF EXISTS public.client_scope;
-DROP TABLE IF EXISTS public.client_node_registrations;
-DROP TABLE IF EXISTS public.client_initial_access;
-DROP TABLE IF EXISTS public.client_auth_flow_bindings;
-DROP TABLE IF EXISTS public.client_attributes;
-DROP TABLE IF EXISTS public.client;
-DROP TABLE IF EXISTS public.broker_link;
-DROP TABLE IF EXISTS public.authenticator_config_entry;
-DROP TABLE IF EXISTS public.authenticator_config;
-DROP TABLE IF EXISTS public.authentication_flow;
-DROP TABLE IF EXISTS public.authentication_execution;
-DROP TABLE IF EXISTS public.associated_policy;
-DROP TABLE IF EXISTS public.admin_event_entity;
 SET default_tablespace = '';
 
 SET default_table_access_method = heap;
@@ -942,17 +593,17 @@ CREATE TABLE public.identity_provider (
     enabled boolean DEFAULT false NOT NULL,
     provider_alias character varying(255),
     provider_id character varying(255),
-    store_token boolean DEFAULT false NOT NULL,
-    authenticate_by_default boolean DEFAULT false NOT NULL,
+    store_token boolean,
+    authenticate_by_default boolean,
     realm_id character varying(36),
-    add_token_role boolean DEFAULT true NOT NULL,
-    trust_email boolean DEFAULT false NOT NULL,
+    add_token_role boolean,
+    trust_email boolean,
     first_broker_login_flow_id character varying(36),
     post_broker_login_flow_id character varying(36),
     provider_display_name character varying(255),
-    link_only boolean DEFAULT false NOT NULL,
+    link_only boolean,
     organization_id character varying(255),
-    hide_on_login boolean DEFAULT false
+    hide_on_login boolean
 );
 
 
@@ -1023,7 +674,8 @@ CREATE TABLE public.keycloak_group (
     name character varying(255),
     parent_group character varying(36) NOT NULL,
     realm_id character varying(36),
-    type integer DEFAULT 0 NOT NULL
+    type integer DEFAULT 0 NOT NULL,
+    description character varying(255)
 );
 
 
@@ -1091,7 +743,8 @@ CREATE TABLE public.offline_user_session (
     data text,
     last_session_refresh integer DEFAULT 0 NOT NULL,
     broker_session_id character varying(1024),
-    version integer DEFAULT 0
+    version integer DEFAULT 0,
+    remember_me boolean
 );
 
 
@@ -1128,6 +781,24 @@ CREATE TABLE public.org_domain (
 
 
 ALTER TABLE public.org_domain OWNER TO keycloak;
+
+--
+-- Name: org_invitation; Type: TABLE; Schema: public; Owner: keycloak
+--
+
+CREATE TABLE public.org_invitation (
+    id character varying(36) NOT NULL,
+    organization_id character varying(255) NOT NULL,
+    email character varying(255) NOT NULL,
+    first_name character varying(255),
+    last_name character varying(255),
+    created_at integer NOT NULL,
+    expires_at integer,
+    invite_link character varying(2048)
+);
+
+
+ALTER TABLE public.org_invitation OWNER TO keycloak;
 
 --
 -- Name: policy_config; Type: TABLE; Schema: public; Owner: keycloak
@@ -1754,18 +1425,50 @@ CREATE TABLE public.web_origins (
 ALTER TABLE public.web_origins OWNER TO keycloak;
 
 --
+-- Name: workflow_state; Type: TABLE; Schema: public; Owner: keycloak
+--
+
+CREATE TABLE public.workflow_state (
+    execution_id character varying(255) NOT NULL,
+    resource_id character varying(255) NOT NULL,
+    workflow_id character varying(255) NOT NULL,
+    resource_type character varying(255),
+    scheduled_step_id character varying(255),
+    scheduled_step_timestamp bigint
+);
+
+
+ALTER TABLE public.workflow_state OWNER TO keycloak;
+
+--
 -- Data for Name: admin_event_entity; Type: TABLE DATA; Schema: public; Owner: keycloak
 --
 
 COPY public.admin_event_entity (id, admin_event_time, realm_id, operation_type, auth_realm_id, auth_client_id, auth_user_id, ip_address, resource_path, representation, error, resource_type, details_json) FROM stdin;
-ae6a3646-0b9e-4d00-a382-2c0d0acd3675	1770897399583	e800c4cb-db3a-4a31-8496-6d3b373e78b4	CREATE	185230e8-ba54-44fa-8d4c-b14ee2caaec2	58e769c6-1d80-4245-a8d9-adec5f16e906	1b5f3be8-86c3-44e2-881d-8e68bc76d23c	172.18.0.8	clients/77fa6a87-4221-416b-b113-a268db28ed6b	\N	\N	CLIENT	\N
-b5f4f31d-11f4-4225-b6cb-ac585af5815c	1770979573057	e800c4cb-db3a-4a31-8496-6d3b373e78b4	ACTION	185230e8-ba54-44fa-8d4c-b14ee2caaec2	58e769c6-1d80-4245-a8d9-adec5f16e906	1b5f3be8-86c3-44e2-881d-8e68bc76d23c	172.18.0.9	users/3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16/logout	\N	\N	USER	\N
-f74d7e39-2677-4374-8946-b00f16636c44	1770980446091	e800c4cb-db3a-4a31-8496-6d3b373e78b4	ACTION	185230e8-ba54-44fa-8d4c-b14ee2caaec2	58e769c6-1d80-4245-a8d9-adec5f16e906	1b5f3be8-86c3-44e2-881d-8e68bc76d23c	172.18.0.9	users/3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16/logout	\N	\N	USER	\N
-b50ee42d-7d4a-48d9-80bd-8f2d3c8aa619	1770980554267	e800c4cb-db3a-4a31-8496-6d3b373e78b4	CREATE	185230e8-ba54-44fa-8d4c-b14ee2caaec2	58e769c6-1d80-4245-a8d9-adec5f16e906	1b5f3be8-86c3-44e2-881d-8e68bc76d23c	172.18.0.9	clients/25d79daa-2326-419a-b646-18fcc33bb3f8	\N	\N	CLIENT	\N
-5a018a01-ab9c-4317-92a6-31f966d57166	1770981164472	e800c4cb-db3a-4a31-8496-6d3b373e78b4	ACTION	185230e8-ba54-44fa-8d4c-b14ee2caaec2	58e769c6-1d80-4245-a8d9-adec5f16e906	1b5f3be8-86c3-44e2-881d-8e68bc76d23c	172.18.0.9	users/3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16/logout	\N	\N	USER	\N
-7ca58e42-31a6-4d60-9c6e-23357f1a4974	1770982804364	e800c4cb-db3a-4a31-8496-6d3b373e78b4	ACTION	185230e8-ba54-44fa-8d4c-b14ee2caaec2	58e769c6-1d80-4245-a8d9-adec5f16e906	1b5f3be8-86c3-44e2-881d-8e68bc76d23c	172.18.0.9	users/3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16/logout	\N	\N	USER	\N
-7f5aedc3-eb98-46b9-9775-173289594c4f	1771073118947	e800c4cb-db3a-4a31-8496-6d3b373e78b4	DELETE	185230e8-ba54-44fa-8d4c-b14ee2caaec2	58e769c6-1d80-4245-a8d9-adec5f16e906	1b5f3be8-86c3-44e2-881d-8e68bc76d23c	172.18.0.9	sessions/73078272-92d5-499d-b953-df66e7ec7812	\N	\N	USER_SESSION	\N
-985ac453-44dd-4069-8e21-4c5c9ce42b7d	1771074071950	e800c4cb-db3a-4a31-8496-6d3b373e78b4	DELETE	185230e8-ba54-44fa-8d4c-b14ee2caaec2	58e769c6-1d80-4245-a8d9-adec5f16e906	1b5f3be8-86c3-44e2-881d-8e68bc76d23c	172.18.0.9	sessions/ddeec69d-3cb0-43b3-b866-f5f6a5861fc1	\N	\N	USER_SESSION	\N
+8b243925-bb12-4b0b-8022-8cf39eac6b18	1775555001401	e800c4cb-db3a-4a31-8496-6d3b373e78b4	CREATE	185230e8-ba54-44fa-8d4c-b14ee2caaec2	5d86798c-3ee6-4abe-a77a-b0f7dbf670cc	1b5f3be8-86c3-44e2-881d-8e68bc76d23c	172.18.0.1	clients/985ac8b3-510f-46a5-84ed-843977dcf115	\N	\N	CLIENT	\N
+41b4901e-161b-4576-9f07-1692cbe75d15	1775555040516	e800c4cb-db3a-4a31-8496-6d3b373e78b4	UPDATE	185230e8-ba54-44fa-8d4c-b14ee2caaec2	5d86798c-3ee6-4abe-a77a-b0f7dbf670cc	1b5f3be8-86c3-44e2-881d-8e68bc76d23c	172.18.0.1	clients/985ac8b3-510f-46a5-84ed-843977dcf115	\N	\N	CLIENT	\N
+b5d9296f-1857-4db1-876b-e3b4e31948c8	1775556608536	e800c4cb-db3a-4a31-8496-6d3b373e78b4	UPDATE	185230e8-ba54-44fa-8d4c-b14ee2caaec2	5d86798c-3ee6-4abe-a77a-b0f7dbf670cc	1b5f3be8-86c3-44e2-881d-8e68bc76d23c	172.18.0.1	clients/985ac8b3-510f-46a5-84ed-843977dcf115	\N	\N	CLIENT	\N
+bec0dd1a-16ce-40d5-a2a6-c28d279fb82b	1775556621320	e800c4cb-db3a-4a31-8496-6d3b373e78b4	UPDATE	185230e8-ba54-44fa-8d4c-b14ee2caaec2	5d86798c-3ee6-4abe-a77a-b0f7dbf670cc	1b5f3be8-86c3-44e2-881d-8e68bc76d23c	172.18.0.1	clients/985ac8b3-510f-46a5-84ed-843977dcf115	\N	\N	CLIENT	\N
+056e31e5-845c-4b05-bb72-90eece73b9e5	1775556855736	e800c4cb-db3a-4a31-8496-6d3b373e78b4	UPDATE	185230e8-ba54-44fa-8d4c-b14ee2caaec2	5d86798c-3ee6-4abe-a77a-b0f7dbf670cc	1b5f3be8-86c3-44e2-881d-8e68bc76d23c	172.18.0.1	clients/985ac8b3-510f-46a5-84ed-843977dcf115	\N	\N	CLIENT	\N
+9e26cf18-2248-4460-a4ee-07e10e6872de	1775557704803	e800c4cb-db3a-4a31-8496-6d3b373e78b4	UPDATE	185230e8-ba54-44fa-8d4c-b14ee2caaec2	5d86798c-3ee6-4abe-a77a-b0f7dbf670cc	1b5f3be8-86c3-44e2-881d-8e68bc76d23c	172.18.0.1	clients/985ac8b3-510f-46a5-84ed-843977dcf115	\N	\N	CLIENT	\N
+87477924-b654-4102-a63c-7c0a62e8f933	1775558173448	e800c4cb-db3a-4a31-8496-6d3b373e78b4	UPDATE	185230e8-ba54-44fa-8d4c-b14ee2caaec2	5d86798c-3ee6-4abe-a77a-b0f7dbf670cc	1b5f3be8-86c3-44e2-881d-8e68bc76d23c	172.18.0.1	clients/985ac8b3-510f-46a5-84ed-843977dcf115	\N	\N	CLIENT	\N
+40cb29d7-b2ec-40d3-8a7d-051d51ad2d78	1775558190729	e800c4cb-db3a-4a31-8496-6d3b373e78b4	UPDATE	185230e8-ba54-44fa-8d4c-b14ee2caaec2	5d86798c-3ee6-4abe-a77a-b0f7dbf670cc	1b5f3be8-86c3-44e2-881d-8e68bc76d23c	172.18.0.1	clients/985ac8b3-510f-46a5-84ed-843977dcf115	\N	\N	CLIENT	\N
+7ae10c92-e0ea-4222-9639-dae154132732	1775558192436	e800c4cb-db3a-4a31-8496-6d3b373e78b4	UPDATE	185230e8-ba54-44fa-8d4c-b14ee2caaec2	5d86798c-3ee6-4abe-a77a-b0f7dbf670cc	1b5f3be8-86c3-44e2-881d-8e68bc76d23c	172.18.0.1	clients/985ac8b3-510f-46a5-84ed-843977dcf115	\N	\N	CLIENT	\N
+403ba130-53f9-418c-9ee4-f1d58cedc400	1775558371553	e800c4cb-db3a-4a31-8496-6d3b373e78b4	UPDATE	185230e8-ba54-44fa-8d4c-b14ee2caaec2	5d86798c-3ee6-4abe-a77a-b0f7dbf670cc	1b5f3be8-86c3-44e2-881d-8e68bc76d23c	172.18.0.1	clients/985ac8b3-510f-46a5-84ed-843977dcf115	\N	\N	CLIENT	\N
+84dea7f3-0806-41d4-9566-b95e5a77cd0a	1775558385902	e800c4cb-db3a-4a31-8496-6d3b373e78b4	UPDATE	185230e8-ba54-44fa-8d4c-b14ee2caaec2	5d86798c-3ee6-4abe-a77a-b0f7dbf670cc	1b5f3be8-86c3-44e2-881d-8e68bc76d23c	172.18.0.1	clients/985ac8b3-510f-46a5-84ed-843977dcf115	\N	\N	CLIENT	\N
+5445b3f7-765f-44ac-b967-2579c9542464	1775558555064	e800c4cb-db3a-4a31-8496-6d3b373e78b4	ACTION	185230e8-ba54-44fa-8d4c-b14ee2caaec2	5d86798c-3ee6-4abe-a77a-b0f7dbf670cc	1b5f3be8-86c3-44e2-881d-8e68bc76d23c	172.18.0.1	users/f9dd5f8d-1448-40b5-ba6a-4dea01409c5d/reset-password	\N	\N	USER	\N
+14163138-92f3-4e29-9e58-a7f840c752e4	1775558997359	e800c4cb-db3a-4a31-8496-6d3b373e78b4	UPDATE	185230e8-ba54-44fa-8d4c-b14ee2caaec2	5d86798c-3ee6-4abe-a77a-b0f7dbf670cc	1b5f3be8-86c3-44e2-881d-8e68bc76d23c	172.18.0.1	\N	\N	\N	REALM	\N
+5f4e6aee-e194-4e0a-9112-9d1dc8870812	1775559018066	e800c4cb-db3a-4a31-8496-6d3b373e78b4	DELETE	185230e8-ba54-44fa-8d4c-b14ee2caaec2	5d86798c-3ee6-4abe-a77a-b0f7dbf670cc	1b5f3be8-86c3-44e2-881d-8e68bc76d23c	172.18.0.1	users/f9dd5f8d-1448-40b5-ba6a-4dea01409c5d	\N	\N	USER	\N
+1d088eb6-78a4-4647-8709-dfbd982b367a	1775559382960	e800c4cb-db3a-4a31-8496-6d3b373e78b4	UPDATE	185230e8-ba54-44fa-8d4c-b14ee2caaec2	5d86798c-3ee6-4abe-a77a-b0f7dbf670cc	1b5f3be8-86c3-44e2-881d-8e68bc76d23c	172.18.0.1	\N	\N	\N	REALM	\N
+fd452ea6-264f-4146-a3f9-ebc52f2a73c3	1775625467083	e800c4cb-db3a-4a31-8496-6d3b373e78b4	CREATE	185230e8-ba54-44fa-8d4c-b14ee2caaec2	5d86798c-3ee6-4abe-a77a-b0f7dbf670cc	1b5f3be8-86c3-44e2-881d-8e68bc76d23c	172.18.0.1	clients/6727e456-b726-4690-9350-a7e8e11393d2	\N	\N	CLIENT	\N
+75d38b4f-1f40-4efc-b9e1-7bbfd87492aa	1775625471208	e800c4cb-db3a-4a31-8496-6d3b373e78b4	UPDATE	185230e8-ba54-44fa-8d4c-b14ee2caaec2	5d86798c-3ee6-4abe-a77a-b0f7dbf670cc	1b5f3be8-86c3-44e2-881d-8e68bc76d23c	172.18.0.1	clients/6727e456-b726-4690-9350-a7e8e11393d2	\N	\N	CLIENT	\N
+caaf648a-3c63-4d78-a196-f2a57a279b99	1775625503428	e800c4cb-db3a-4a31-8496-6d3b373e78b4	UPDATE	185230e8-ba54-44fa-8d4c-b14ee2caaec2	5d86798c-3ee6-4abe-a77a-b0f7dbf670cc	1b5f3be8-86c3-44e2-881d-8e68bc76d23c	172.18.0.1	clients/6727e456-b726-4690-9350-a7e8e11393d2	\N	\N	CLIENT	\N
+93c93629-2ea3-45bb-aa83-9cde95e3a19b	1775625542972	e800c4cb-db3a-4a31-8496-6d3b373e78b4	UPDATE	185230e8-ba54-44fa-8d4c-b14ee2caaec2	5d86798c-3ee6-4abe-a77a-b0f7dbf670cc	1b5f3be8-86c3-44e2-881d-8e68bc76d23c	172.18.0.1	clients/6727e456-b726-4690-9350-a7e8e11393d2	\N	\N	CLIENT	\N
+704224ac-2010-4e5b-b478-c477c92ab3c7	1775625883394	e800c4cb-db3a-4a31-8496-6d3b373e78b4	DELETE	185230e8-ba54-44fa-8d4c-b14ee2caaec2	58e769c6-1d80-4245-a8d9-adec5f16e906	1b5f3be8-86c3-44e2-881d-8e68bc76d23c	172.18.0.10	clients/1ae7f743-0c60-4e49-8359-ed59f3dcc653	\N	\N	AUTHORIZATION_RESOURCE_SERVER	\N
+cda280df-678b-4235-82e1-439f9a2589c8	1775625883400	e800c4cb-db3a-4a31-8496-6d3b373e78b4	UPDATE	185230e8-ba54-44fa-8d4c-b14ee2caaec2	58e769c6-1d80-4245-a8d9-adec5f16e906	1b5f3be8-86c3-44e2-881d-8e68bc76d23c	172.18.0.10	clients/1ae7f743-0c60-4e49-8359-ed59f3dcc653	\N	\N	AUTHORIZATION_RESOURCE_SERVER	\N
+a2119f9c-0f93-4192-a101-fe69b28203f7	1775625883497	e800c4cb-db3a-4a31-8496-6d3b373e78b4	DELETE	185230e8-ba54-44fa-8d4c-b14ee2caaec2	58e769c6-1d80-4245-a8d9-adec5f16e906	1b5f3be8-86c3-44e2-881d-8e68bc76d23c	172.18.0.10	clients/f8394892-b347-42ff-b66b-0a2a6e8588a6	\N	\N	AUTHORIZATION_RESOURCE_SERVER	\N
+bca7d75a-4e9f-4169-a51f-914c849350f9	1775625883500	e800c4cb-db3a-4a31-8496-6d3b373e78b4	UPDATE	185230e8-ba54-44fa-8d4c-b14ee2caaec2	58e769c6-1d80-4245-a8d9-adec5f16e906	1b5f3be8-86c3-44e2-881d-8e68bc76d23c	172.18.0.10	clients/f8394892-b347-42ff-b66b-0a2a6e8588a6	\N	\N	AUTHORIZATION_RESOURCE_SERVER	\N
+d262d524-0ed7-453d-be50-54bf2b2e420d	1775625883543	e800c4cb-db3a-4a31-8496-6d3b373e78b4	UPDATE	185230e8-ba54-44fa-8d4c-b14ee2caaec2	58e769c6-1d80-4245-a8d9-adec5f16e906	1b5f3be8-86c3-44e2-881d-8e68bc76d23c	172.18.0.10	clients/62181cb8-5777-40b7-b17c-0b6c8b648d4f	\N	\N	CLIENT	\N
 \.
 
 
@@ -1774,13 +1477,7 @@ b50ee42d-7d4a-48d9-80bd-8f2d3c8aa619	1770980554267	e800c4cb-db3a-4a31-8496-6d3b3
 --
 
 COPY public.associated_policy (policy_id, associated_policy_id) FROM stdin;
-297df1e8-1f2a-44fd-b796-b0263eebddf7	b9f407d6-1785-48b9-911f-af78b889b12a
-81b579d9-1be2-45e6-9733-9568e3051ff1	bb1f6644-46c1-4a45-9cf8-484826f90694
-2daa6107-e287-4cd3-a9fa-1201305e2aa0	bb1f6644-46c1-4a45-9cf8-484826f90694
 e6c1b01b-2a9c-4b1a-b3c9-c910f851c8dd	14f8f1c3-ab39-4cec-ad96-15e15f6ef68a
-ebdd394c-4388-4ec4-9a9d-0efe1ca0862b	9158c35a-6779-440a-a619-8b59168d18e0
-8582ad32-16a0-4a0b-b2c3-738c580eb064	199858fb-0948-4ac3-90f3-15fe47b05abe
-7fe124bf-13b7-44a1-a557-4a368ff8fd78	75ea8fd3-b331-4120-8f59-45b1a674fc69
 \.
 
 
@@ -2514,7 +2211,6 @@ ddc982cf-34a8-4928-93f6-98bd4a48c0fe	t	f	realm-management	0	f	\N	\N	t	\N	f	d7c6d
 30bc9e82-123c-4de0-bd95-0915d50d0934	t	f	account	0	t	\N	/realms/main/account/	f	\N	f	d7c6d5e4-7e6d-42c1-a938-d935d14a695c	openid-connect	0	f	f	${client_account}	f	client-secret	${authBaseUrl}	\N	\N	t	f	f	f
 936497d5-9ff1-4b77-8ede-5e92677409df	t	t	security-admin-console	0	t	\N	/admin/main/console/	f	\N	f	d7c6d5e4-7e6d-42c1-a938-d935d14a695c	openid-connect	0	f	f	${client_security-admin-console}	f	client-secret	${authAdminUrl}	\N	\N	t	f	f	f
 6b091f07-1c1e-4d9f-85bd-07ce0b03b4bc	t	t	admin-cli	0	t	\N	\N	f	\N	f	d7c6d5e4-7e6d-42c1-a938-d935d14a695c	openid-connect	0	f	f	${client_admin-cli}	f	client-secret	\N	\N	\N	f	f	t	f
-f8394892-b347-42ff-b66b-0a2a6e8588a6	t	t	admin-ui	0	f	lyTj6HmqvPU3mznWlEsN7MF1MGGx7OK5	http://localhost:5173	f	http://localhost:5173	f	e800c4cb-db3a-4a31-8496-6d3b373e78b4	openid-connect	-1	t	f	adminUI	t	client-secret	http://localhost:5173		\N	t	f	f	t
 4a337a89-e965-40e9-b06b-e910ea3ab309	t	t	pms-client	0	f	NNKjrEcmalFAb1DX7xu3ndrcbnwmTdni		f	http://localhost:2020	f	e800c4cb-db3a-4a31-8496-6d3b373e78b4	openid-connect	-1	t	f	pms-client	f	client-secret	http://localhost:2020		\N	t	f	t	t
 f8fbfad2-dde7-4105-a179-ba591d31856d	t	t	user-account-management	0	f	VC5TmQByg3KMBpdgBkfEywYZRnNXa4WI		f		f	e800c4cb-db3a-4a31-8496-6d3b373e78b4	openid-connect	-1	t	f	user-account-management	t	client-secret		this is used to mange user profile , session . logout etc	\N	f	f	f	t
 34f7575f-7a13-4bdf-8b87-aeec5569417f	t	f	tesing -realm	0	f	\N	\N	t	\N	f	185230e8-ba54-44fa-8d4c-b14ee2caaec2	\N	0	f	f	tesing  Realm	f	client-secret	\N	\N	\N	t	f	f	f
@@ -2562,7 +2258,6 @@ f634a2cd-3c38-48ad-917a-545b03b20586	t	f	account-console	0	t	\N	/realms/server/a
 462ed61e-be8c-4a16-994e-0cfc505d26a4	t	t	security-admin-console	0	t	\N	/admin/server/console/	f	\N	f	30f13b6b-cd7a-4695-be38-a43d23a0e1a4	openid-connect	0	f	f	${client_security-admin-console}	f	client-secret	${authAdminUrl}	\N	\N	t	f	f	f
 e3873db4-e5bc-4928-8dbb-13820984fccd	t	t	admin-cli	0	t	\N	\N	f	\N	f	30f13b6b-cd7a-4695-be38-a43d23a0e1a4	openid-connect	0	f	f	${client_admin-cli}	f	client-secret	\N	\N	\N	f	f	t	f
 5ad4c83e-0c16-4a20-9587-d246b4d031b7	t	t	ddd	0	f	2a0fdefb7ed6e501f74c7c6db194a90d69fe80c6475d56007a07149848fd235b	\N	f	\N	f	e800c4cb-db3a-4a31-8496-6d3b373e78b4	openid-connect	-1	f	f	\N	t	client-secret	\N	\N	\N	t	f	f	f
-63c427ab-a4a2-430b-ab13-99c04b861734	t	t	admin-ui	0	f	6PQSnJRjmehi1SrWvBiN9Hdw4aq5peGi	https://admin.gururajhr.in/	f	https://admin.gururajhr.in	f	30f13b6b-cd7a-4695-be38-a43d23a0e1a4	openid-connect	-1	t	f	admin-ui	t	client-secret	https://admin.gururajhr.in	rfeeff	\N	t	f	t	t
 5a31a623-d3d1-4786-882d-0bdf5974be67	t	t	checcc	0	f	2a413ab881004621240e5b273f8541b8a2bbbe66cdb1aa3c7fdba210c77c6c5f	\N	f	\N	f	e800c4cb-db3a-4a31-8496-6d3b373e78b4	openid-connect	-1	f	f	\N	t	client-secret	\N	\N	\N	t	f	f	f
 b51ff0d7-30d5-4950-a776-7199276e40f3	t	t	spi	0	f	8fb414674bcf4a0b719032b30997f0e63f2b1afd8ed7bd72625c9981e7c97086	\N	f	\N	f	e800c4cb-db3a-4a31-8496-6d3b373e78b4	openid-connect	-1	f	f	\N	t	client-secret	\N	\N	\N	t	f	f	f
 dc2f4074-3eb0-4843-8f54-fa4074fba2be	t	t	spiddy	0	f	e54af3f6c6ba08ebe031b84bd71e8aeb7b7fca663e671f06773268028cfad977	\N	f	\N	f	e800c4cb-db3a-4a31-8496-6d3b373e78b4	openid-connect	-1	f	f	\N	t	client-secret	\N	\N	\N	t	f	f	f
@@ -2611,7 +2306,6 @@ e150b350-1f97-4bcb-9f56-b3e4174eb3fe	t	t	demooo3	0	f	5f797858d68c051d9612a04770b
 8f1015d4-f3c9-4271-8d07-bdfebd1606ab	t	t	demooo4	0	f	1bfe703c19b1b0723c6d30847f452989a880e4aef1124f1a56d0dbb08c0be7e9	\N	f	\N	f	e800c4cb-db3a-4a31-8496-6d3b373e78b4	openid-connect	-1	f	f	\N	t	client-secret	\N	\N	\N	t	f	t	f
 c58b5fb0-16f9-401e-9e05-861f435f9531	t	t	fixed1	0	f	b0fb092b02ef7999b569f8ab6738db1aeffb9d61d5f89ee7718b66aeb9e3cda0	\N	f	\N	f	e800c4cb-db3a-4a31-8496-6d3b373e78b4	openid-connect	-1	f	f	\N	t	client-secret	\N	\N	\N	t	f	t	f
 7633328d-be49-483f-9d55-f2a30272ea83	t	t	chccc	0	f	0cde2ba2d5258ab34143f8d753d51668332ffd673cee70271ca4b839f3e4efe6	\N	f	\N	f	e800c4cb-db3a-4a31-8496-6d3b373e78b4	openid-connect	-1	f	f	\N	t	client-secret	\N	\N	\N	t	f	t	f
-1ae7f743-0c60-4e49-8359-ed59f3dcc653	t	t	account-ui	0	f	xIOG249tgLkO8M6DIzKRjFVCsoRHYNDl	https://account.gururajhr.in	f	https://account.gururajhr.in	f	e800c4cb-db3a-4a31-8496-6d3b373e78b4	openid-connect	-1	t	f	account-ui	t	client-secret	https://account.gururajhr.in	user accoun ui	\N	t	f	t	t
 2655509e-90f0-4a1f-aa22-f669a0f1b98c	t	t	fixed4org	0	f	8fc695bc7a94dcc736fff52cf4fc48ef3aa8f4a3ef730fcdf89b1c207393897b	\N	f	\N	f	e800c4cb-db3a-4a31-8496-6d3b373e78b4	openid-connect	-1	f	f	\N	t	client-secret	\N	\N	\N	t	f	t	f
 c7bb182d-d15d-4d16-a194-9bd6cd02923c	t	t	fixed2	0	f	e57aac5c4c22f813a157cfbb4a02ac5245af3250f222c622f5c567e1d892ca2a	\N	f	\N	f	e800c4cb-db3a-4a31-8496-6d3b373e78b4	openid-connect	-1	f	f	\N	t	client-secret	\N	\N	\N	t	f	t	f
 afaa173c-2ef2-4ab4-b62f-fc153124991a	t	t	fixed3org	0	f	e2ca4ec11a4e87216ebb96939b32cd0a6e4910e228fff6ebfd834890c34807de	\N	f	\N	f	e800c4cb-db3a-4a31-8496-6d3b373e78b4	openid-connect	-1	f	f	\N	t	client-secret	\N	\N	\N	t	f	t	f
@@ -2634,6 +2328,11 @@ b1302a31-b401-4d5f-bdf2-da43e2ee436c	t	t	after	0	f	795b239af3135ab741775bc522b9c
 3555bdac-49ef-4b27-923f-fe05666ce2b2	t	t	pms-local-v1	0	f	570696ac5e396aaadd7f859999018f751d9ab37a3b3fbdc23ceaba69b1215db6	\N	f	\N	f	e800c4cb-db3a-4a31-8496-6d3b373e78b4	openid-connect	-1	f	f	\N	t	client-secret	\N	\N	\N	t	f	t	f
 25e8f330-a7a0-436f-9b8b-727f7b4d9a80	t	t	non-docker	0	f	331ab1d2c590d7cf9e5a1965bf4e250242a2078befcb4998c7483a469aabdc53		f		f	e800c4cb-db3a-4a31-8496-6d3b373e78b4	openid-connect	-1	f	f		t	client-secret			\N	t	f	t	f
 ab135ac3-c4d5-4a98-9528-1bdc89a60cbd	t	t	9890	0	f	58a7e8e0e32122bdfff5c350122a3a904651af6480211f8f4225534a4d410c06	\N	f	\N	f	e800c4cb-db3a-4a31-8496-6d3b373e78b4	openid-connect	-1	f	f	\N	t	client-secret	\N	\N	\N	t	f	t	f
+985ac8b3-510f-46a5-84ed-843977dcf115	t	t	final-fn-pms	0	f	1S2Se4V3dyoYnqrroBdjFizvrrMXBcwa	https://pms.gururajhr.in/	f		f	e800c4cb-db3a-4a31-8496-6d3b373e78b4	openid-connect	-1	t	f	Front end pms	f	client-secret	https://pms.gururajhr.in/		\N	t	f	t	t
+6727e456-b726-4690-9350-a7e8e11393d2	t	t	auth	0	f	Af3C9exFMAr2sGErMmY5EbMnbQHd3Oxl	https://auth.gururajhr.in	f	https://auth.gururajhr.in	f	e800c4cb-db3a-4a31-8496-6d3b373e78b4	openid-connect	-1	t	f	auth	f	client-secret	https://auth.gururajhr.in		\N	t	f	t	f
+1ae7f743-0c60-4e49-8359-ed59f3dcc653	t	t	account-ui	0	f	xIOG249tgLkO8M6DIzKRjFVCsoRHYNDl	https://account.gururajhr.in	f	https://account.gururajhr.in	f	e800c4cb-db3a-4a31-8496-6d3b373e78b4	openid-connect	-1	f	f	account-ui	t	client-secret	https://account.gururajhr.in	user accoun ui	\N	t	f	t	t
+f8394892-b347-42ff-b66b-0a2a6e8588a6	t	t	admin-ui	0	f	lyTj6HmqvPU3mznWlEsN7MF1MGGx7OK5	http://localhost:5173	f	http://localhost:5173	f	e800c4cb-db3a-4a31-8496-6d3b373e78b4	openid-connect	-1	f	f	adminUI	t	client-secret	http://localhost:5173		\N	t	f	f	t
+63c427ab-a4a2-430b-ab13-99c04b861734	t	t	admin-ui	0	f	6PQSnJRjmehi1SrWvBiN9Hdw4aq5peGi	https://admin.gururajhr.in/	f	https://admin.gururajhr.in	f	30f13b6b-cd7a-4695-be38-a43d23a0e1a4	openid-connect	-1	f	f	admin-ui	t	client-secret	https://admin.gururajhr.in	rfeeff	\N	t	f	t	t
 \.
 
 
@@ -3150,6 +2849,29 @@ ab135ac3-c4d5-4a98-9528-1bdc89a60cbd	backchannel.logout.revoke.offline.tokens	fa
 25d79daa-2326-419a-b646-18fcc33bb3f8	client.session.max.lifespan	36000
 25d79daa-2326-419a-b646-18fcc33bb3f8	backchannel.logout.session.required	true
 25d79daa-2326-419a-b646-18fcc33bb3f8	backchannel.logout.revoke.offline.tokens	false
+985ac8b3-510f-46a5-84ed-843977dcf115	client.secret.creation.time	1775555001
+985ac8b3-510f-46a5-84ed-843977dcf115	standard.token.exchange.enabled	false
+985ac8b3-510f-46a5-84ed-843977dcf115	oauth2.device.authorization.grant.enabled	false
+985ac8b3-510f-46a5-84ed-843977dcf115	oidc.ciba.grant.enabled	false
+985ac8b3-510f-46a5-84ed-843977dcf115	dpop.bound.access.tokens	false
+985ac8b3-510f-46a5-84ed-843977dcf115	backchannel.logout.session.required	true
+985ac8b3-510f-46a5-84ed-843977dcf115	backchannel.logout.revoke.offline.tokens	false
+985ac8b3-510f-46a5-84ed-843977dcf115	realm_client	false
+985ac8b3-510f-46a5-84ed-843977dcf115	display.on.consent.screen	false
+985ac8b3-510f-46a5-84ed-843977dcf115	frontchannel.logout.session.required	true
+985ac8b3-510f-46a5-84ed-843977dcf115	logout.confirmation.enabled	false
+6727e456-b726-4690-9350-a7e8e11393d2	client.secret.creation.time	1775625467
+6727e456-b726-4690-9350-a7e8e11393d2	standard.token.exchange.enabled	false
+6727e456-b726-4690-9350-a7e8e11393d2	oauth2.device.authorization.grant.enabled	false
+6727e456-b726-4690-9350-a7e8e11393d2	oidc.ciba.grant.enabled	false
+6727e456-b726-4690-9350-a7e8e11393d2	dpop.bound.access.tokens	false
+6727e456-b726-4690-9350-a7e8e11393d2	oauth2.jwt.authorization.grant.enabled	false
+6727e456-b726-4690-9350-a7e8e11393d2	backchannel.logout.session.required	true
+6727e456-b726-4690-9350-a7e8e11393d2	backchannel.logout.revoke.offline.tokens	false
+6727e456-b726-4690-9350-a7e8e11393d2	realm_client	false
+6727e456-b726-4690-9350-a7e8e11393d2	display.on.consent.screen	false
+6727e456-b726-4690-9350-a7e8e11393d2	frontchannel.logout.session.required	true
+6727e456-b726-4690-9350-a7e8e11393d2	logout.confirmation.enabled	false
 \.
 
 
@@ -5113,6 +4835,30 @@ ab135ac3-c4d5-4a98-9528-1bdc89a60cbd	506a48e4-ee35-4d36-bb9d-acc917709e21	t
 25d79daa-2326-419a-b646-18fcc33bb3f8	807137b3-fd7a-4a43-af5a-b79bd0ab8737	f
 25d79daa-2326-419a-b646-18fcc33bb3f8	1f226410-ed59-4d30-a229-337b76cae53c	f
 25d79daa-2326-419a-b646-18fcc33bb3f8	506a48e4-ee35-4d36-bb9d-acc917709e21	t
+985ac8b3-510f-46a5-84ed-843977dcf115	b1dd6b68-df6a-42e7-92f7-d1e5b6b0a8e3	t
+985ac8b3-510f-46a5-84ed-843977dcf115	1f226410-ed59-4d30-a229-337b76cae53c	t
+985ac8b3-510f-46a5-84ed-843977dcf115	7c02562b-45cd-4fd1-8779-10011556b6e2	t
+985ac8b3-510f-46a5-84ed-843977dcf115	26802d24-375b-47d5-8bf4-ae866fe79613	t
+985ac8b3-510f-46a5-84ed-843977dcf115	bdeb7733-c390-43b8-85e5-451f0eed1697	t
+985ac8b3-510f-46a5-84ed-843977dcf115	3c605028-d0be-4445-a6c1-d0072fcbe8f5	t
+985ac8b3-510f-46a5-84ed-843977dcf115	7a41d945-3cdb-4801-831f-655be9bad90b	t
+985ac8b3-510f-46a5-84ed-843977dcf115	bf6f6cbe-586d-459e-8d76-e513a2a1e769	t
+985ac8b3-510f-46a5-84ed-843977dcf115	887d087a-5fde-4e28-9279-20c2ef57c576	t
+985ac8b3-510f-46a5-84ed-843977dcf115	83be1c86-9eb6-4e2b-9a29-b58cd67f4be6	f
+985ac8b3-510f-46a5-84ed-843977dcf115	807137b3-fd7a-4a43-af5a-b79bd0ab8737	f
+985ac8b3-510f-46a5-84ed-843977dcf115	fdd69f2c-2874-4ceb-89f7-a20a1d01df65	f
+6727e456-b726-4690-9350-a7e8e11393d2	b1dd6b68-df6a-42e7-92f7-d1e5b6b0a8e3	t
+6727e456-b726-4690-9350-a7e8e11393d2	1f226410-ed59-4d30-a229-337b76cae53c	t
+6727e456-b726-4690-9350-a7e8e11393d2	7c02562b-45cd-4fd1-8779-10011556b6e2	t
+6727e456-b726-4690-9350-a7e8e11393d2	26802d24-375b-47d5-8bf4-ae866fe79613	t
+6727e456-b726-4690-9350-a7e8e11393d2	bdeb7733-c390-43b8-85e5-451f0eed1697	t
+6727e456-b726-4690-9350-a7e8e11393d2	3c605028-d0be-4445-a6c1-d0072fcbe8f5	t
+6727e456-b726-4690-9350-a7e8e11393d2	7a41d945-3cdb-4801-831f-655be9bad90b	t
+6727e456-b726-4690-9350-a7e8e11393d2	bf6f6cbe-586d-459e-8d76-e513a2a1e769	t
+6727e456-b726-4690-9350-a7e8e11393d2	887d087a-5fde-4e28-9279-20c2ef57c576	t
+6727e456-b726-4690-9350-a7e8e11393d2	83be1c86-9eb6-4e2b-9a29-b58cd67f4be6	f
+6727e456-b726-4690-9350-a7e8e11393d2	807137b3-fd7a-4a43-af5a-b79bd0ab8737	f
+6727e456-b726-4690-9350-a7e8e11393d2	fdd69f2c-2874-4ceb-89f7-a20a1d01df65	f
 \.
 
 
@@ -6040,10 +5786,11 @@ ee31844c-a1b6-4244-babe-e696edbe8c42	\N	password	0988a8ee-4838-4a9c-9332-075ce50
 1d3a5d7e-9dc4-49e9-9223-824e84cf1447	\N	password	4d064ee9-3229-4fd3-b2b9-a271d91bf019	1752824427661	\N	{"value":"HB69veA4ezUhOutpsFrSxGkkc0j8G28idYYwUl+eJjM=","salt":"T5B/yMEcJ5CiF0GpsIusyA==","additionalParameters":{}}	{"hashIterations":5,"algorithm":"argon2","additionalParameters":{"hashLength":["32"],"memory":["7168"],"type":["id"],"version":["1.3"],"parallelism":["1"]}}	10	0
 e873a76a-11d8-4042-82a3-93bdd0debde3	\N	password	be7c0f73-4c08-45ea-bd14-7b8968cbc5a4	1757418674725	\N	{"value":"DPb0LSwOCq2VwmTcp9l72KvQJesmOZEjmTEK7HR5bfE=","salt":"61IiMm8LIzo3tneV3GBfqg==","additionalParameters":{}}	{"hashIterations":5,"algorithm":"argon2","additionalParameters":{"hashLength":["32"],"memory":["7168"],"type":["id"],"version":["1.3"],"parallelism":["1"]}}	10	0
 515b0b02-3ade-4c80-9554-09e4deca4a7e	\N	password	eb485a12-b05a-456d-86a0-159c4dcb9c34	1757419118239	\N	{"value":"xRH/g+bZuj8WnYUZchoKC7eXRxHP1A1frmXwi+2D+SM=","salt":"0r6UR5zFhkoq78UjebpbdA==","additionalParameters":{}}	{"hashIterations":5,"algorithm":"argon2","additionalParameters":{"hashLength":["32"],"memory":["7168"],"type":["id"],"version":["1.3"],"parallelism":["1"]}}	10	0
-11863e7a-3e50-466c-a487-ee1dc43745f3	\N	password	f9dd5f8d-1448-40b5-ba6a-4dea01409c5d	1761828074668	\N	{"value":"A6795BuxpAh7pCrx8FgZZ296Ab25yXpAH8kkBZz9+Bo=","salt":"jTwOlypMNbyLz3QCE2u7vA==","additionalParameters":{}}	{"hashIterations":5,"algorithm":"argon2","additionalParameters":{"hashLength":["32"],"memory":["7168"],"type":["id"],"version":["1.3"],"parallelism":["1"]}}	10	0
 481bf6e3-930e-426c-aa1d-f0a98858c76a	\N	password	59b06eaf-74e2-47de-9b9e-183c4b5cce2b	1759747118083	\N	{"value":"IwpOPcOuaQ5Oo7+EfCyqtWPxfOmuzscDJdcpPt9WuOI=","salt":"Cmno7fve7Loq6XEr4Oks6w==","additionalParameters":{}}	{"hashIterations":5,"algorithm":"argon2","additionalParameters":{"hashLength":["32"],"memory":["7168"],"type":["id"],"version":["1.3"],"parallelism":["1"]}}	10	0
 da823264-5cb5-43d4-ba6c-36df5594a76a	\N	password	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	1762760781664	\N	{"value":"2FF3xGMDttxm12RoaGe8dSN0HbFRkiwBdZnhqIplL5A=","salt":"3qYhuP4ZS/um9U37Cj+qow==","additionalParameters":{}}	{"hashIterations":5,"algorithm":"argon2","additionalParameters":{"hashLength":["32"],"memory":["7168"],"type":["id"],"version":["1.3"],"parallelism":["1"]}}	10	26
 f4a1d782-310c-483b-8e17-86c451ddfb9e	\N	password	0ec68e26-9025-43a4-807b-14de2597eb73	1763455708240	\N	{"value":"YJgI7QwImAlzTFkJNQoUWvENZzdjnnSiC7IJ5WYd8Mw=","salt":"YbdhXu4Ti3oqaUQcX7+qJA==","additionalParameters":{}}	{"hashIterations":5,"algorithm":"argon2","additionalParameters":{"hashLength":["32"],"memory":["7168"],"type":["id"],"version":["1.3"],"parallelism":["1"]}}	10	0
+b7051c6b-d966-4a4e-833b-050d854454ef	\N	password	7dc436ae-5e5e-43e3-981b-994ee0ce54f7	1775558489142	\N	{"value":"xmTxx7eggY4gcxi1HDDL2Zj8gZZLdAT7H/VXzHVvt/w=","salt":"NcDEeFchech8xnrblleXOg==","additionalParameters":{}}	{"hashIterations":5,"algorithm":"argon2","additionalParameters":{"hashLength":["32"],"memory":["7168"],"type":["id"],"version":["1.3"],"parallelism":["1"]}}	10	0
+991c3b96-28a8-4609-ac62-a5dad5a0e710	\N	password	a54df9d5-ff7c-4355-a05d-d319e83416d0	1775559049880	\N	{"value":"fJMww8YT6yOIpeqnnrYSI5PfZdqmvfKAkdze3AIiWMA=","salt":"I5y0ZI3mOj/lmD8bLWkEcg==","additionalParameters":{}}	{"hashIterations":5,"algorithm":"argon2","additionalParameters":{"hashLength":["32"],"memory":["7168"],"type":["id"],"version":["1.3"],"parallelism":["1"]}}	10	0
 \.
 
 
@@ -6072,6 +5819,7 @@ COPY public.databasechangelog (id, author, filename, dateexecuted, orderexecuted
 1.7.0	bburke@redhat.com	META-INF/jpa-changelog-1.7.0.xml	2025-06-30 12:22:28.87219	18	EXECUTED	9:3368ff0be4c2855ee2dd9ca813b38d8e	createTable tableName=KEYCLOAK_GROUP; createTable tableName=GROUP_ROLE_MAPPING; createTable tableName=GROUP_ATTRIBUTE; createTable tableName=USER_GROUP_MEMBERSHIP; createTable tableName=REALM_DEFAULT_GROUPS; addColumn tableName=IDENTITY_PROVIDER; ...		\N	4.29.1	\N	\N	1286142739
 1.8.0	mposolda@redhat.com	META-INF/jpa-changelog-1.8.0.xml	2025-06-30 12:22:29.221944	19	EXECUTED	9:8ac2fb5dd030b24c0570a763ed75ed20	addColumn tableName=IDENTITY_PROVIDER; createTable tableName=CLIENT_TEMPLATE; createTable tableName=CLIENT_TEMPLATE_ATTRIBUTES; createTable tableName=TEMPLATE_SCOPE_MAPPING; dropNotNullConstraint columnName=CLIENT_ID, tableName=PROTOCOL_MAPPER; ad...		\N	4.29.1	\N	\N	1286142739
 1.8.0-2	keycloak	META-INF/jpa-changelog-1.8.0.xml	2025-06-30 12:22:29.236714	20	EXECUTED	9:f91ddca9b19743db60e3057679810e6c	dropDefaultValue columnName=ALGORITHM, tableName=CREDENTIAL; update tableName=CREDENTIAL		\N	4.29.1	\N	\N	1286142739
+26.5.0-add-remember-me	keycloak	META-INF/jpa-changelog-26.5.0.xml	2026-04-07 09:28:45.760446	172	EXECUTED	9:a7273ea8b21bd2f674c9c49141999f05	addColumn tableName=OFFLINE_USER_SESSION		\N	4.33.0	\N	\N	5554110255
 1.8.0	mposolda@redhat.com	META-INF/db2-jpa-changelog-1.8.0.xml	2025-06-30 12:22:29.246904	21	MARK_RAN	9:831e82914316dc8a57dc09d755f23c51	addColumn tableName=IDENTITY_PROVIDER; createTable tableName=CLIENT_TEMPLATE; createTable tableName=CLIENT_TEMPLATE_ATTRIBUTES; createTable tableName=TEMPLATE_SCOPE_MAPPING; dropNotNullConstraint columnName=CLIENT_ID, tableName=PROTOCOL_MAPPER; ad...		\N	4.29.1	\N	\N	1286142739
 1.8.0-2	keycloak	META-INF/db2-jpa-changelog-1.8.0.xml	2025-06-30 12:22:29.253553	22	MARK_RAN	9:f91ddca9b19743db60e3057679810e6c	dropDefaultValue columnName=ALGORITHM, tableName=CREDENTIAL; update tableName=CREDENTIAL		\N	4.29.1	\N	\N	1286142739
 1.9.0	mposolda@redhat.com	META-INF/jpa-changelog-1.9.0.xml	2025-06-30 12:22:29.403891	23	EXECUTED	9:bc3d0f9e823a69dc21e23e94c7a94bb1	update tableName=REALM; update tableName=REALM; update tableName=REALM; update tableName=REALM; update tableName=CREDENTIAL; update tableName=CREDENTIAL; update tableName=CREDENTIAL; update tableName=REALM; update tableName=REALM; customChange; dr...		\N	4.29.1	\N	\N	1286142739
@@ -6204,6 +5952,32 @@ unique-consentuser-mysql	keycloak	META-INF/jpa-changelog-25.0.0.xml	2025-06-30 1
 26.1.0-34380	keycloak	META-INF/jpa-changelog-26.1.0.xml	2025-06-30 12:22:55.845588	150	EXECUTED	9:ac8b9edb7c2b6c17a1c7a11fcf5ccf01	dropTable tableName=USERNAME_LOGIN_FAILURE		\N	4.29.1	\N	\N	1286142739
 26.2.0-36750	keycloak	META-INF/jpa-changelog-26.2.0.xml	2025-06-30 12:22:55.953707	151	EXECUTED	9:b49ce951c22f7eb16480ff085640a33a	createTable tableName=SERVER_CONFIG		\N	4.29.1	\N	\N	1286142739
 26.2.0-26106	keycloak	META-INF/jpa-changelog-26.2.0.xml	2025-06-30 12:22:55.969898	152	EXECUTED	9:b5877d5dab7d10ff3a9d209d7beb6680	addColumn tableName=CREDENTIAL		\N	4.29.1	\N	\N	1286142739
+20.0.0-12964-supported-dbs-edb-migration	keycloak	META-INF/jpa-changelog-20.0.0.xml	2026-04-07 09:28:44.408065	153	EXECUTED	9:a6b18a8e38062df5793edbe064f4aecd	dropIndex indexName=IDX_GROUP_ATT_BY_NAME_VALUE, tableName=GROUP_ATTRIBUTE; createIndex indexName=IDX_GROUP_ATT_BY_NAME_VALUE, tableName=GROUP_ATTRIBUTE		\N	4.33.0	\N	\N	5554110255
+client-attributes-string-accomodation-fixed-pre-drop-index	keycloak	META-INF/jpa-changelog-20.0.0.xml	2026-04-07 09:28:44.426271	154	MARK_RAN	9:04baaf56c116ed19951cbc2cca584022	dropIndex indexName=IDX_CLIENT_ATT_BY_NAME_VALUE, tableName=CLIENT_ATTRIBUTES		\N	4.33.0	\N	\N	5554110255
+client-attributes-string-accomodation-fixed-post-create-index	keycloak	META-INF/jpa-changelog-20.0.0.xml	2026-04-07 09:28:44.436891	155	MARK_RAN	9:bd2bd0fc7768cf0845ac96a8786fa735	createIndex indexName=IDX_CLIENT_ATT_BY_NAME_VALUE, tableName=CLIENT_ATTRIBUTES		\N	4.33.0	\N	\N	5554110255
+24.0.0-26618-edb-migration	keycloak	META-INF/jpa-changelog-24.0.0.xml	2026-04-07 09:28:44.634733	156	EXECUTED	9:2f684b29d414cd47efe3a3599f390741	dropIndex indexName=IDX_CLIENT_ATT_BY_NAME_VALUE, tableName=CLIENT_ATTRIBUTES; createIndex indexName=IDX_CLIENT_ATT_BY_NAME_VALUE, tableName=CLIENT_ATTRIBUTES		\N	4.33.0	\N	\N	5554110255
+unique-consentuser-edb-migration	keycloak	META-INF/jpa-changelog-25.0.0.xml	2026-04-07 09:28:44.658573	157	MARK_RAN	9:5857626a2ea8767e9a6c66bf3a2cb32f	customChange; dropUniqueConstraint constraintName=UK_JKUWUVD56ONTGSUHOGM8UEWRT, tableName=USER_CONSENT; addUniqueConstraint constraintName=UK_LOCAL_CONSENT, tableName=USER_CONSENT; addUniqueConstraint constraintName=UK_EXTERNAL_CONSENT, tableName=...		\N	4.33.0	\N	\N	5554110255
+26.2.6-39866-duplicate	keycloak	META-INF/jpa-changelog-26.2.6.xml	2026-04-07 09:28:44.681649	158	EXECUTED	9:1dc67ccee24f30331db2cba4f372e40e	customChange		\N	4.33.0	\N	\N	5554110255
+26.2.6-39866-uk	keycloak	META-INF/jpa-changelog-26.2.6.xml	2026-04-07 09:28:44.741125	159	EXECUTED	9:b70b76f47210cf0a5f4ef0e219eac7cd	addUniqueConstraint constraintName=UK_MIGRATION_VERSION, tableName=MIGRATION_MODEL		\N	4.33.0	\N	\N	5554110255
+26.2.6-40088-duplicate	keycloak	META-INF/jpa-changelog-26.2.6.xml	2026-04-07 09:28:44.762211	160	EXECUTED	9:cc7e02ed69ab31979afb1982f9670e8f	customChange		\N	4.33.0	\N	\N	5554110255
+26.2.6-40088-uk	keycloak	META-INF/jpa-changelog-26.2.6.xml	2026-04-07 09:28:44.802584	161	EXECUTED	9:5bb848128da7bc4595cc507383325241	addUniqueConstraint constraintName=UK_MIGRATION_UPDATE_TIME, tableName=MIGRATION_MODEL		\N	4.33.0	\N	\N	5554110255
+26.3.0-groups-description	keycloak	META-INF/jpa-changelog-26.3.0.xml	2026-04-07 09:28:44.842289	162	EXECUTED	9:e1a3c05574326fb5b246b73b9a4c4d49	addColumn tableName=KEYCLOAK_GROUP		\N	4.33.0	\N	\N	5554110255
+26.4.0-40933-saml-encryption-attributes	keycloak	META-INF/jpa-changelog-26.4.0.xml	2026-04-07 09:28:44.864654	163	EXECUTED	9:7e9eaba362ca105efdda202303a4fe49	customChange		\N	4.33.0	\N	\N	5554110255
+26.4.0-51321	keycloak	META-INF/jpa-changelog-26.4.0.xml	2026-04-07 09:28:44.960249	164	EXECUTED	9:34bab2bc56f75ffd7e347c580874e306	createIndex indexName=IDX_EVENT_ENTITY_USER_ID_TYPE, tableName=EVENT_ENTITY		\N	4.33.0	\N	\N	5554110255
+40343-workflow-state-table	keycloak	META-INF/jpa-changelog-26.4.0.xml	2026-04-07 09:28:45.305102	165	EXECUTED	9:ed3ab4723ceed210e5b5e60ac4562106	createTable tableName=WORKFLOW_STATE; addPrimaryKey constraintName=PK_WORKFLOW_STATE, tableName=WORKFLOW_STATE; addUniqueConstraint constraintName=UQ_WORKFLOW_RESOURCE, tableName=WORKFLOW_STATE; createIndex indexName=IDX_WORKFLOW_STATE_STEP, table...		\N	4.33.0	\N	\N	5554110255
+26.5.0-index-offline-css-by-client	keycloak	META-INF/jpa-changelog-26.5.0.xml	2026-04-07 09:28:45.42675	166	EXECUTED	9:383e981ce95d16e32af757b7998820f7	createIndex indexName=IDX_OFFLINE_CSS_BY_CLIENT, tableName=OFFLINE_CLIENT_SESSION		\N	4.33.0	\N	\N	5554110255
+26.5.0-index-offline-css-by-client-storage-provider	keycloak	META-INF/jpa-changelog-26.5.0.xml	2026-04-07 09:28:45.535826	167	EXECUTED	9:f5bc200e6fa7d7e483854dee535ca425	createIndex indexName=IDX_OFFLINE_CSS_BY_CLIENT_STORAGE_PROVIDER, tableName=OFFLINE_CLIENT_SESSION		\N	4.33.0	\N	\N	5554110255
+26.5.0-idp-config-allow-null-fixed-drop-mssql-index	keycloak	META-INF/jpa-changelog-26.5.0.xml	2026-04-07 09:28:45.54607	168	MARK_RAN	9:50c51d2c98cd1d624eb1c485c3cf1f75	dropIndex indexName=IDX_IDP_FOR_LOGIN, tableName=IDENTITY_PROVIDER		\N	4.33.0	\N	\N	5554110255
+26.5.0-idp-config-allow-null	keycloak	META-INF/jpa-changelog-26.5.0.xml	2026-04-07 09:28:45.578361	169	EXECUTED	9:b667fb087874303b324c1af7fae4f606	dropDefaultValue columnName=TRUST_EMAIL, tableName=IDENTITY_PROVIDER; dropNotNullConstraint columnName=TRUST_EMAIL, tableName=IDENTITY_PROVIDER; dropNotNullConstraint columnName=STORE_TOKEN, tableName=IDENTITY_PROVIDER; dropDefaultValue columnName...		\N	4.33.0	\N	\N	5554110255
+26.5.0-idp-config-allow-null-fixed-create-mssql-index	keycloak	META-INF/jpa-changelog-26.5.0.xml	2026-04-07 09:28:45.612492	170	MARK_RAN	9:dcbbb24c151c3b0b59f12fede23cc94d	createIndex indexName=IDX_IDP_FOR_LOGIN, tableName=IDENTITY_PROVIDER		\N	4.33.0	\N	\N	5554110255
+26.5.0-remove-workflow-provider-id-column	keycloak	META-INF/jpa-changelog-26.5.0.xml	2026-04-07 09:28:45.736934	171	EXECUTED	9:d8eeb324484d45e946d03b953e168b21	dropIndex indexName=IDX_WORKFLOW_STATE_PROVIDER, tableName=WORKFLOW_STATE; createIndex indexName=IDX_WORKFLOW_STATE_PROVIDER, tableName=WORKFLOW_STATE; dropColumn columnName=WORKFLOW_PROVIDER_ID, tableName=WORKFLOW_STATE		\N	4.33.0	\N	\N	5554110255
+26.5.0-add-sess-refresh-idx	keycloak	META-INF/jpa-changelog-26.5.0.xml	2026-04-07 09:28:45.873943	173	EXECUTED	9:ce49383d317ccbcd3434d1f21172b0b7	createIndex indexName=IDX_USER_SESSION_EXPIRATION_CREATED, tableName=OFFLINE_USER_SESSION		\N	4.33.0	\N	\N	5554110255
+26.5.0-add-sess-create-idx	keycloak	META-INF/jpa-changelog-26.5.0.xml	2026-04-07 09:28:46.004238	174	EXECUTED	9:aaee09e23a4d8468fbc5c51b7b314c58	createIndex indexName=IDX_USER_SESSION_EXPIRATION_LAST_REFRESH, tableName=OFFLINE_USER_SESSION		\N	4.33.0	\N	\N	5554110255
+26.5.0-drop-sess-refresh-idx	keycloak	META-INF/jpa-changelog-26.5.0.xml	2026-04-07 09:28:46.033002	175	EXECUTED	9:f0082210b6ccbbaf81287c27aa23753c	dropIndex indexName=IDX_OFFLINE_USS_BY_LAST_SESSION_REFRESH, tableName=OFFLINE_USER_SESSION		\N	4.33.0	\N	\N	5554110255
+26.5.0-mysql-mariadb-default-charset-collation	keycloak	META-INF/jpa-changelog-26.5.0.xml	2026-04-07 09:28:46.04451	176	MARK_RAN	9:1b383fa60d2db0a8952b365e725f9d16	customChange		\N	4.33.0	\N	\N	5554110255
+26.5.0-invitations-table-fixed2	keycloak	META-INF/jpa-changelog-26.5.0.xml	2026-04-07 09:28:46.339075	177	EXECUTED	9:322cb11fc03181903dcd67a54f8b3cf0	createTable tableName=ORG_INVITATION; addForeignKeyConstraint baseTableName=ORG_INVITATION, constraintName=FK_ORG_INVITATION_ORG, referencedTableName=ORG; createIndex indexName=IDX_ORG_INVITATION_ORG_ID, tableName=ORG_INVITATION; createIndex index...		\N	4.33.0	\N	\N	5554110255
+26.6.0-45009-broker-link-user-id	keycloak	META-INF/jpa-changelog-26.6.0.xml	2026-04-07 09:28:46.438265	178	EXECUTED	9:05026bbbc8d2ead5afcbda2f5fdf3a2b	createIndex indexName=IDX_BROKER_LINK_USER_ID, tableName=BROKER_LINK		\N	4.33.0	\N	\N	5554110255
+26.6.0-45009-broker-link-identity-provider	keycloak	META-INF/jpa-changelog-26.6.0.xml	2026-04-07 09:28:46.541499	179	EXECUTED	9:7d9a0253c9de7be754efef8bba4265bd	createIndex indexName=IDX_BROKER_LINK_IDENTITY_PROVIDER, tableName=BROKER_LINK		\N	4.33.0	\N	\N	5554110255
 \.
 
 
@@ -6347,180 +6121,115 @@ check12	65214e77-1bf0-4e8b-8b15-9e1cef4c0a3c	f
 --
 
 COPY public.event_entity (id, client_id, details_json, error, ip_address, realm_id, session_id, event_time, type, user_id, details_json_long_value) FROM stdin;
-75a61c9f-1c16-4649-871c-e03d59acaa1d	account-ui	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	8aa56eec-8656-4925-b5db-6c7b43960d1e	1770728681073	LOGIN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"auth_method":"openid-connect","auth_type":"code","redirect_uri":"https://auth.local.test/auth/callback/account-ui","consent":"no_consent_required","code_id":"8aa56eec-8656-4925-b5db-6c7b43960d1e","username":"swaragh092@gmail.com"}
-5a232cc3-1683-45e7-8652-a975c767f28c	account-ui	\N	\N	172.18.0.10	e800c4cb-db3a-4a31-8496-6d3b373e78b4	8aa56eec-8656-4925-b5db-6c7b43960d1e	1770728682531	CODE_TO_TOKEN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"token_id":"onrtac:40306d2a-aa1c-47ee-835a-d1b38a08f5a8","grant_type":"authorization_code","refresh_token_type":"Refresh","scope":"openid email microprofile-jwt identity_provider_scope profile","refresh_token_id":"ccdf7605-d75f-457f-9d1a-864ca53f1c59","code_id":"8aa56eec-8656-4925-b5db-6c7b43960d1e","client_auth_method":"client-secret"}
-aca97f7f-a544-4bb0-b178-4159026b3df5	account-ui	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	8aa56eec-8656-4925-b5db-6c7b43960d1e	1770728788511	LOGIN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"auth_method":"openid-connect","auth_type":"code","response_type":"code","redirect_uri":"https://auth.local.test/auth/callback/account-ui","consent":"no_consent_required","code_id":"8aa56eec-8656-4925-b5db-6c7b43960d1e","response_mode":"query","username":"swaragh092@gmail.com"}
-7522c474-407f-4b4e-a048-fd77729b8709	account-ui	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	b5622124-ea2e-4d21-be6d-3c74490a1c12	1770891594194	LOGIN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"auth_method":"openid-connect","auth_type":"code","response_type":"code","redirect_uri":"https://auth.local.test/auth/callback/account-ui","consent":"no_consent_required","code_id":"b5622124-ea2e-4d21-be6d-3c74490a1c12","response_mode":"query","username":"swaragh092@gmail.com"}
-879ee7da-2b33-4bbb-af2b-f01c3885694f	account-ui	\N	\N	172.18.0.8	e800c4cb-db3a-4a31-8496-6d3b373e78b4	b5622124-ea2e-4d21-be6d-3c74490a1c12	1770891595986	CODE_TO_TOKEN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"token_id":"onrtac:85376ff7-8983-414f-96a7-640f05975645","grant_type":"authorization_code","refresh_token_type":"Refresh","scope":"openid email microprofile-jwt identity_provider_scope profile","refresh_token_id":"b89bd593-e084-41ec-ba7b-ed37f8128aee","code_id":"b5622124-ea2e-4d21-be6d-3c74490a1c12","client_auth_method":"client-secret"}
-fa96dcb1-71c4-4ef6-aa89-0132063d78f6	new-token	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	a4447c07-99b8-4337-828a-ca73a1456a1e	1770982122614	LOGIN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"auth_method":"openid-connect","auth_type":"code","redirect_uri":"https://auth.local.test/auth/callback/new-token","consent":"no_consent_required","code_id":"a4447c07-99b8-4337-828a-ca73a1456a1e","username":"swaragh092@gmail.com"}
-be49bb4a-b86c-44ca-be3c-4b86b9ea1ffb	new-token	\N	\N	172.18.0.9	e800c4cb-db3a-4a31-8496-6d3b373e78b4	a4447c07-99b8-4337-828a-ca73a1456a1e	1770982124782	CODE_TO_TOKEN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"token_id":"onrtac:667fc1e6-7793-4299-a8e8-913416fea17a","grant_type":"authorization_code","refresh_token_type":"Refresh","scope":"openid email profile","refresh_token_id":"7af492e0-1881-4573-8f6a-4e5634b125ff","code_id":"a4447c07-99b8-4337-828a-ca73a1456a1e","client_auth_method":"client-secret"}
-6ba634e7-c2fd-483e-bf4d-2b7098a2175e	account-ui	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	a4447c07-99b8-4337-828a-ca73a1456a1e	1770982182553	LOGIN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"auth_method":"openid-connect","auth_type":"code","response_type":"code","redirect_uri":"https://auth.local.test/auth/callback/account-ui","consent":"no_consent_required","code_id":"a4447c07-99b8-4337-828a-ca73a1456a1e","response_mode":"query","username":"swaragh092@gmail.com"}
-fcbf6307-1ec7-4438-b0dc-9634fe8cf803	account-ui	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	a4447c07-99b8-4337-828a-ca73a1456a1e	1770982231249	LOGIN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"auth_method":"openid-connect","auth_type":"code","response_type":"code","redirect_uri":"https://auth.local.test/auth/callback/account-ui","consent":"no_consent_required","code_id":"a4447c07-99b8-4337-828a-ca73a1456a1e","response_mode":"query","username":"swaragh092@gmail.com"}
-bd8b4867-85f0-48c5-bdd9-87e4c72afc6b	account-ui	\N	\N	172.18.0.9	e800c4cb-db3a-4a31-8496-6d3b373e78b4	a4447c07-99b8-4337-828a-ca73a1456a1e	1770982231401	CODE_TO_TOKEN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"token_id":"onrtac:71612dd8-8509-4685-98c2-1422d849188d","grant_type":"authorization_code","refresh_token_type":"Refresh","scope":"openid email microprofile-jwt identity_provider_scope profile","refresh_token_id":"4c75f08b-8c66-4675-bf75-b193f6f798e8","code_id":"a4447c07-99b8-4337-828a-ca73a1456a1e","client_auth_method":"client-secret"}
-32b8a144-fea9-41d8-b45c-bc675352053e	new-token	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	a4447c07-99b8-4337-828a-ca73a1456a1e	1770982237505	LOGIN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"auth_method":"openid-connect","auth_type":"code","response_type":"code","redirect_uri":"https://auth.local.test/auth/callback/new-token","consent":"no_consent_required","code_id":"a4447c07-99b8-4337-828a-ca73a1456a1e","response_mode":"query","username":"swaragh092@gmail.com"}
-735dbb05-8638-4e0a-9c7c-f010cc6d5a26	new-token	\N	\N	172.18.0.9	e800c4cb-db3a-4a31-8496-6d3b373e78b4	a4447c07-99b8-4337-828a-ca73a1456a1e	1770982237592	CODE_TO_TOKEN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"token_id":"onrtac:2d18dd3a-57f8-40d5-b1d7-0581932a0fbf","grant_type":"authorization_code","refresh_token_type":"Refresh","scope":"openid email profile","refresh_token_id":"27efd469-a77e-481b-ba71-dfb222968c4c","code_id":"a4447c07-99b8-4337-828a-ca73a1456a1e","client_auth_method":"client-secret"}
-446a9330-a938-439b-bb8e-2a4e4b57341c	account-ui	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	a4447c07-99b8-4337-828a-ca73a1456a1e	1770982245217	LOGIN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"auth_method":"openid-connect","auth_type":"code","response_type":"code","redirect_uri":"https://auth.local.test/auth/callback/account-ui","consent":"no_consent_required","code_id":"a4447c07-99b8-4337-828a-ca73a1456a1e","response_mode":"query","username":"swaragh092@gmail.com"}
-b0cc1b92-c925-43ac-ad7a-d213ecd52fba	account-ui	\N	\N	172.18.0.9	e800c4cb-db3a-4a31-8496-6d3b373e78b4	a4447c07-99b8-4337-828a-ca73a1456a1e	1770982245427	CODE_TO_TOKEN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"token_id":"onrtac:284a79ec-90a4-491e-90f8-1e415c9ca887","grant_type":"authorization_code","refresh_token_type":"Refresh","scope":"openid email microprofile-jwt identity_provider_scope profile","refresh_token_id":"f034b0db-81d2-4111-808a-55f826e5df2c","code_id":"a4447c07-99b8-4337-828a-ca73a1456a1e","client_auth_method":"client-secret"}
-16d334bd-e62f-4cde-b1c5-5849774bffaf	account-ui	\N	\N	172.18.0.10	e800c4cb-db3a-4a31-8496-6d3b373e78b4	8aa56eec-8656-4925-b5db-6c7b43960d1e	1770728788931	CODE_TO_TOKEN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"token_id":"onrtac:f41187d3-3795-4890-a88a-4c36541a7e60","grant_type":"authorization_code","refresh_token_type":"Refresh","scope":"openid email microprofile-jwt identity_provider_scope profile","refresh_token_id":"47b33934-b627-4c8e-8ac5-bdc0098022e6","code_id":"8aa56eec-8656-4925-b5db-6c7b43960d1e","client_auth_method":"client-secret"}
-94798462-cede-4bbd-8847-41b9a1172f16	account-ui	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	8aa56eec-8656-4925-b5db-6c7b43960d1e	1770728979155	LOGIN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"auth_method":"openid-connect","auth_type":"code","response_type":"code","redirect_uri":"https://auth.local.test/auth/callback/account-ui","consent":"no_consent_required","code_id":"8aa56eec-8656-4925-b5db-6c7b43960d1e","response_mode":"query","username":"swaragh092@gmail.com"}
-c8a98b7f-d35d-46af-8b4a-0d3e2a383ca4	account-ui	\N	\N	172.18.0.10	e800c4cb-db3a-4a31-8496-6d3b373e78b4	8aa56eec-8656-4925-b5db-6c7b43960d1e	1770728979437	CODE_TO_TOKEN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"token_id":"onrtac:82ece7a2-9943-4966-a6ce-a965ae9ae3fc","grant_type":"authorization_code","refresh_token_type":"Refresh","scope":"openid email microprofile-jwt identity_provider_scope profile","refresh_token_id":"7f3c8b3d-679c-4b5a-b91e-84d06f1785bd","code_id":"8aa56eec-8656-4925-b5db-6c7b43960d1e","client_auth_method":"client-secret"}
-a23254db-8429-4704-ba78-7b58f54b23da	account-ui	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	8aa56eec-8656-4925-b5db-6c7b43960d1e	1770729216897	LOGIN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"auth_method":"openid-connect","auth_type":"code","response_type":"code","redirect_uri":"https://auth.local.test/auth/callback/account-ui","consent":"no_consent_required","code_id":"8aa56eec-8656-4925-b5db-6c7b43960d1e","response_mode":"query","username":"swaragh092@gmail.com"}
-b39e8ecf-bcd1-4623-96ef-382d2be2788f	account-ui	\N	\N	172.18.0.10	e800c4cb-db3a-4a31-8496-6d3b373e78b4	8aa56eec-8656-4925-b5db-6c7b43960d1e	1770729217032	CODE_TO_TOKEN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"token_id":"onrtac:3e511d60-de5d-4ac4-8c7c-8193de13ca2a","grant_type":"authorization_code","refresh_token_type":"Refresh","scope":"openid email microprofile-jwt identity_provider_scope profile","refresh_token_id":"0945cf7a-f321-41f5-af30-434e44fd4d95","code_id":"8aa56eec-8656-4925-b5db-6c7b43960d1e","client_auth_method":"client-secret"}
-57cc5461-306f-41f3-9e0a-83be8d44df60	account-ui	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	8aa56eec-8656-4925-b5db-6c7b43960d1e	1770729384293	LOGIN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"auth_method":"openid-connect","auth_type":"code","response_type":"code","redirect_uri":"https://auth.local.test/auth/callback/account-ui","consent":"no_consent_required","code_id":"8aa56eec-8656-4925-b5db-6c7b43960d1e","response_mode":"query","username":"swaragh092@gmail.com"}
-676e09a8-37f5-4d9f-a06b-d190146916af	account-ui	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	b5622124-ea2e-4d21-be6d-3c74490a1c12	1770892350602	LOGIN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"auth_method":"openid-connect","auth_type":"code","response_type":"code","redirect_uri":"https://auth.local.test/auth/callback/account-ui","consent":"no_consent_required","code_id":"b5622124-ea2e-4d21-be6d-3c74490a1c12","response_mode":"query","username":"swaragh092@gmail.com"}
-eec50736-527d-433e-a8a7-b07d34a00687	account-ui	\N	\N	172.18.0.8	e800c4cb-db3a-4a31-8496-6d3b373e78b4	b5622124-ea2e-4d21-be6d-3c74490a1c12	1770892352099	CODE_TO_TOKEN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"token_id":"onrtac:3d887012-1f11-4860-adfd-0a0e1f9718bd","grant_type":"authorization_code","refresh_token_type":"Refresh","scope":"openid email microprofile-jwt identity_provider_scope profile","refresh_token_id":"d587430d-df62-4e98-ba53-2ed1753c456c","code_id":"b5622124-ea2e-4d21-be6d-3c74490a1c12","client_auth_method":"client-secret"}
-669d8967-b206-4b22-a355-183418612835	account-ui	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	a4447c07-99b8-4337-828a-ca73a1456a1e	1770982182559	LOGIN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"auth_method":"openid-connect","auth_type":"code","response_type":"code","redirect_uri":"https://auth.local.test/auth/callback/account-ui","consent":"no_consent_required","code_id":"a4447c07-99b8-4337-828a-ca73a1456a1e","response_mode":"query","username":"swaragh092@gmail.com"}
-8b92cc72-3c1c-4b1f-81f1-62c786eb24f4	account-ui	\N	\N	172.18.0.9	e800c4cb-db3a-4a31-8496-6d3b373e78b4	a4447c07-99b8-4337-828a-ca73a1456a1e	1770982183104	CODE_TO_TOKEN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"token_id":"onrtac:6e7bbbef-88b3-40b5-a1b4-7ed4a5957dc3","grant_type":"authorization_code","refresh_token_type":"Refresh","scope":"openid email microprofile-jwt identity_provider_scope profile","refresh_token_id":"f91a67a5-d995-451c-8533-c5196f988ec8","code_id":"a4447c07-99b8-4337-828a-ca73a1456a1e","client_auth_method":"client-secret"}
-c3b13200-1795-4f65-82f6-ab9b77f22812	new-token	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	60fb4d60-9d96-4026-89be-9ed7d8a91b1a	1771066877460	LOGIN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"auth_method":"openid-connect","auth_type":"code","redirect_uri":"https://auth.local.test/auth/callback/new-token","consent":"no_consent_required","code_id":"60fb4d60-9d96-4026-89be-9ed7d8a91b1a","username":"swaragh092@gmail.com"}
-b957aaec-01ab-4a57-9aec-25a830c05b7e	new-token	\N	\N	172.18.0.9	e800c4cb-db3a-4a31-8496-6d3b373e78b4	60fb4d60-9d96-4026-89be-9ed7d8a91b1a	1771066880324	CODE_TO_TOKEN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"token_id":"onrtac:54ac9947-e9ab-41c5-8c31-08febf02c209","grant_type":"authorization_code","refresh_token_type":"Refresh","scope":"openid email profile","refresh_token_id":"5d41e8bb-a9e0-40cd-84d1-a1a4358893d2","code_id":"60fb4d60-9d96-4026-89be-9ed7d8a91b1a","client_auth_method":"client-secret"}
-94e8d003-0043-4950-8bc2-5ff13a23efb4	new-token	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	60fb4d60-9d96-4026-89be-9ed7d8a91b1a	1771066931988	LOGIN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"auth_method":"openid-connect","auth_type":"code","response_type":"code","redirect_uri":"https://auth.local.test/auth/callback/new-token","consent":"no_consent_required","code_id":"60fb4d60-9d96-4026-89be-9ed7d8a91b1a","response_mode":"query","username":"swaragh092@gmail.com"}
-f5c09cd8-b848-42fd-a4ec-147959b37266	new-token	\N	\N	172.18.0.9	e800c4cb-db3a-4a31-8496-6d3b373e78b4	60fb4d60-9d96-4026-89be-9ed7d8a91b1a	1771066932598	CODE_TO_TOKEN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"token_id":"onrtac:add19c9b-b3c4-45f3-b1ca-22fefd7867b8","grant_type":"authorization_code","refresh_token_type":"Refresh","scope":"openid email profile","refresh_token_id":"43e376c9-7403-4409-9cd4-a252625297ed","code_id":"60fb4d60-9d96-4026-89be-9ed7d8a91b1a","client_auth_method":"client-secret"}
-fb58c161-fd80-44ae-a271-3004918db3f6	account-ui	\N	\N	172.18.0.10	e800c4cb-db3a-4a31-8496-6d3b373e78b4	8aa56eec-8656-4925-b5db-6c7b43960d1e	1770729385035	CODE_TO_TOKEN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"token_id":"onrtac:3a45efc2-dd79-4eba-9195-c22b3bd3147e","grant_type":"authorization_code","refresh_token_type":"Refresh","scope":"openid email microprofile-jwt identity_provider_scope profile","refresh_token_id":"7b84cf53-dd62-45df-a9ec-de8606ea35c8","code_id":"8aa56eec-8656-4925-b5db-6c7b43960d1e","client_auth_method":"client-secret"}
-631c2970-bfee-4d38-a676-e87389e10a63	account-ui	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	b5622124-ea2e-4d21-be6d-3c74490a1c12	1770893567809	LOGIN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"auth_method":"openid-connect","auth_type":"code","response_type":"code","redirect_uri":"https://auth.local.test/auth/callback/account-ui","consent":"no_consent_required","code_id":"b5622124-ea2e-4d21-be6d-3c74490a1c12","response_mode":"query","username":"swaragh092@gmail.com"}
-d9844212-19de-4274-9b38-e66a99dbccca	account-ui	\N	\N	172.18.0.8	e800c4cb-db3a-4a31-8496-6d3b373e78b4	b5622124-ea2e-4d21-be6d-3c74490a1c12	1770893568296	CODE_TO_TOKEN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"token_id":"onrtac:4230c534-6169-4ed9-b480-9ce367d33de7","grant_type":"authorization_code","refresh_token_type":"Refresh","scope":"openid email microprofile-jwt identity_provider_scope profile","refresh_token_id":"b7f5d552-5cc7-446f-a9d4-515e8a4e768c","code_id":"b5622124-ea2e-4d21-be6d-3c74490a1c12","client_auth_method":"client-secret"}
-f98fccbd-89f9-42e0-967b-7d3c211b7fc4	account-ui	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	a4447c07-99b8-4337-828a-ca73a1456a1e	1770982252315	LOGIN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"auth_method":"openid-connect","auth_type":"code","response_type":"code","redirect_uri":"https://auth.local.test/auth/callback/account-ui","consent":"no_consent_required","code_id":"a4447c07-99b8-4337-828a-ca73a1456a1e","response_mode":"query","username":"swaragh092@gmail.com"}
-b09645bb-b2c8-4722-9a91-bb71f3b5f3ec	account-ui	\N	\N	172.18.0.9	e800c4cb-db3a-4a31-8496-6d3b373e78b4	a4447c07-99b8-4337-828a-ca73a1456a1e	1770982252390	CODE_TO_TOKEN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"token_id":"onrtac:dbc17b68-f9a7-414b-bc5f-4c38c2cccdec","grant_type":"authorization_code","refresh_token_type":"Refresh","scope":"openid email microprofile-jwt identity_provider_scope profile","refresh_token_id":"8b0f54d4-dca2-4fc5-84f2-e769532414d6","code_id":"a4447c07-99b8-4337-828a-ca73a1456a1e","client_auth_method":"client-secret"}
-2f060f57-bcb8-48c0-afbc-0868622aef01	new-token	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	a4447c07-99b8-4337-828a-ca73a1456a1e	1770982303505	LOGIN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"auth_method":"openid-connect","auth_type":"code","response_type":"code","redirect_uri":"https://auth.local.test/auth/callback/new-token","consent":"no_consent_required","code_id":"a4447c07-99b8-4337-828a-ca73a1456a1e","response_mode":"query","username":"swaragh092@gmail.com"}
-7be7b2ff-c16d-421b-bcc3-1aa6eb71c790	new-token	\N	\N	172.18.0.9	e800c4cb-db3a-4a31-8496-6d3b373e78b4	a4447c07-99b8-4337-828a-ca73a1456a1e	1770982303620	CODE_TO_TOKEN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"token_id":"onrtac:2181b1df-dfaf-4e96-9c2e-9cb5f899b8b7","grant_type":"authorization_code","refresh_token_type":"Refresh","scope":"openid email profile","refresh_token_id":"93e03e31-8891-43e1-a012-d7330e2cef78","code_id":"a4447c07-99b8-4337-828a-ca73a1456a1e","client_auth_method":"client-secret"}
-76f8f099-93bc-436f-9dc1-0829924a62f7	new-token	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	a4447c07-99b8-4337-828a-ca73a1456a1e	1770982659036	LOGIN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"auth_method":"openid-connect","auth_type":"code","response_type":"code","redirect_uri":"https://auth.local.test/auth/callback/new-token","consent":"no_consent_required","code_id":"a4447c07-99b8-4337-828a-ca73a1456a1e","response_mode":"query","username":"swaragh092@gmail.com"}
-8c88ef54-df6a-4d46-86da-3f42ca384257	new-token	\N	\N	172.18.0.9	e800c4cb-db3a-4a31-8496-6d3b373e78b4	a4447c07-99b8-4337-828a-ca73a1456a1e	1770982659749	CODE_TO_TOKEN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"token_id":"onrtac:7eca4c3d-1e6e-4a99-82de-ec1af9219f15","grant_type":"authorization_code","refresh_token_type":"Refresh","scope":"openid email profile","refresh_token_id":"7bbccba7-21a0-4aa0-8da2-c8d0c7561b37","code_id":"a4447c07-99b8-4337-828a-ca73a1456a1e","client_auth_method":"client-secret"}
-3bc3b2f4-20bd-41cd-9d00-504d41d4622b	account-ui	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	a4447c07-99b8-4337-828a-ca73a1456a1e	1770982679741	LOGIN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"auth_method":"openid-connect","auth_type":"code","response_type":"code","redirect_uri":"https://auth.local.test/auth/callback/account-ui","consent":"no_consent_required","code_id":"a4447c07-99b8-4337-828a-ca73a1456a1e","response_mode":"query","username":"swaragh092@gmail.com"}
-26a50d89-51f0-446c-ac75-12fd521804fe	account-ui	\N	\N	172.18.0.9	e800c4cb-db3a-4a31-8496-6d3b373e78b4	a4447c07-99b8-4337-828a-ca73a1456a1e	1770982680015	CODE_TO_TOKEN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"token_id":"onrtac:234a8f62-b18c-4fc8-813e-5291c04c8fbf","grant_type":"authorization_code","refresh_token_type":"Refresh","scope":"openid email microprofile-jwt identity_provider_scope profile","refresh_token_id":"7197ba87-7fee-4c03-bb0c-61e2fbd2f105","code_id":"a4447c07-99b8-4337-828a-ca73a1456a1e","client_auth_method":"client-secret"}
-43b9e18c-0c78-4938-983e-f04eb37ee367	account-ui	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	a4447c07-99b8-4337-828a-ca73a1456a1e	1770982688116	LOGIN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"auth_method":"openid-connect","auth_type":"code","response_type":"code","redirect_uri":"https://auth.local.test/auth/callback/account-ui","consent":"no_consent_required","code_id":"a4447c07-99b8-4337-828a-ca73a1456a1e","response_mode":"query","username":"swaragh092@gmail.com"}
-a42b129e-429c-42b1-b4a7-0917c5128f8d	account-ui	\N	\N	172.18.0.9	e800c4cb-db3a-4a31-8496-6d3b373e78b4	a4447c07-99b8-4337-828a-ca73a1456a1e	1770982688349	CODE_TO_TOKEN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"token_id":"onrtac:b12f4a53-620c-4dad-ad10-aa235529ab68","grant_type":"authorization_code","refresh_token_type":"Refresh","scope":"openid email microprofile-jwt identity_provider_scope profile","refresh_token_id":"f877b35d-7fa5-4594-ac0c-2b8e29a016d9","code_id":"a4447c07-99b8-4337-828a-ca73a1456a1e","client_auth_method":"client-secret"}
-5d2ae151-6b9d-4415-8f1e-71df6324dd84	new-token	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	60fb4d60-9d96-4026-89be-9ed7d8a91b1a	1771067008970	LOGIN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"auth_method":"openid-connect","auth_type":"code","response_type":"code","redirect_uri":"https://auth.local.test/auth/callback/new-token","consent":"no_consent_required","code_id":"60fb4d60-9d96-4026-89be-9ed7d8a91b1a","response_mode":"query","username":"swaragh092@gmail.com"}
-6bea4513-bc7e-408a-a38b-c6fbd66707bd	new-token	\N	\N	172.18.0.9	e800c4cb-db3a-4a31-8496-6d3b373e78b4	60fb4d60-9d96-4026-89be-9ed7d8a91b1a	1771067009743	CODE_TO_TOKEN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"token_id":"onrtac:e1dffc5d-1d2c-4810-bc0f-2f2019652d79","grant_type":"authorization_code","refresh_token_type":"Refresh","scope":"openid email profile","refresh_token_id":"53ab372f-0898-4088-ab7d-3ce4ddcb76ad","code_id":"60fb4d60-9d96-4026-89be-9ed7d8a91b1a","client_auth_method":"client-secret"}
-36b37eb8-c29e-4ac8-9134-2fdda6aac294	account-ui	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	8aa56eec-8656-4925-b5db-6c7b43960d1e	1770730134208	LOGIN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"auth_method":"openid-connect","auth_type":"code","response_type":"code","redirect_uri":"https://auth.local.test/auth/callback/account-ui","consent":"no_consent_required","code_id":"8aa56eec-8656-4925-b5db-6c7b43960d1e","response_mode":"query","username":"swaragh092@gmail.com"}
-eed59c04-33f2-488a-b6a7-6baee5894834	account-ui	\N	\N	172.18.0.10	e800c4cb-db3a-4a31-8496-6d3b373e78b4	8aa56eec-8656-4925-b5db-6c7b43960d1e	1770730134826	CODE_TO_TOKEN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"token_id":"onrtac:35853a2e-734c-48a9-af7f-c7cf99970838","grant_type":"authorization_code","refresh_token_type":"Refresh","scope":"openid email microprofile-jwt identity_provider_scope profile","refresh_token_id":"562001c8-d794-49be-8dcc-50894840b18b","code_id":"8aa56eec-8656-4925-b5db-6c7b43960d1e","client_auth_method":"client-secret"}
-c6a57254-3c84-43a2-8cb4-0810b84f4f7b	account-ui	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	b5622124-ea2e-4d21-be6d-3c74490a1c12	1770894807329	LOGIN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"auth_method":"openid-connect","auth_type":"code","response_type":"code","redirect_uri":"https://auth.local.test/auth/callback/account-ui","consent":"no_consent_required","code_id":"b5622124-ea2e-4d21-be6d-3c74490a1c12","response_mode":"query","username":"swaragh092@gmail.com"}
-2fd1f77f-30ee-4fd5-97e3-d3fd1b301c64	account-ui	\N	\N	172.18.0.8	e800c4cb-db3a-4a31-8496-6d3b373e78b4	b5622124-ea2e-4d21-be6d-3c74490a1c12	1770894821856	CODE_TO_TOKEN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"token_id":"onrtac:12d2a888-9ba8-4134-8bfc-b1606fc01f78","grant_type":"authorization_code","refresh_token_type":"Refresh","scope":"openid email microprofile-jwt identity_provider_scope profile","refresh_token_id":"20850003-b72c-4901-9a76-322315379acb","code_id":"b5622124-ea2e-4d21-be6d-3c74490a1c12","client_auth_method":"client-secret"}
-38d7185c-e9be-4e91-8f7d-2de0b1cc6014	account-ui	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	b5622124-ea2e-4d21-be6d-3c74490a1c12	1770895120303	LOGIN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"auth_method":"openid-connect","auth_type":"code","response_type":"code","redirect_uri":"https://auth.local.test/auth/callback/account-ui","consent":"no_consent_required","code_id":"b5622124-ea2e-4d21-be6d-3c74490a1c12","response_mode":"query","username":"swaragh092@gmail.com"}
-42a0b91b-ef1c-4fdc-9e62-07d8270ee2ba	account-ui	\N	\N	172.18.0.8	e800c4cb-db3a-4a31-8496-6d3b373e78b4	b5622124-ea2e-4d21-be6d-3c74490a1c12	1770895169366	CODE_TO_TOKEN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"token_id":"onrtac:48fc1f84-7b52-4a18-8575-70715a965a4a","grant_type":"authorization_code","refresh_token_type":"Refresh","scope":"openid email microprofile-jwt identity_provider_scope profile","refresh_token_id":"3845157a-43a3-4301-add9-a1770bd77a8a","code_id":"b5622124-ea2e-4d21-be6d-3c74490a1c12","client_auth_method":"client-secret"}
-0b994c98-ffd8-4449-b19d-da2fed873e39	account-ui	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	b5622124-ea2e-4d21-be6d-3c74490a1c12	1770896307855	LOGIN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"auth_method":"openid-connect","auth_type":"code","response_type":"code","redirect_uri":"https://auth.local.test/auth/callback/account-ui","consent":"no_consent_required","code_id":"b5622124-ea2e-4d21-be6d-3c74490a1c12","response_mode":"query","username":"swaragh092@gmail.com"}
-40a884af-d20c-4d8a-a3b0-16deaf3dd132	account-ui	\N	\N	172.18.0.8	e800c4cb-db3a-4a31-8496-6d3b373e78b4	b5622124-ea2e-4d21-be6d-3c74490a1c12	1770896310284	CODE_TO_TOKEN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"token_id":"onrtac:ae53b8bf-f7bb-4b60-a9f8-273d6a629e0c","grant_type":"authorization_code","refresh_token_type":"Refresh","scope":"openid email microprofile-jwt identity_provider_scope profile","refresh_token_id":"1770cfd5-7802-4250-a008-53c4fecd393b","code_id":"b5622124-ea2e-4d21-be6d-3c74490a1c12","client_auth_method":"client-secret"}
-0f234d58-ed79-42fd-8412-b2631fa22631	account-ui	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	b5622124-ea2e-4d21-be6d-3c74490a1c12	1770896823742	LOGIN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"auth_method":"openid-connect","auth_type":"code","response_type":"code","redirect_uri":"https://auth.local.test/auth/callback/account-ui","consent":"no_consent_required","code_id":"b5622124-ea2e-4d21-be6d-3c74490a1c12","response_mode":"query","username":"swaragh092@gmail.com"}
-a1cc0cc2-0f10-47c3-849a-5a51cd1137f7	account-ui	\N	\N	172.18.0.8	e800c4cb-db3a-4a31-8496-6d3b373e78b4	b5622124-ea2e-4d21-be6d-3c74490a1c12	1770896826061	CODE_TO_TOKEN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"token_id":"onrtac:eea82263-b05e-438d-bbcb-1dfb6c0d54b9","grant_type":"authorization_code","refresh_token_type":"Refresh","scope":"openid email microprofile-jwt identity_provider_scope profile","refresh_token_id":"69291ba5-184d-4d7a-b694-71aeb1cc5fe9","code_id":"b5622124-ea2e-4d21-be6d-3c74490a1c12","client_auth_method":"client-secret"}
-fed04a40-0585-4d94-ad66-ebe02331e576	token-test	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	b5622124-ea2e-4d21-be6d-3c74490a1c12	1770897512391	LOGIN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"auth_method":"openid-connect","auth_type":"code","response_type":"code","redirect_uri":"https://auth.local.test/auth/callback/token-test","consent":"no_consent_required","code_id":"b5622124-ea2e-4d21-be6d-3c74490a1c12","response_mode":"query","username":"swaragh092@gmail.com"}
-a33ccdea-469a-4cec-9b84-bbd6e5d7ad8c	token-test	\N	\N	172.18.0.8	e800c4cb-db3a-4a31-8496-6d3b373e78b4	b5622124-ea2e-4d21-be6d-3c74490a1c12	1770897512579	CODE_TO_TOKEN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"token_id":"onrtac:9d1ddcaf-ceae-4343-830f-390c8468af99","grant_type":"authorization_code","refresh_token_type":"Refresh","scope":"openid email profile","refresh_token_id":"8b90da7b-3dea-4d48-b0c1-89d28a7da4c2","code_id":"b5622124-ea2e-4d21-be6d-3c74490a1c12","client_auth_method":"client-secret"}
-8820c03e-2e60-4c36-a9e9-33b5e8bd0444	token-test	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	b5622124-ea2e-4d21-be6d-3c74490a1c12	1770897676829	LOGIN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"auth_method":"openid-connect","auth_type":"code","response_type":"code","redirect_uri":"https://auth.local.test/auth/callback/token-test","consent":"no_consent_required","code_id":"b5622124-ea2e-4d21-be6d-3c74490a1c12","response_mode":"query","username":"swaragh092@gmail.com"}
-6160ec5c-ce13-4f0d-8a4e-bacda224179f	token-test	\N	\N	172.18.0.8	e800c4cb-db3a-4a31-8496-6d3b373e78b4	b5622124-ea2e-4d21-be6d-3c74490a1c12	1770897676952	CODE_TO_TOKEN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"token_id":"onrtac:55ca39e8-2c5d-4eda-91aa-e4e6b77d8a2a","grant_type":"authorization_code","refresh_token_type":"Refresh","scope":"openid email profile","refresh_token_id":"c8549489-47b4-4b06-be5e-14f36d1d9c58","code_id":"b5622124-ea2e-4d21-be6d-3c74490a1c12","client_auth_method":"client-secret"}
-dec84368-8492-466a-8617-af23c78cf919	account-ui	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	8aa56eec-8656-4925-b5db-6c7b43960d1e	1770730168132	LOGIN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"auth_method":"openid-connect","auth_type":"code","response_type":"code","redirect_uri":"https://auth.local.test/auth/callback/account-ui","consent":"no_consent_required","code_id":"8aa56eec-8656-4925-b5db-6c7b43960d1e","response_mode":"query","username":"swaragh092@gmail.com"}
-9fe01ec8-0182-4e31-9178-c8928d843cfe	account-ui	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	b5622124-ea2e-4d21-be6d-3c74490a1c12	1770895111570	LOGIN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"auth_method":"openid-connect","auth_type":"code","response_type":"code","redirect_uri":"https://auth.local.test/auth/callback/account-ui","consent":"no_consent_required","code_id":"b5622124-ea2e-4d21-be6d-3c74490a1c12","response_mode":"query","username":"swaragh092@gmail.com"}
-4067b2a1-2b5b-478d-b8d1-791e778f0230	account-ui	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	40b68407-b208-4ea8-9eec-4adfbe05a7bd	1771050872538	LOGIN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"auth_method":"openid-connect","auth_type":"code","redirect_uri":"https://auth.local.test/auth/callback/account-ui","consent":"no_consent_required","code_id":"40b68407-b208-4ea8-9eec-4adfbe05a7bd","username":"swaragh092@gmail.com"}
-8940d7be-d143-4de4-baf1-469185e0939a	account-ui	\N	\N	172.18.0.9	e800c4cb-db3a-4a31-8496-6d3b373e78b4	40b68407-b208-4ea8-9eec-4adfbe05a7bd	1771050876517	CODE_TO_TOKEN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"token_id":"onrtac:8f430d52-d8cd-40e1-a25b-a46cd1204e37","grant_type":"authorization_code","refresh_token_type":"Refresh","scope":"openid email microprofile-jwt identity_provider_scope profile","refresh_token_id":"3ee3c335-36ea-4e3e-baee-80420dbb9c6e","code_id":"40b68407-b208-4ea8-9eec-4adfbe05a7bd","client_auth_method":"client-secret"}
-cb140493-072e-4bd9-9ebf-96102eecd125	account-ui	\N	invalid_user_credentials	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	\N	1771052313134	LOGIN_ERROR	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"auth_method":"openid-connect","auth_type":"code","redirect_uri":"https://auth.local.test/auth/callback/account-ui","code_id":"a9ad1368-3f06-4080-a042-5a61bc6ce5df","username":"swaragh092@gmail.com"}
-2b637e5d-50b9-46fe-9bb2-a1ecba8a0825	account-ui	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	a9ad1368-3f06-4080-a042-5a61bc6ce5df	1771052511743	LOGIN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"auth_method":"openid-connect","auth_type":"code","redirect_uri":"https://auth.local.test/auth/callback/account-ui","consent":"no_consent_required","code_id":"a9ad1368-3f06-4080-a042-5a61bc6ce5df","username":"swaragh092@gmail.com"}
-3568d007-aa8d-4b83-821d-c2549a938bf6	account-ui	\N	\N	172.18.0.9	e800c4cb-db3a-4a31-8496-6d3b373e78b4	a9ad1368-3f06-4080-a042-5a61bc6ce5df	1771052514886	CODE_TO_TOKEN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"token_id":"onrtac:5f9f3ac8-9055-4335-aa41-b1e40551c8c6","grant_type":"authorization_code","refresh_token_type":"Refresh","scope":"openid email microprofile-jwt identity_provider_scope profile","refresh_token_id":"3baf6855-8c96-47f9-90ec-c4f2b2389d0c","code_id":"a9ad1368-3f06-4080-a042-5a61bc6ce5df","client_auth_method":"client-secret"}
-2fbfade4-25d3-4b5e-a4da-ec31ba778a55	new-token	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	73078272-92d5-499d-b953-df66e7ec7812	1771072404371	LOGIN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"auth_method":"openid-connect","auth_type":"code","redirect_uri":"https://auth.local.test/auth/callback/new-token","consent":"no_consent_required","code_id":"73078272-92d5-499d-b953-df66e7ec7812","username":"swaragh092@gmail.com"}
-228a7083-7e6a-472e-9019-97c4110ced87	account-ui	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	73078272-92d5-499d-b953-df66e7ec7812	1771072437766	LOGIN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"auth_method":"openid-connect","auth_type":"code","response_type":"code","redirect_uri":"https://auth.local.test/auth/callback/account-ui","consent":"no_consent_required","code_id":"73078272-92d5-499d-b953-df66e7ec7812","response_mode":"query","username":"swaragh092@gmail.com"}
-528f56b4-d9c1-4e7f-a3e9-f2761f8b9fd9	account-ui	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	73078272-92d5-499d-b953-df66e7ec7812	1771072462209	LOGIN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"auth_method":"openid-connect","auth_type":"code","response_type":"code","redirect_uri":"https://auth.local.test/auth/callback/account-ui","consent":"no_consent_required","code_id":"73078272-92d5-499d-b953-df66e7ec7812","response_mode":"query","username":"swaragh092@gmail.com"}
-0eecb3ad-8455-4ddf-ad5d-deb730731fc7	account-ui	\N	\N	172.18.0.9	e800c4cb-db3a-4a31-8496-6d3b373e78b4	73078272-92d5-499d-b953-df66e7ec7812	1771072466004	CODE_TO_TOKEN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"token_id":"onrtac:12f4892f-8a80-4444-b35e-36255fb131e0","grant_type":"authorization_code","refresh_token_type":"Refresh","scope":"openid email microprofile-jwt identity_provider_scope profile","refresh_token_id":"0eb309f2-2808-4f58-ae20-f5de4a797471","code_id":"73078272-92d5-499d-b953-df66e7ec7812","client_auth_method":"client-secret"}
-020b87a4-2b47-475a-805b-59a6a23a7cbd	account-ui	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	73078272-92d5-499d-b953-df66e7ec7812	1771072472572	LOGIN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"auth_method":"openid-connect","auth_type":"code","response_type":"code","redirect_uri":"https://auth.local.test/auth/callback/account-ui","consent":"no_consent_required","code_id":"73078272-92d5-499d-b953-df66e7ec7812","response_mode":"query","username":"swaragh092@gmail.com"}
-1b5af263-b5c8-4d91-8694-91140795a8c1	account-ui	\N	\N	172.18.0.10	e800c4cb-db3a-4a31-8496-6d3b373e78b4	8aa56eec-8656-4925-b5db-6c7b43960d1e	1770730168403	CODE_TO_TOKEN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"token_id":"onrtac:b64028df-4c96-4fa7-9512-1d169180faaa","grant_type":"authorization_code","refresh_token_type":"Refresh","scope":"openid email microprofile-jwt identity_provider_scope profile","refresh_token_id":"445b0a24-d299-4945-b2f0-f717b1cf5108","code_id":"8aa56eec-8656-4925-b5db-6c7b43960d1e","client_auth_method":"client-secret"}
-fdc23111-b2a5-4798-b80e-e8a0999e37d3	account-ui	\N	\N	172.18.0.9	e800c4cb-db3a-4a31-8496-6d3b373e78b4	73078272-92d5-499d-b953-df66e7ec7812	1771072475019	CODE_TO_TOKEN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"token_id":"onrtac:74ca090e-bf17-4c08-8b70-6460d9674fd8","grant_type":"authorization_code","refresh_token_type":"Refresh","scope":"openid email microprofile-jwt identity_provider_scope profile","refresh_token_id":"629e67d1-285b-46c2-bd73-2339de8b731b","code_id":"73078272-92d5-499d-b953-df66e7ec7812","client_auth_method":"client-secret"}
-35d61904-5148-4f29-a4f7-3fdfea4d2701	new-token	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	73078272-92d5-499d-b953-df66e7ec7812	1771073049305	LOGIN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"auth_method":"openid-connect","auth_type":"code","response_type":"code","redirect_uri":"https://auth.local.test/auth/callback/new-token","consent":"no_consent_required","code_id":"73078272-92d5-499d-b953-df66e7ec7812","response_mode":"query","username":"swaragh092@gmail.com"}
-ffcb0ccb-1f47-4747-b342-bc1e1f2001fe	account-ui	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	2ee315e1-5b68-4284-8407-efa1b72302e3	1770874895581	LOGIN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"auth_method":"openid-connect","auth_type":"code","redirect_uri":"https://auth.local.test/auth/callback/account-ui","consent":"no_consent_required","code_id":"2ee315e1-5b68-4284-8407-efa1b72302e3","username":"swaragh092@gmail.com"}
-bd133f26-8b16-4bfb-86df-bf5fc5d7626d	account-ui	\N	\N	172.18.0.6	e800c4cb-db3a-4a31-8496-6d3b373e78b4	2ee315e1-5b68-4284-8407-efa1b72302e3	1770874895956	CODE_TO_TOKEN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"token_id":"onrtac:83dfde90-ae0e-4982-9c11-a0a217a24f8e","grant_type":"authorization_code","refresh_token_type":"Refresh","scope":"openid email microprofile-jwt identity_provider_scope profile","refresh_token_id":"df0cb5ea-9731-4a83-8733-849913c63c8f","code_id":"2ee315e1-5b68-4284-8407-efa1b72302e3","client_auth_method":"client-secret"}
-e7551b7b-8f6d-4c64-8e38-c1c3aa9a921a	account-ui	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	2ee315e1-5b68-4284-8407-efa1b72302e3	1770875721113	LOGIN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"auth_method":"openid-connect","auth_type":"code","response_type":"code","redirect_uri":"https://auth.local.test/auth/callback/account-ui","consent":"no_consent_required","code_id":"2ee315e1-5b68-4284-8407-efa1b72302e3","response_mode":"query","username":"swaragh092@gmail.com"}
-7e788fdc-26a2-43f9-892c-0b24e9226003	account-ui	\N	\N	172.18.0.6	e800c4cb-db3a-4a31-8496-6d3b373e78b4	2ee315e1-5b68-4284-8407-efa1b72302e3	1770875721664	CODE_TO_TOKEN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"token_id":"onrtac:b9e1bc40-87fb-4272-b50a-f6e198d7574f","grant_type":"authorization_code","refresh_token_type":"Refresh","scope":"openid email microprofile-jwt identity_provider_scope profile","refresh_token_id":"98299062-deb2-4c3e-91da-2c235fc326f7","code_id":"2ee315e1-5b68-4284-8407-efa1b72302e3","client_auth_method":"client-secret"}
-c974c3b3-68b7-43f4-9c10-c8c7636c75e0	token-test	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	f09785a2-1c99-45ce-9ed2-fd392dd32245	1770897821540	LOGIN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"auth_method":"openid-connect","auth_type":"code","redirect_uri":"https://auth.local.test/auth/callback/token-test","consent":"no_consent_required","code_id":"f09785a2-1c99-45ce-9ed2-fd392dd32245","username":"swaragh092@gmail.com"}
-1d968277-bb35-4c23-a9b5-db00e8d768ca	token-test	\N	\N	172.18.0.8	e800c4cb-db3a-4a31-8496-6d3b373e78b4	f09785a2-1c99-45ce-9ed2-fd392dd32245	1770897821691	CODE_TO_TOKEN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"token_id":"onrtac:c9bf5924-bc50-4c18-94de-02f9daba4159","grant_type":"authorization_code","refresh_token_type":"Refresh","scope":"openid email profile","refresh_token_id":"0953c652-8a01-46db-9534-a5f83bd959d1","code_id":"f09785a2-1c99-45ce-9ed2-fd392dd32245","client_auth_method":"client-secret"}
-2f557a9b-bf61-41ec-bc34-670600f1c1bb	token-test	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	f09785a2-1c99-45ce-9ed2-fd392dd32245	1770898018447	LOGIN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"auth_method":"openid-connect","auth_type":"code","response_type":"code","redirect_uri":"https://auth.local.test/auth/callback/token-test","consent":"no_consent_required","code_id":"f09785a2-1c99-45ce-9ed2-fd392dd32245","response_mode":"query","username":"swaragh092@gmail.com"}
-491a3eba-20d1-4c59-9594-e4a5d2ef4053	token-test	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	f09785a2-1c99-45ce-9ed2-fd392dd32245	1770898030545	LOGIN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"auth_method":"openid-connect","auth_type":"code","response_type":"code","redirect_uri":"https://auth.local.test/auth/callback/token-test","consent":"no_consent_required","code_id":"f09785a2-1c99-45ce-9ed2-fd392dd32245","response_mode":"query","username":"swaragh092@gmail.com"}
-498b184b-b14b-4f38-b634-7aa3de41b058	token-test	\N	\N	172.18.0.8	e800c4cb-db3a-4a31-8496-6d3b373e78b4	f09785a2-1c99-45ce-9ed2-fd392dd32245	1770898030734	CODE_TO_TOKEN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"token_id":"onrtac:0f17a0f3-5628-434c-812d-fb5e66499b4e","grant_type":"authorization_code","refresh_token_type":"Refresh","scope":"openid email profile","refresh_token_id":"29b26b0f-113d-4dcf-ab9d-c1f2ce999120","code_id":"f09785a2-1c99-45ce-9ed2-fd392dd32245","client_auth_method":"client-secret"}
-fc82f250-1a26-4119-bfc4-5133b1cd93cb	account-ui	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	5a955f45-0134-4ec6-8da7-1cd4cdf2e982	1771060048887	LOGIN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"auth_method":"openid-connect","auth_type":"code","redirect_uri":"https://auth.local.test/auth/callback/account-ui","consent":"no_consent_required","code_id":"5a955f45-0134-4ec6-8da7-1cd4cdf2e982","username":"swaragh092@gmail.com"}
-f928b1d5-ef0a-4514-aa29-11e732c7791e	account-ui	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	5a955f45-0134-4ec6-8da7-1cd4cdf2e982	1771060060854	LOGIN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"auth_method":"openid-connect","auth_type":"code","response_type":"code","redirect_uri":"https://auth.local.test/auth/callback/account-ui","consent":"no_consent_required","code_id":"5a955f45-0134-4ec6-8da7-1cd4cdf2e982","response_mode":"query","username":"swaragh092@gmail.com"}
-9edac549-3bae-4d9c-8d97-8b7e1833dff0	new-token	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	5a955f45-0134-4ec6-8da7-1cd4cdf2e982	1771060130810	LOGIN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"auth_method":"openid-connect","auth_type":"code","response_type":"code","redirect_uri":"https://auth.local.test/auth/callback/new-token","consent":"no_consent_required","code_id":"5a955f45-0134-4ec6-8da7-1cd4cdf2e982","response_mode":"query","username":"swaragh092@gmail.com"}
-7a8a29ab-ce72-46d6-82c3-2881d64c5bea	new-token	\N	\N	172.18.0.9	e800c4cb-db3a-4a31-8496-6d3b373e78b4	5a955f45-0134-4ec6-8da7-1cd4cdf2e982	1771060135069	CODE_TO_TOKEN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"token_id":"onrtac:71332f61-abb6-4e46-b31d-ea6d1524a2a8","grant_type":"authorization_code","refresh_token_type":"Refresh","scope":"openid email profile","refresh_token_id":"9d3d6cf6-59e0-4aaf-bdc0-0e888d8e60f4","code_id":"5a955f45-0134-4ec6-8da7-1cd4cdf2e982","client_auth_method":"client-secret"}
-e6da5ca7-34b2-49eb-b8fa-6b7bbfc11101	account-ui	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	5a955f45-0134-4ec6-8da7-1cd4cdf2e982	1771060145766	LOGIN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"auth_method":"openid-connect","auth_type":"code","response_type":"code","redirect_uri":"https://auth.local.test/auth/callback/account-ui","consent":"no_consent_required","code_id":"5a955f45-0134-4ec6-8da7-1cd4cdf2e982","response_mode":"query","username":"swaragh092@gmail.com"}
-02005418-6dce-401e-905f-e9c4bbdbed20	account-ui	\N	\N	172.18.0.9	e800c4cb-db3a-4a31-8496-6d3b373e78b4	5a955f45-0134-4ec6-8da7-1cd4cdf2e982	1771060147694	CODE_TO_TOKEN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"token_id":"onrtac:915b3ae6-cc5d-45c5-914c-4a96d957ef76","grant_type":"authorization_code","refresh_token_type":"Refresh","scope":"openid email microprofile-jwt identity_provider_scope profile","refresh_token_id":"5a5b7442-6cdd-4992-ad36-f67fd7b73145","code_id":"5a955f45-0134-4ec6-8da7-1cd4cdf2e982","client_auth_method":"client-secret"}
-932a9bb2-2772-4d4c-8392-1313c8bb90ca	account-ui	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	2ee315e1-5b68-4284-8407-efa1b72302e3	1770876720181	LOGIN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"auth_method":"openid-connect","auth_type":"code","response_type":"code","redirect_uri":"https://auth.local.test/auth/callback/account-ui","consent":"no_consent_required","code_id":"2ee315e1-5b68-4284-8407-efa1b72302e3","response_mode":"query","username":"swaragh092@gmail.com"}
-230f83c9-cbbd-4ca3-aca2-f23b07002041	account-ui	\N	\N	172.18.0.6	e800c4cb-db3a-4a31-8496-6d3b373e78b4	2ee315e1-5b68-4284-8407-efa1b72302e3	1770876757166	CODE_TO_TOKEN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"token_id":"onrtac:05177aad-b32f-4553-a967-72221002f29f","grant_type":"authorization_code","refresh_token_type":"Refresh","scope":"openid email microprofile-jwt identity_provider_scope profile","refresh_token_id":"f2fde22c-aac5-4802-80d2-1f350339fe28","code_id":"2ee315e1-5b68-4284-8407-efa1b72302e3","client_auth_method":"client-secret"}
-eb61a025-f8fc-4b0b-8784-b48bd933cf4d	account-ui	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	3c8271e6-c05d-439d-88f9-2aa375c9476f	1770977549679	LOGIN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"auth_method":"openid-connect","auth_type":"code","redirect_uri":"https://auth.local.test/auth/callback/account-ui","consent":"no_consent_required","code_id":"3c8271e6-c05d-439d-88f9-2aa375c9476f","username":"swaragh092@gmail.com"}
-72ec831b-5131-4ed2-8775-533e5646e04a	account-ui	\N	expired_code	172.18.0.9	e800c4cb-db3a-4a31-8496-6d3b373e78b4	3c8271e6-c05d-439d-88f9-2aa375c9476f	1770977619505	CODE_TO_TOKEN_ERROR	\N	{"grant_type":"authorization_code","code_id":"3c8271e6-c05d-439d-88f9-2aa375c9476f","client_auth_method":"client-secret"}
-5fe5925e-7f18-44ea-8d21-cf10f9f2520e	account-ui	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	3c8271e6-c05d-439d-88f9-2aa375c9476f	1770977636494	LOGIN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"auth_method":"openid-connect","auth_type":"code","response_type":"code","redirect_uri":"https://auth.local.test/auth/callback/account-ui","consent":"no_consent_required","code_id":"3c8271e6-c05d-439d-88f9-2aa375c9476f","response_mode":"query","username":"swaragh092@gmail.com"}
-1b49bd28-9423-4d01-b4cb-1fdfb009d3f5	account-ui	\N	\N	172.18.0.9	e800c4cb-db3a-4a31-8496-6d3b373e78b4	3c8271e6-c05d-439d-88f9-2aa375c9476f	1770977642106	CODE_TO_TOKEN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"token_id":"onrtac:f0b2de2a-a920-4994-97f4-f57a77947452","grant_type":"authorization_code","refresh_token_type":"Refresh","scope":"openid email microprofile-jwt identity_provider_scope profile","refresh_token_id":"a7bfc2c2-58eb-4390-87d1-d06381449f03","code_id":"3c8271e6-c05d-439d-88f9-2aa375c9476f","client_auth_method":"client-secret"}
-7d85a92a-ff41-468b-a68b-77fee72d460a	account-ui	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	5a955f45-0134-4ec6-8da7-1cd4cdf2e982	1771060213923	LOGIN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"auth_method":"openid-connect","auth_type":"code","response_type":"code","redirect_uri":"https://auth.local.test/auth/callback/account-ui","consent":"no_consent_required","code_id":"5a955f45-0134-4ec6-8da7-1cd4cdf2e982","response_mode":"query","username":"swaragh092@gmail.com"}
-17d25f89-5914-4ad6-b2fd-6c613497434a	account-ui	\N	\N	172.18.0.9	e800c4cb-db3a-4a31-8496-6d3b373e78b4	5a955f45-0134-4ec6-8da7-1cd4cdf2e982	1771060214146	CODE_TO_TOKEN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"token_id":"onrtac:c93ba6f5-b5d6-4099-8d61-62253d9c1fe6","grant_type":"authorization_code","refresh_token_type":"Refresh","scope":"openid email microprofile-jwt identity_provider_scope profile","refresh_token_id":"228c7551-f8ab-48b4-9f76-25375853d2a4","code_id":"5a955f45-0134-4ec6-8da7-1cd4cdf2e982","client_auth_method":"client-secret"}
-efad5310-0834-499e-8493-3c3450f68646	new-token	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	5a955f45-0134-4ec6-8da7-1cd4cdf2e982	1771060231577	LOGIN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"auth_method":"openid-connect","auth_type":"code","response_type":"code","redirect_uri":"https://auth.local.test/auth/callback/new-token","consent":"no_consent_required","code_id":"5a955f45-0134-4ec6-8da7-1cd4cdf2e982","response_mode":"query","username":"swaragh092@gmail.com"}
-361db0b0-41c3-48db-8b10-4140e65bbba5	new-token	\N	\N	172.18.0.9	e800c4cb-db3a-4a31-8496-6d3b373e78b4	5a955f45-0134-4ec6-8da7-1cd4cdf2e982	1771060231873	CODE_TO_TOKEN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"token_id":"onrtac:a5ec5f62-023c-4ce9-9c3b-7230d227744e","grant_type":"authorization_code","refresh_token_type":"Refresh","scope":"openid email profile","refresh_token_id":"6fbe37ae-f695-46de-b753-fb67265f3bc0","code_id":"5a955f45-0134-4ec6-8da7-1cd4cdf2e982","client_auth_method":"client-secret"}
-a77bdf2d-0806-4b40-8114-e36e66816351	account-ui	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	5a955f45-0134-4ec6-8da7-1cd4cdf2e982	1771060244036	LOGIN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"auth_method":"openid-connect","auth_type":"code","response_type":"code","redirect_uri":"https://auth.local.test/auth/callback/account-ui","consent":"no_consent_required","code_id":"5a955f45-0134-4ec6-8da7-1cd4cdf2e982","response_mode":"query","username":"swaragh092@gmail.com"}
-fff9c0e0-09b1-4604-941c-3af933a05ff1	account-ui	\N	\N	172.18.0.9	e800c4cb-db3a-4a31-8496-6d3b373e78b4	5a955f45-0134-4ec6-8da7-1cd4cdf2e982	1771060244300	CODE_TO_TOKEN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"token_id":"onrtac:1b6788a7-6bf0-4b02-97ee-4cb6bc420a9f","grant_type":"authorization_code","refresh_token_type":"Refresh","scope":"openid email microprofile-jwt identity_provider_scope profile","refresh_token_id":"9546da4c-5963-4466-9040-a370b98cc891","code_id":"5a955f45-0134-4ec6-8da7-1cd4cdf2e982","client_auth_method":"client-secret"}
-fb188f74-93dc-4dfa-8e03-f7d0a02f640e	new-token	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	50f0c2fe-7bfd-4d74-be41-0ab5902936a6	1771065876003	LOGIN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"auth_method":"openid-connect","auth_type":"code","redirect_uri":"https://auth.local.test/auth/callback/new-token","consent":"no_consent_required","code_id":"50f0c2fe-7bfd-4d74-be41-0ab5902936a6","username":"swaragh092@gmail.com"}
-ce120f37-06ad-4236-a554-e2352279a2f6	new-token	\N	\N	172.18.0.9	e800c4cb-db3a-4a31-8496-6d3b373e78b4	50f0c2fe-7bfd-4d74-be41-0ab5902936a6	1771065876219	CODE_TO_TOKEN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"token_id":"onrtac:6fb773b6-1b20-40f9-9eb4-b69a36ccb7a9","grant_type":"authorization_code","refresh_token_type":"Refresh","scope":"openid email profile","refresh_token_id":"e9321ef2-bbe2-4742-9c97-4be32e488f93","code_id":"50f0c2fe-7bfd-4d74-be41-0ab5902936a6","client_auth_method":"client-secret"}
-ccdd16a2-0727-4efc-8a80-229328d33ab6	account-ui	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	50f0c2fe-7bfd-4d74-be41-0ab5902936a6	1771065885696	LOGIN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"auth_method":"openid-connect","auth_type":"code","response_type":"code","redirect_uri":"https://auth.local.test/auth/callback/account-ui","consent":"no_consent_required","code_id":"50f0c2fe-7bfd-4d74-be41-0ab5902936a6","response_mode":"query","username":"swaragh092@gmail.com"}
-75f72198-5437-483e-9b19-22aca5c508c6	account-ui	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	2ee315e1-5b68-4284-8407-efa1b72302e3	1770876965023	LOGIN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"auth_method":"openid-connect","auth_type":"code","response_type":"code","redirect_uri":"https://auth.local.test/auth/callback/account-ui","consent":"no_consent_required","code_id":"2ee315e1-5b68-4284-8407-efa1b72302e3","response_mode":"query","username":"swaragh092@gmail.com"}
-3fdbda82-5909-4f1c-bfca-3614c17a4802	account-ui	\N	\N	172.18.0.6	e800c4cb-db3a-4a31-8496-6d3b373e78b4	2ee315e1-5b68-4284-8407-efa1b72302e3	1770876965444	CODE_TO_TOKEN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"token_id":"onrtac:0d62145b-682a-4442-b373-23e5d9ff3cf7","grant_type":"authorization_code","refresh_token_type":"Refresh","scope":"openid email microprofile-jwt identity_provider_scope profile","refresh_token_id":"35a60599-c145-47fd-892d-3c5dce210b66","code_id":"2ee315e1-5b68-4284-8407-efa1b72302e3","client_auth_method":"client-secret"}
-c61fe437-0f51-404c-8dd8-827f079dc039	account-ui	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	2ee315e1-5b68-4284-8407-efa1b72302e3	1770877151595	LOGIN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"auth_method":"openid-connect","auth_type":"code","response_type":"code","redirect_uri":"https://auth.local.test/auth/callback/account-ui","consent":"no_consent_required","code_id":"2ee315e1-5b68-4284-8407-efa1b72302e3","response_mode":"query","username":"swaragh092@gmail.com"}
-8627c8c4-8c30-44ed-b876-b1e27c81c483	account-ui	\N	\N	172.18.0.6	e800c4cb-db3a-4a31-8496-6d3b373e78b4	2ee315e1-5b68-4284-8407-efa1b72302e3	1770877151840	CODE_TO_TOKEN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"token_id":"onrtac:10a873c7-533e-4fca-a1af-c71cb8333d6c","grant_type":"authorization_code","refresh_token_type":"Refresh","scope":"openid email microprofile-jwt identity_provider_scope profile","refresh_token_id":"73581bcb-3ca3-417b-b424-e6f499b75f96","code_id":"2ee315e1-5b68-4284-8407-efa1b72302e3","client_auth_method":"client-secret"}
-3e236134-3085-49f0-b1f4-25b438530ffa	account-ui	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	2ee315e1-5b68-4284-8407-efa1b72302e3	1770877529541	LOGIN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"auth_method":"openid-connect","auth_type":"code","response_type":"code","redirect_uri":"https://auth.local.test/auth/callback/account-ui","consent":"no_consent_required","code_id":"2ee315e1-5b68-4284-8407-efa1b72302e3","response_mode":"query","username":"swaragh092@gmail.com"}
-634b97ad-1120-4cf0-b1ef-9c6d3542403d	account-ui	\N	\N	172.18.0.6	e800c4cb-db3a-4a31-8496-6d3b373e78b4	2ee315e1-5b68-4284-8407-efa1b72302e3	1770877531230	CODE_TO_TOKEN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"token_id":"onrtac:17d83447-af9d-46e8-9200-6febd4afa4d3","grant_type":"authorization_code","refresh_token_type":"Refresh","scope":"openid email microprofile-jwt identity_provider_scope profile","refresh_token_id":"ceb4ebbd-970f-480d-b903-2c5f5ec17190","code_id":"2ee315e1-5b68-4284-8407-efa1b72302e3","client_auth_method":"client-secret"}
-d9c4c667-f9f1-4269-86d4-6d3cdcfedd7c	account-ui	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	3c8271e6-c05d-439d-88f9-2aa375c9476f	1770978982074	LOGIN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"auth_method":"openid-connect","auth_type":"code","response_type":"code","redirect_uri":"https://auth.local.test/auth/callback/account-ui","consent":"no_consent_required","code_id":"3c8271e6-c05d-439d-88f9-2aa375c9476f","response_mode":"query","username":"swaragh092@gmail.com"}
-3d7809a1-4051-4f6e-9c30-ee7116da16ab	account-ui	\N	\N	172.18.0.9	e800c4cb-db3a-4a31-8496-6d3b373e78b4	3c8271e6-c05d-439d-88f9-2aa375c9476f	1770978982283	CODE_TO_TOKEN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"token_id":"onrtac:2f5f6176-31b6-4cf7-a5ae-80ad833d2ce3","grant_type":"authorization_code","refresh_token_type":"Refresh","scope":"openid email microprofile-jwt identity_provider_scope profile","refresh_token_id":"d2962f2b-69ef-4b50-a0cd-3484ab19a2c6","code_id":"3c8271e6-c05d-439d-88f9-2aa375c9476f","client_auth_method":"client-secret"}
-28c97511-43f0-494b-97a8-bc654e94c798	account-ui	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	3c8271e6-c05d-439d-88f9-2aa375c9476f	1770979478699	LOGIN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"auth_method":"openid-connect","auth_type":"code","response_type":"code","redirect_uri":"https://auth.local.test/auth/callback/account-ui","consent":"no_consent_required","code_id":"3c8271e6-c05d-439d-88f9-2aa375c9476f","response_mode":"query","username":"swaragh092@gmail.com"}
-04c1da99-e53d-4168-9938-51b699f62288	account-ui	\N	\N	172.18.0.9	e800c4cb-db3a-4a31-8496-6d3b373e78b4	3c8271e6-c05d-439d-88f9-2aa375c9476f	1770979479156	CODE_TO_TOKEN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"token_id":"onrtac:f81f1e07-2038-4823-bfe4-7ab30e12cefc","grant_type":"authorization_code","refresh_token_type":"Refresh","scope":"openid email microprofile-jwt identity_provider_scope profile","refresh_token_id":"51a1ee83-5a86-49cc-ad8f-3d1a5dabfb68","code_id":"3c8271e6-c05d-439d-88f9-2aa375c9476f","client_auth_method":"client-secret"}
-7d2ce23c-b128-412a-bd09-ce38296aea55	account-ui	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	48e9042d-6254-496f-be66-dcce187ebbd8	1770979588711	LOGIN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"auth_method":"openid-connect","auth_type":"code","redirect_uri":"https://auth.local.test/auth/callback/account-ui","consent":"no_consent_required","code_id":"48e9042d-6254-496f-be66-dcce187ebbd8","username":"swaragh092@gmail.com"}
-02a28cbe-00b1-4fcd-870f-aaacca1dfa4c	account-ui	\N	\N	172.18.0.9	e800c4cb-db3a-4a31-8496-6d3b373e78b4	48e9042d-6254-496f-be66-dcce187ebbd8	1770979588963	CODE_TO_TOKEN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"token_id":"onrtac:29c112c7-ddc0-4677-bf3a-3735d39dd02c","grant_type":"authorization_code","refresh_token_type":"Refresh","scope":"openid email microprofile-jwt identity_provider_scope profile","refresh_token_id":"10e930b2-99d3-4c27-a6cc-142ed2e448c2","code_id":"48e9042d-6254-496f-be66-dcce187ebbd8","client_auth_method":"client-secret"}
-12027b89-ffb4-4a82-b5bc-010d332e1725	account-ui	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	48e9042d-6254-496f-be66-dcce187ebbd8	1770980392774	LOGIN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"auth_method":"openid-connect","auth_type":"code","response_type":"code","redirect_uri":"https://auth.local.test/auth/callback/account-ui","consent":"no_consent_required","code_id":"48e9042d-6254-496f-be66-dcce187ebbd8","response_mode":"query","username":"swaragh092@gmail.com"}
-1b5806ca-0ac4-495c-9d80-53efcd52cc45	account-ui	\N	\N	172.18.0.9	e800c4cb-db3a-4a31-8496-6d3b373e78b4	48e9042d-6254-496f-be66-dcce187ebbd8	1770980394949	CODE_TO_TOKEN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"token_id":"onrtac:bbea8879-566b-40ef-a61c-09913442ed72","grant_type":"authorization_code","refresh_token_type":"Refresh","scope":"openid email microprofile-jwt identity_provider_scope profile","refresh_token_id":"d7f745ea-70fc-4bf0-a81c-20573f39de6f","code_id":"48e9042d-6254-496f-be66-dcce187ebbd8","client_auth_method":"client-secret"}
-2309346b-0a95-45fc-a9a0-73470f0ef5ce	new-token	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	88ccf324-60a3-4ba8-a688-0bafc7ac8f35	1770981133045	LOGIN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"auth_method":"openid-connect","auth_type":"code","redirect_uri":"https://auth.local.test/auth/callback/new-token","consent":"no_consent_required","code_id":"88ccf324-60a3-4ba8-a688-0bafc7ac8f35","username":"swaragh092@gmail.com"}
-2dd84a0d-2a79-47b9-a821-1ac96395b085	account-ui	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	2ee315e1-5b68-4284-8407-efa1b72302e3	1770878618550	LOGIN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"auth_method":"openid-connect","auth_type":"code","response_type":"code","redirect_uri":"https://auth.local.test/auth/callback/account-ui","consent":"no_consent_required","code_id":"2ee315e1-5b68-4284-8407-efa1b72302e3","response_mode":"query","username":"swaragh092@gmail.com"}
-cfce99e6-4034-4b5e-b97c-b37d67d6a3ed	account-ui	\N	\N	172.18.0.6	e800c4cb-db3a-4a31-8496-6d3b373e78b4	2ee315e1-5b68-4284-8407-efa1b72302e3	1770878618849	CODE_TO_TOKEN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"token_id":"onrtac:bcce3239-3803-4dc3-b010-7f5162112d48","grant_type":"authorization_code","refresh_token_type":"Refresh","scope":"openid email microprofile-jwt identity_provider_scope profile","refresh_token_id":"76849bce-851d-4ceb-b25d-27037736f727","code_id":"2ee315e1-5b68-4284-8407-efa1b72302e3","client_auth_method":"client-secret"}
-f293686d-b478-44ef-96a6-aa87df9586e8	new-token	\N	\N	172.18.0.9	e800c4cb-db3a-4a31-8496-6d3b373e78b4	88ccf324-60a3-4ba8-a688-0bafc7ac8f35	1770981133458	CODE_TO_TOKEN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"token_id":"onrtac:c2af779f-8200-4768-ba6a-062478c983a3","grant_type":"authorization_code","refresh_token_type":"Refresh","scope":"openid email profile","refresh_token_id":"a1ec9c8c-96f4-4994-8aa2-80e84c7fb168","code_id":"88ccf324-60a3-4ba8-a688-0bafc7ac8f35","client_auth_method":"client-secret"}
-494ba2ef-73e4-4004-8956-d8a52ceb68d6	account-ui	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	88ccf324-60a3-4ba8-a688-0bafc7ac8f35	1770981152395	LOGIN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"auth_method":"openid-connect","auth_type":"code","response_type":"code","redirect_uri":"https://auth.local.test/auth/callback/account-ui","consent":"no_consent_required","code_id":"88ccf324-60a3-4ba8-a688-0bafc7ac8f35","response_mode":"query","username":"swaragh092@gmail.com"}
-cab17cd5-d623-4b23-a2d5-839fd83d53da	account-ui	\N	\N	172.18.0.9	e800c4cb-db3a-4a31-8496-6d3b373e78b4	88ccf324-60a3-4ba8-a688-0bafc7ac8f35	1770981152685	CODE_TO_TOKEN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"token_id":"onrtac:b97560c8-fb1b-4fe4-a57f-e6f8ac974693","grant_type":"authorization_code","refresh_token_type":"Refresh","scope":"openid email microprofile-jwt identity_provider_scope profile","refresh_token_id":"2c87fcd5-26cd-473f-8bc7-9e8d47a1d2cb","code_id":"88ccf324-60a3-4ba8-a688-0bafc7ac8f35","client_auth_method":"client-secret"}
-d2639fd8-df3a-4077-a6c1-7c8808d89434	new-token	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	5a955f45-0134-4ec6-8da7-1cd4cdf2e982	1771065470995	LOGIN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"auth_method":"openid-connect","auth_type":"code","response_type":"code","redirect_uri":"https://auth.local.test/auth/callback/new-token","consent":"no_consent_required","code_id":"5a955f45-0134-4ec6-8da7-1cd4cdf2e982","response_mode":"query","username":"swaragh092@gmail.com"}
-6d346f50-23d5-45dd-b2dd-349f2d7d63df	new-token	\N	\N	172.18.0.9	e800c4cb-db3a-4a31-8496-6d3b373e78b4	5a955f45-0134-4ec6-8da7-1cd4cdf2e982	1771065472678	CODE_TO_TOKEN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"token_id":"onrtac:b28742ea-968e-4c40-8ebe-15b04fbba753","grant_type":"authorization_code","refresh_token_type":"Refresh","scope":"openid email profile","refresh_token_id":"dcef17db-9680-4251-b4cd-a9dc5f87a265","code_id":"5a955f45-0134-4ec6-8da7-1cd4cdf2e982","client_auth_method":"client-secret"}
-f317701f-ee65-452d-b25b-4077b46299dc	new-token	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	73078272-92d5-499d-b953-df66e7ec7812	1771072441520	LOGIN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"auth_method":"openid-connect","auth_type":"code","response_type":"code","redirect_uri":"https://auth.local.test/auth/callback/new-token","consent":"no_consent_required","code_id":"73078272-92d5-499d-b953-df66e7ec7812","response_mode":"query","username":"swaragh092@gmail.com"}
-d3474416-1f8f-48cb-9fef-94e6918597d1	account-ui	\N	\N	172.18.0.9	e800c4cb-db3a-4a31-8496-6d3b373e78b4	73078272-92d5-499d-b953-df66e7ec7812	1771072447964	CODE_TO_TOKEN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"token_id":"onrtac:223aeef1-d266-40ef-ac8d-de495479d160","grant_type":"authorization_code","refresh_token_type":"Refresh","scope":"openid email microprofile-jwt identity_provider_scope profile","refresh_token_id":"24921b97-7d3e-44c5-aafc-6bc271b5415b","code_id":"73078272-92d5-499d-b953-df66e7ec7812","client_auth_method":"client-secret"}
-7d339b87-19b5-4877-b3a4-9b4dd9d21bbe	new-token	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	ddeec69d-3cb0-43b3-b866-f5f6a5861fc1	1771073602069	LOGIN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"auth_method":"openid-connect","auth_type":"code","response_type":"code","redirect_uri":"https://auth.local.test/auth/callback/new-token","consent":"no_consent_required","code_id":"ddeec69d-3cb0-43b3-b866-f5f6a5861fc1","response_mode":"query","username":"swaragh092@gmail.com"}
-339313b9-c434-48bc-951b-343a7836a202	new-token	\N	\N	172.18.0.9	e800c4cb-db3a-4a31-8496-6d3b373e78b4	ddeec69d-3cb0-43b3-b866-f5f6a5861fc1	1771073602322	CODE_TO_TOKEN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"token_id":"onrtac:d6ae5d80-c71a-42cb-ab64-cb1971825212","grant_type":"authorization_code","refresh_token_type":"Refresh","scope":"openid email profile","refresh_token_id":"5667d042-ffb1-4c05-8067-93d7cefada86","code_id":"ddeec69d-3cb0-43b3-b866-f5f6a5861fc1","client_auth_method":"client-secret"}
-38afdcc4-7251-45b8-8d6c-2a453d16f930	account-ui	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	ddeec69d-3cb0-43b3-b866-f5f6a5861fc1	1771073859537	LOGIN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"auth_method":"openid-connect","auth_type":"code","response_type":"code","redirect_uri":"https://auth.local.test/auth/callback/account-ui","consent":"no_consent_required","code_id":"ddeec69d-3cb0-43b3-b866-f5f6a5861fc1","response_mode":"query","username":"swaragh092@gmail.com"}
-73a4b4ce-e6df-41ca-8ad5-48e3a8afb303	account-ui	\N	\N	172.18.0.9	e800c4cb-db3a-4a31-8496-6d3b373e78b4	ddeec69d-3cb0-43b3-b866-f5f6a5861fc1	1771073859724	CODE_TO_TOKEN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"token_id":"onrtac:328489f5-2d6a-4a44-8e83-b40286317c2c","grant_type":"authorization_code","refresh_token_type":"Refresh","scope":"openid email microprofile-jwt identity_provider_scope profile","refresh_token_id":"c4510fc3-a46d-47f1-8790-7f216db1d8d1","code_id":"ddeec69d-3cb0-43b3-b866-f5f6a5861fc1","client_auth_method":"client-secret"}
-0417b55b-a48f-4e43-b9d8-a507a325e34a	account-ui	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	2ee315e1-5b68-4284-8407-efa1b72302e3	1770879472713	LOGIN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"auth_method":"openid-connect","auth_type":"code","response_type":"code","redirect_uri":"https://auth.local.test/auth/callback/account-ui","consent":"no_consent_required","code_id":"2ee315e1-5b68-4284-8407-efa1b72302e3","response_mode":"query","username":"swaragh092@gmail.com"}
-042629c8-bc68-46e1-82cc-2226d54844a4	account-ui	\N	\N	172.18.0.6	e800c4cb-db3a-4a31-8496-6d3b373e78b4	2ee315e1-5b68-4284-8407-efa1b72302e3	1770879473223	CODE_TO_TOKEN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"token_id":"onrtac:e2df23d0-c7f3-4680-90c8-236bb78779c4","grant_type":"authorization_code","refresh_token_type":"Refresh","scope":"openid email microprofile-jwt identity_provider_scope profile","refresh_token_id":"461a313b-a9ab-4e2a-aefe-e1a25d7e3d1c","code_id":"2ee315e1-5b68-4284-8407-efa1b72302e3","client_auth_method":"client-secret"}
-ab1f5600-d703-4a2a-9ce3-8354777c6587	account-ui	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	2ee315e1-5b68-4284-8407-efa1b72302e3	1770879589464	LOGIN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"auth_method":"openid-connect","auth_type":"code","response_type":"code","redirect_uri":"https://auth.local.test/auth/callback/account-ui","consent":"no_consent_required","code_id":"2ee315e1-5b68-4284-8407-efa1b72302e3","response_mode":"query","username":"swaragh092@gmail.com"}
-b71a0de4-7091-4e1f-afce-68355a2e2059	account-ui	\N	\N	172.18.0.6	e800c4cb-db3a-4a31-8496-6d3b373e78b4	2ee315e1-5b68-4284-8407-efa1b72302e3	1770879590554	CODE_TO_TOKEN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"token_id":"onrtac:7e868f10-053a-4922-9a72-37697e61dc0b","grant_type":"authorization_code","refresh_token_type":"Refresh","scope":"openid email microprofile-jwt identity_provider_scope profile","refresh_token_id":"a89b4faf-c83d-4c11-9e5f-6d3957d387aa","code_id":"2ee315e1-5b68-4284-8407-efa1b72302e3","client_auth_method":"client-secret"}
-e401ec13-2884-4525-8744-ee4c8275b4f4	account-ui	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	2d3a7cf6-2484-454c-b3ae-76e3ac0b0913	1770879652250	LOGIN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"auth_method":"openid-connect","auth_type":"code","redirect_uri":"https://auth.local.test/auth/callback/account-ui","consent":"no_consent_required","code_id":"2d3a7cf6-2484-454c-b3ae-76e3ac0b0913","username":"swaragh092@gmail.com"}
-b4e59ec0-bd02-4afa-b35a-00fae484a8ca	account-ui	\N	\N	172.18.0.6	e800c4cb-db3a-4a31-8496-6d3b373e78b4	2d3a7cf6-2484-454c-b3ae-76e3ac0b0913	1770879652450	CODE_TO_TOKEN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"token_id":"onrtac:fcef68a8-f179-4116-a662-c26b3d2abe3a","grant_type":"authorization_code","refresh_token_type":"Refresh","scope":"openid email microprofile-jwt identity_provider_scope profile","refresh_token_id":"76f0fd8d-7e17-4f6f-bb1c-13fbcdfd58e9","code_id":"2d3a7cf6-2484-454c-b3ae-76e3ac0b0913","client_auth_method":"client-secret"}
-a69c1209-37f1-47a1-b169-d0af2bd2ca24	account-ui	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	2d3a7cf6-2484-454c-b3ae-76e3ac0b0913	1770879692417	LOGIN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"auth_method":"openid-connect","auth_type":"code","response_type":"code","redirect_uri":"https://auth.local.test/auth/callback/account-ui","consent":"no_consent_required","code_id":"2d3a7cf6-2484-454c-b3ae-76e3ac0b0913","response_mode":"query","username":"swaragh092@gmail.com"}
-a1dd6e0e-556f-4b18-86f5-febf8b2c1f71	account-ui	\N	\N	172.18.0.6	e800c4cb-db3a-4a31-8496-6d3b373e78b4	2d3a7cf6-2484-454c-b3ae-76e3ac0b0913	1770879692604	CODE_TO_TOKEN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"token_id":"onrtac:72bb050c-aa3f-4a15-ab69-dd768319bba2","grant_type":"authorization_code","refresh_token_type":"Refresh","scope":"openid email microprofile-jwt identity_provider_scope profile","refresh_token_id":"66b4405f-7f66-42ab-bd9c-9a347e8c4c14","code_id":"2d3a7cf6-2484-454c-b3ae-76e3ac0b0913","client_auth_method":"client-secret"}
-0d6caf24-9fb8-4c3d-84cb-15eacb308689	account-ui	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	2d3a7cf6-2484-454c-b3ae-76e3ac0b0913	1770879810197	LOGIN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"auth_method":"openid-connect","auth_type":"code","response_type":"code","redirect_uri":"https://auth.local.test/auth/callback/account-ui","consent":"no_consent_required","code_id":"2d3a7cf6-2484-454c-b3ae-76e3ac0b0913","response_mode":"query","username":"swaragh092@gmail.com"}
-1b5e4684-2d48-46e5-bddb-71f457024f28	account-ui	\N	\N	172.18.0.6	e800c4cb-db3a-4a31-8496-6d3b373e78b4	2d3a7cf6-2484-454c-b3ae-76e3ac0b0913	1770879810400	CODE_TO_TOKEN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"token_id":"onrtac:18f414e9-7d4f-4042-a1cd-a298aab0120e","grant_type":"authorization_code","refresh_token_type":"Refresh","scope":"openid email microprofile-jwt identity_provider_scope profile","refresh_token_id":"ff6ee3e3-95e0-4655-9cec-480c6636106a","code_id":"2d3a7cf6-2484-454c-b3ae-76e3ac0b0913","client_auth_method":"client-secret"}
-aba9c969-f0de-4efc-97a1-caa9a60c9143	account-ui	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	2d3a7cf6-2484-454c-b3ae-76e3ac0b0913	1770880152013	LOGIN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"auth_method":"openid-connect","auth_type":"code","response_type":"code","redirect_uri":"https://auth.local.test/auth/callback/account-ui","consent":"no_consent_required","code_id":"2d3a7cf6-2484-454c-b3ae-76e3ac0b0913","response_mode":"query","username":"swaragh092@gmail.com"}
-18e5bcf2-0186-4ffc-aea6-2284b802b4b6	account-ui	\N	\N	172.18.0.6	e800c4cb-db3a-4a31-8496-6d3b373e78b4	2d3a7cf6-2484-454c-b3ae-76e3ac0b0913	1770880156570	CODE_TO_TOKEN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"token_id":"onrtac:d12d1f91-7848-48bd-a5ac-3cbdfbaad4f2","grant_type":"authorization_code","refresh_token_type":"Refresh","scope":"openid email microprofile-jwt identity_provider_scope profile","refresh_token_id":"b2b4f5a2-fe93-473d-99b5-0b235e2f9536","code_id":"2d3a7cf6-2484-454c-b3ae-76e3ac0b0913","client_auth_method":"client-secret"}
-178dfcfa-ed3d-4117-aac7-9e6a4129034c	account-ui	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	2d3a7cf6-2484-454c-b3ae-76e3ac0b0913	1770880194923	LOGIN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"auth_method":"openid-connect","auth_type":"code","response_type":"code","redirect_uri":"https://auth.local.test/auth/callback/account-ui","consent":"no_consent_required","code_id":"2d3a7cf6-2484-454c-b3ae-76e3ac0b0913","response_mode":"query","username":"swaragh092@gmail.com"}
-3e00494c-1138-4f14-a0ff-7f120df4388f	account-ui	\N	\N	172.18.0.6	e800c4cb-db3a-4a31-8496-6d3b373e78b4	2d3a7cf6-2484-454c-b3ae-76e3ac0b0913	1770880195268	CODE_TO_TOKEN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"token_id":"onrtac:657fb2b5-90a6-411a-ad73-96eb32271adc","grant_type":"authorization_code","refresh_token_type":"Refresh","scope":"openid email microprofile-jwt identity_provider_scope profile","refresh_token_id":"63243770-2fa5-4322-9a2c-48976af9807a","code_id":"2d3a7cf6-2484-454c-b3ae-76e3ac0b0913","client_auth_method":"client-secret"}
-dc87ce46-60c6-4418-99cd-a940ccd85687	account-ui	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	2ee315e1-5b68-4284-8407-efa1b72302e3	1770880503511	LOGIN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"auth_method":"openid-connect","auth_type":"code","response_type":"code","redirect_uri":"https://auth.local.test/auth/callback/account-ui","consent":"no_consent_required","code_id":"2ee315e1-5b68-4284-8407-efa1b72302e3","response_mode":"query","username":"swaragh092@gmail.com"}
-3a1305bb-8af5-4668-aca1-d8bb11335dcd	account-ui	\N	\N	172.18.0.6	e800c4cb-db3a-4a31-8496-6d3b373e78b4	2ee315e1-5b68-4284-8407-efa1b72302e3	1770880507140	CODE_TO_TOKEN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"token_id":"onrtac:3336aa22-bbde-4451-8abc-d6a1b8cb93c4","grant_type":"authorization_code","refresh_token_type":"Refresh","scope":"openid email microprofile-jwt identity_provider_scope profile","refresh_token_id":"8720a5e1-47b1-4a42-bf9d-4af8e9930983","code_id":"2ee315e1-5b68-4284-8407-efa1b72302e3","client_auth_method":"client-secret"}
-a94e70ba-048b-4e41-a646-447cd65e462e	account-ui	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	2ee315e1-5b68-4284-8407-efa1b72302e3	1770880627971	LOGIN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"auth_method":"openid-connect","auth_type":"code","response_type":"code","redirect_uri":"https://auth.local.test/auth/callback/account-ui","consent":"no_consent_required","code_id":"2ee315e1-5b68-4284-8407-efa1b72302e3","response_mode":"query","username":"swaragh092@gmail.com"}
-7345309f-61da-4238-a684-beec6e532a53	account-ui	\N	\N	172.18.0.6	e800c4cb-db3a-4a31-8496-6d3b373e78b4	2ee315e1-5b68-4284-8407-efa1b72302e3	1770880630384	CODE_TO_TOKEN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"token_id":"onrtac:e35688a8-c15f-4764-819a-1d936e7a78bf","grant_type":"authorization_code","refresh_token_type":"Refresh","scope":"openid email microprofile-jwt identity_provider_scope profile","refresh_token_id":"3ed1abe5-c20b-45ec-81db-fd2cbb7792a9","code_id":"2ee315e1-5b68-4284-8407-efa1b72302e3","client_auth_method":"client-secret"}
-5a6c77e2-bcfe-4e8d-8691-d45a8144afc5	new-token	\N	invalid_user_credentials	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	\N	1770981979045	LOGIN_ERROR	\N	{"auth_method":"openid-connect","auth_type":"code","redirect_uri":"https://auth.local.test/auth/callback/new-token","code_id":"a4447c07-99b8-4337-828a-ca73a1456a1e","username":"swaragh092@gmail.com"}
-1821d323-876f-466f-ac6e-e43e820895bd	account-ui	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	a4447c07-99b8-4337-828a-ca73a1456a1e	1770982182560	LOGIN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"auth_method":"openid-connect","auth_type":"code","response_type":"code","redirect_uri":"https://auth.local.test/auth/callback/account-ui","consent":"no_consent_required","code_id":"a4447c07-99b8-4337-828a-ca73a1456a1e","response_mode":"query","username":"swaragh092@gmail.com"}
-eff11b36-d929-45b1-a091-922202dc16ce	account-ui	\N	\N	172.18.0.9	e800c4cb-db3a-4a31-8496-6d3b373e78b4	50f0c2fe-7bfd-4d74-be41-0ab5902936a6	1771065886135	CODE_TO_TOKEN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"token_id":"onrtac:ba00254c-4b4c-4869-ac8b-0c537280cd56","grant_type":"authorization_code","refresh_token_type":"Refresh","scope":"openid email microprofile-jwt identity_provider_scope profile","refresh_token_id":"888d6904-b42b-4211-874e-9af3428025f9","code_id":"50f0c2fe-7bfd-4d74-be41-0ab5902936a6","client_auth_method":"client-secret"}
-f14848a5-ce32-4ca2-a97d-d8782b2ddbcd	new-token	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	50f0c2fe-7bfd-4d74-be41-0ab5902936a6	1771065916643	LOGIN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"auth_method":"openid-connect","auth_type":"code","response_type":"code","redirect_uri":"https://auth.local.test/auth/callback/new-token","consent":"no_consent_required","code_id":"50f0c2fe-7bfd-4d74-be41-0ab5902936a6","response_mode":"query","username":"swaragh092@gmail.com"}
-c4b39724-fbb3-4e15-b7d3-9c9b85e04473	new-token	\N	\N	172.18.0.9	e800c4cb-db3a-4a31-8496-6d3b373e78b4	50f0c2fe-7bfd-4d74-be41-0ab5902936a6	1771065916909	CODE_TO_TOKEN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"token_id":"onrtac:294eefbe-8e1e-4856-bb3f-87501fad7954","grant_type":"authorization_code","refresh_token_type":"Refresh","scope":"openid email profile","refresh_token_id":"996b071d-bcb5-4e43-8978-8b821c502f02","code_id":"50f0c2fe-7bfd-4d74-be41-0ab5902936a6","client_auth_method":"client-secret"}
-e06842a9-3eaa-4d2c-97ad-081fd6ba199d	new-token	\N	\N	172.18.0.9	e800c4cb-db3a-4a31-8496-6d3b373e78b4	73078272-92d5-499d-b953-df66e7ec7812	1771073051500	CODE_TO_TOKEN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"token_id":"onrtac:f31e40f7-3d56-4ea2-8e1d-664ad8e60165","grant_type":"authorization_code","refresh_token_type":"Refresh","scope":"openid email profile","refresh_token_id":"b7374ac2-b97c-4719-aec8-76557b78aaa3","code_id":"73078272-92d5-499d-b953-df66e7ec7812","client_auth_method":"client-secret"}
-bb106202-968f-4645-8b94-911bd94b305b	account-ui	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	73078272-92d5-499d-b953-df66e7ec7812	1771073060278	LOGIN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"auth_method":"openid-connect","auth_type":"code","response_type":"code","redirect_uri":"https://auth.local.test/auth/callback/account-ui","consent":"no_consent_required","code_id":"73078272-92d5-499d-b953-df66e7ec7812","response_mode":"query","username":"swaragh092@gmail.com"}
-54865674-adfc-4376-8ea5-d217d680edc0	account-ui	\N	\N	172.18.0.9	e800c4cb-db3a-4a31-8496-6d3b373e78b4	73078272-92d5-499d-b953-df66e7ec7812	1771073060648	CODE_TO_TOKEN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"token_id":"onrtac:fd1ef83d-dac6-488a-80b1-e5ec7308d2aa","grant_type":"authorization_code","refresh_token_type":"Refresh","scope":"openid email microprofile-jwt identity_provider_scope profile","refresh_token_id":"2bfd6bc2-ea5d-40a3-915d-a32e8030b0df","code_id":"73078272-92d5-499d-b953-df66e7ec7812","client_auth_method":"client-secret"}
-d43ae66e-9afa-4147-a762-3aab37bc115e	account-ui	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	ddeec69d-3cb0-43b3-b866-f5f6a5861fc1	1771073497324	LOGIN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"auth_method":"openid-connect","auth_type":"code","redirect_uri":"https://auth.local.test/auth/callback/account-ui","consent":"no_consent_required","code_id":"ddeec69d-3cb0-43b3-b866-f5f6a5861fc1","username":"swaragh092@gmail.com"}
-80dbb626-5bce-43ac-8e3b-55fddbd711c7	account-ui	\N	\N	172.18.0.9	e800c4cb-db3a-4a31-8496-6d3b373e78b4	ddeec69d-3cb0-43b3-b866-f5f6a5861fc1	1771073497688	CODE_TO_TOKEN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"token_id":"onrtac:b6f75c21-0d4a-465d-9ff4-924ed5a1ea6d","grant_type":"authorization_code","refresh_token_type":"Refresh","scope":"openid email microprofile-jwt identity_provider_scope profile","refresh_token_id":"b0d23f2a-caa9-40fe-ac4b-517dc77b2ef0","code_id":"ddeec69d-3cb0-43b3-b866-f5f6a5861fc1","client_auth_method":"client-secret"}
-923963e2-18fb-41c8-b6d5-c75efd4f9412	author	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	dbf7b8ca-f2e3-4be8-b391-31a061c4ce66	1770361793665	LOGIN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"auth_method":"openid-connect","auth_type":"code","response_type":"code","redirect_uri":"https://auth.local.test/auth/callback/author","consent":"no_consent_required","code_id":"dbf7b8ca-f2e3-4be8-b391-31a061c4ce66","response_mode":"query","username":"swaragh092@gmail.com"}
-8b8ab6a1-992b-407a-b1b6-bca685d5689f	author	\N	\N	172.18.0.9	e800c4cb-db3a-4a31-8496-6d3b373e78b4	dbf7b8ca-f2e3-4be8-b391-31a061c4ce66	1770361793923	CODE_TO_TOKEN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"token_id":"onrtac:895efde3-9295-4b8a-a8a8-77ad75600864","grant_type":"authorization_code","refresh_token_type":"Refresh","scope":"openid email profile","refresh_token_id":"69116547-391d-4cfd-b338-d657c0905f7c","code_id":"dbf7b8ca-f2e3-4be8-b391-31a061c4ce66","client_auth_method":"client-secret"}
-ef5b98d6-ec02-4139-9c15-fb9759c328f1	author	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	dbf7b8ca-f2e3-4be8-b391-31a061c4ce66	1770361991942	LOGIN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"auth_method":"openid-connect","auth_type":"code","response_type":"code","redirect_uri":"https://auth.local.test/auth/callback/author","consent":"no_consent_required","code_id":"dbf7b8ca-f2e3-4be8-b391-31a061c4ce66","response_mode":"query","username":"swaragh092@gmail.com"}
-81d93839-35d6-4fbb-8d04-ea3989208187	author	\N	\N	172.18.0.9	e800c4cb-db3a-4a31-8496-6d3b373e78b4	dbf7b8ca-f2e3-4be8-b391-31a061c4ce66	1770361992246	CODE_TO_TOKEN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"token_id":"onrtac:2375c8fa-f1b2-48bd-b594-46889466858e","grant_type":"authorization_code","refresh_token_type":"Refresh","scope":"openid email profile","refresh_token_id":"d16b95e9-6d44-4f43-ba33-4a6fbcef2d19","code_id":"dbf7b8ca-f2e3-4be8-b391-31a061c4ce66","client_auth_method":"client-secret"}
-5669f88c-3d65-48b9-9560-4bd323adf7c6	author	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	dbf7b8ca-f2e3-4be8-b391-31a061c4ce66	1770362190604	LOGIN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"auth_method":"openid-connect","auth_type":"code","response_type":"code","redirect_uri":"https://auth.local.test/auth/callback/author","consent":"no_consent_required","code_id":"dbf7b8ca-f2e3-4be8-b391-31a061c4ce66","response_mode":"query","username":"swaragh092@gmail.com"}
-0bc7d98f-8c6a-4388-8312-23117e6c99c3	author	\N	\N	172.18.0.9	e800c4cb-db3a-4a31-8496-6d3b373e78b4	dbf7b8ca-f2e3-4be8-b391-31a061c4ce66	1770362191043	CODE_TO_TOKEN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"token_id":"onrtac:75435214-139c-43d6-8336-a077296e723f","grant_type":"authorization_code","refresh_token_type":"Refresh","scope":"openid email profile","refresh_token_id":"d22e2587-b3f6-4607-a8e2-41f7170e48fe","code_id":"dbf7b8ca-f2e3-4be8-b391-31a061c4ce66","client_auth_method":"client-secret"}
-4bb3ce18-094f-404a-9249-1d29501cfe1b	author	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	dbf7b8ca-f2e3-4be8-b391-31a061c4ce66	1770362449981	LOGIN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"auth_method":"openid-connect","auth_type":"code","response_type":"code","redirect_uri":"https://auth.local.test/auth/callback/author","consent":"no_consent_required","code_id":"dbf7b8ca-f2e3-4be8-b391-31a061c4ce66","response_mode":"query","username":"swaragh092@gmail.com"}
-bdee409d-04b2-4ce3-a558-4771045f4c5c	author	\N	\N	172.18.0.9	e800c4cb-db3a-4a31-8496-6d3b373e78b4	dbf7b8ca-f2e3-4be8-b391-31a061c4ce66	1770362450292	CODE_TO_TOKEN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"token_id":"onrtac:67f43297-14fa-48f9-9c8b-ff0be1979a14","grant_type":"authorization_code","refresh_token_type":"Refresh","scope":"openid email profile","refresh_token_id":"3d6c2717-ba3c-4f82-a93d-445ebb7f99ac","code_id":"dbf7b8ca-f2e3-4be8-b391-31a061c4ce66","client_auth_method":"client-secret"}
-135d3c68-40b9-4bb3-b033-011c9815274c	author	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	dbf7b8ca-f2e3-4be8-b391-31a061c4ce66	1770362632116	LOGIN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"auth_method":"openid-connect","auth_type":"code","response_type":"code","redirect_uri":"https://auth.local.test/auth/callback/author","consent":"no_consent_required","code_id":"dbf7b8ca-f2e3-4be8-b391-31a061c4ce66","response_mode":"query","username":"swaragh092@gmail.com"}
-381132f4-281e-47f0-9e73-52d06873f1e5	author	\N	\N	172.18.0.9	e800c4cb-db3a-4a31-8496-6d3b373e78b4	dbf7b8ca-f2e3-4be8-b391-31a061c4ce66	1770362632612	CODE_TO_TOKEN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"token_id":"onrtac:985d54a8-17d1-4d5d-8988-ec13b42ff9a3","grant_type":"authorization_code","refresh_token_type":"Refresh","scope":"openid email profile","refresh_token_id":"7209936b-cdf9-4619-8603-2e22f4e22d04","code_id":"dbf7b8ca-f2e3-4be8-b391-31a061c4ce66","client_auth_method":"client-secret"}
-eee7b16b-4fbe-468e-80bb-d9c32a11ed17	author	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	dbf7b8ca-f2e3-4be8-b391-31a061c4ce66	1770364050424	LOGIN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"auth_method":"openid-connect","auth_type":"code","response_type":"code","redirect_uri":"https://auth.local.test/auth/callback/author","consent":"no_consent_required","code_id":"dbf7b8ca-f2e3-4be8-b391-31a061c4ce66","response_mode":"query","username":"swaragh092@gmail.com"}
-7642841c-593a-40e4-b4ce-7b834b363548	author	\N	\N	172.18.0.9	e800c4cb-db3a-4a31-8496-6d3b373e78b4	dbf7b8ca-f2e3-4be8-b391-31a061c4ce66	1770364051549	CODE_TO_TOKEN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"token_id":"onrtac:c46e7640-459a-44a6-80d6-680dc4800cdf","grant_type":"authorization_code","refresh_token_type":"Refresh","scope":"openid email profile","refresh_token_id":"20fddae5-86ca-4ab4-a8e1-12333b27e7a3","code_id":"dbf7b8ca-f2e3-4be8-b391-31a061c4ce66","client_auth_method":"client-secret"}
-68747aae-d27c-4024-873f-676cd60420e7	author	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	dbf7b8ca-f2e3-4be8-b391-31a061c4ce66	1770364236721	LOGIN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"auth_method":"openid-connect","auth_type":"code","response_type":"code","redirect_uri":"https://auth.local.test/auth/callback/author","consent":"no_consent_required","code_id":"dbf7b8ca-f2e3-4be8-b391-31a061c4ce66","response_mode":"query","username":"swaragh092@gmail.com"}
-3aee95f6-1435-4e9c-ab6e-9eb4086f5664	author	\N	\N	172.18.0.9	e800c4cb-db3a-4a31-8496-6d3b373e78b4	dbf7b8ca-f2e3-4be8-b391-31a061c4ce66	1770364237728	CODE_TO_TOKEN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"token_id":"onrtac:2f76ddf3-dd01-48c8-9356-c92b99bb9275","grant_type":"authorization_code","refresh_token_type":"Refresh","scope":"openid email profile","refresh_token_id":"8474d38d-6948-4b8e-82ae-437f3d4c9ed6","code_id":"dbf7b8ca-f2e3-4be8-b391-31a061c4ce66","client_auth_method":"client-secret"}
-b1546621-8b23-4bcf-adb8-566f1fda344c	account-ui	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	b5622124-ea2e-4d21-be6d-3c74490a1c12	1770891345306	LOGIN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"auth_method":"openid-connect","auth_type":"code","redirect_uri":"https://auth.local.test/auth/callback/account-ui","consent":"no_consent_required","code_id":"b5622124-ea2e-4d21-be6d-3c74490a1c12","username":"swaragh092@gmail.com"}
-8f053dd2-2ce3-4487-a606-35ca9fd4bc9c	account-ui	\N	\N	172.18.0.8	e800c4cb-db3a-4a31-8496-6d3b373e78b4	b5622124-ea2e-4d21-be6d-3c74490a1c12	1770891348401	CODE_TO_TOKEN	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	{"token_id":"onrtac:67619f75-c568-458e-8b23-193953bd68fb","grant_type":"authorization_code","refresh_token_type":"Refresh","scope":"openid email microprofile-jwt identity_provider_scope profile","refresh_token_id":"9bd6d44a-498d-47d2-8ae4-aab148b8e08f","code_id":"b5622124-ea2e-4d21-be6d-3c74490a1c12","client_auth_method":"client-secret"}
+b2eb0356-8213-4ef4-8cc7-e80cb843f4fe	final-fn-pms	\N	invalid_redirect_uri	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	\N	1775556782015	LOGIN_ERROR	\N	{"redirect_uri":"https://auth.gururajhr.in/auth/callback/final-fn-pms"}
+d7090632-8e5e-4342-bd07-ca9f5ad08f5d	final-fn-pms	\N	invalid_redirect_uri	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	\N	1775556791328	LOGIN_ERROR	\N	{"redirect_uri":"https://auth.gururajhr.in/auth/callback/final-fn-pms"}
+7078a055-601a-448e-9500-a575739ae5d3	final-fn-pms	\N	invalid_redirect_uri	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	\N	1775556859743	LOGIN_ERROR	\N	{"redirect_uri":"https://auth.gururajhr.in/auth/callback/final-fn-pms"}
+40e3f130-18ed-4061-90d0-e0aecd4be575	final-fn-pms	\N	invalid_redirect_uri	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	\N	1775556860719	LOGIN_ERROR	\N	{"redirect_uri":"https://auth.gururajhr.in/auth/callback/final-fn-pms"}
+9e42d90a-1da8-4902-98e7-cc68ba4c61e0	final-fn-pms	\N	invalid_redirect_uri	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	\N	1775556863511	LOGIN_ERROR	\N	{"redirect_uri":"https://auth.gururajhr.in/auth/callback/final-fn-pms"}
+1b8ae5cc-584b-4fe7-ae7b-0919d5e8c888	final-fn-pms	\N	invalid_redirect_uri	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	\N	1775556903536	LOGIN_ERROR	\N	{"redirect_uri":"https://auth.gururajhr.in/auth/callback/final-fn-pms"}
+c2d7ab36-ce09-4fbc-becf-abd13c104a73	final-fn-pms	\N	invalid_redirect_uri	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	\N	1775558013631	LOGIN_ERROR	\N	{"redirect_uri":"https://auth.gururajhr.in/auth/callback/final-fn-pms"}
+1d21be67-d788-4315-893f-0e2934be2407	final-fn-pms	\N	invalid_redirect_uri	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	\N	1775558104368	LOGIN_ERROR	\N	{"redirect_uri":"https://auth.gururajhr.in/auth/callback/final-fn-pms"}
+07dd7ab8-634b-4e75-b28d-76d94b49c472	final-fn-pms	\N	email_in_use	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	\N	1775558461019	REGISTER_ERROR	\N	{"auth_method":"openid-connect","auth_type":"code","register_method":"form","last_name":"HR","redirect_uri":"https://auth.gururajhr.in/auth/callback/final-fn-pms","first_name":"Gururaj","code_id":"IqfcJYnAC0-hdESesyHOrLX3","email":"swaragh091@gmail.com","username":"swaragh091@gmail.com"}
+a5392666-9615-4544-b903-b2f27268be09	final-fn-pms	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	\N	1775558488883	REGISTER	7dc436ae-5e5e-43e3-981b-994ee0ce54f7	{"auth_method":"openid-connect","auth_type":"code","register_method":"form","last_name":"HR","redirect_uri":"https://auth.gururajhr.in/auth/callback/final-fn-pms","first_name":"Gururaj","code_id":"IqfcJYnAC0-hdESesyHOrLX3","email":"gururaj0305@gmail.com","username":"gururaj0305@gmail.com"}
+5841bc36-fb70-492b-8fff-9d99c9bbfd2d	final-fn-pms	\N	email_send_failed	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	\N	1775558492307	SEND_VERIFY_EMAIL_ERROR	7dc436ae-5e5e-43e3-981b-994ee0ce54f7	{"reason":"Error when attempting to send the email to the server. More information is available in the server log.","auth_method":"openid-connect","response_type":"code","redirect_uri":"https://auth.gururajhr.in/auth/callback/final-fn-pms","remember_me":"false","code_id":"IqfcJYnAC0-hdESesyHOrLX3","email":"gururaj0305@gmail.com","response_mode":"query","username":"gururaj0305@gmail.com"}
+e0f9723b-73a9-493b-8324-476cd2f2fbdb	final-fn-pms	\N	invalid_user_credentials	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	\N	1775558510908	LOGIN_ERROR	f9dd5f8d-1448-40b5-ba6a-4dea01409c5d	{"auth_method":"openid-connect","auth_type":"code","redirect_uri":"https://auth.gururajhr.in/auth/callback/final-fn-pms","code_id":"IqfcJYnAC0-hdESesyHOrLX3","username":"swaragh091@gmail.com"}
+e167a3e3-4d62-48e2-8511-2cc925be5cec	final-fn-pms	\N	email_send_failed	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	\N	1775558563550	SEND_VERIFY_EMAIL_ERROR	f9dd5f8d-1448-40b5-ba6a-4dea01409c5d	{"reason":"Error when attempting to send the email to the server. More information is available in the server log.","auth_method":"openid-connect","response_type":"code","redirect_uri":"https://auth.gururajhr.in/auth/callback/final-fn-pms","remember_me":"false","code_id":"IqfcJYnAC0-hdESesyHOrLX3","email":"swaragh091@gmail.com","response_mode":"query","username":"swaragh091@gmail.com"}
+cf9b165f-9a92-4021-95cb-004598ba3fdb	final-fn-pms	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	\N	1775559049840	REGISTER	a54df9d5-ff7c-4355-a05d-d319e83416d0	{"auth_method":"openid-connect","auth_type":"code","register_method":"form","last_name":"HR","redirect_uri":"https://auth.gururajhr.in/auth/callback/final-fn-pms","first_name":"Gururaj","code_id":"IqfcJYnAC0-hdESesyHOrLX3","email":"swaragh091@gmail.com","username":"swaragh091@gmail.com"}
+15965b05-b501-4a7a-8608-e3e707b9cec4	final-fn-pms	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	IqfcJYnAC0-hdESesyHOrLX3	1775559050035	LOGIN	a54df9d5-ff7c-4355-a05d-d319e83416d0	{"auth_method":"openid-connect","auth_type":"code","response_type":"code","redirect_uri":"https://auth.gururajhr.in/auth/callback/final-fn-pms","consent":"no_consent_required","code_id":"IqfcJYnAC0-hdESesyHOrLX3","username":"swaragh091@gmail.com","response_mode":"query"}
+6cca1563-ea8c-42e2-a0df-6231a544fc06	final-fn-pms	\N	\N	172.18.0.13	e800c4cb-db3a-4a31-8496-6d3b373e78b4	IqfcJYnAC0-hdESesyHOrLX3	1775559050194	CODE_TO_TOKEN	a54df9d5-ff7c-4355-a05d-d319e83416d0	{"token_id":"onrtac:3dd0d874-4adb-9479-f0a2-aa58325d90d9","grant_type":"authorization_code","refresh_token_type":"Refresh","scope":"openid email microprofile-jwt identity_provider_scope profile","refresh_token_id":"9ff3882d-70a2-89a2-12ce-7d357db58667","code_id":"IqfcJYnAC0-hdESesyHOrLX3","client_auth_method":"client-secret"}
+8ae69473-cf34-4a8e-8ece-3ecbc9146e34	account-ui	\N	invalid_redirect_uri	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	\N	1775559053246	LOGIN_ERROR	\N	{"redirect_uri":"https://auth.gururajhr.in/auth/callback/account-ui"}
+fd729599-9b62-40dd-a714-34a6e6ea2a88	account-ui	\N	invalid_redirect_uri	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	\N	1775559055803	LOGIN_ERROR	\N	{"redirect_uri":"https://auth.gururajhr.in/auth/callback/account-ui"}
+153dbf0a-181c-48c1-a0bf-2b2831ee0860	account-ui	\N	invalid_redirect_uri	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	\N	1775559398979	LOGIN_ERROR	\N	{"redirect_uri":"https://auth.gururajhr.in/auth/callback/account-ui"}
+4908cc5a-44cc-4317-a06d-84e7a61c77fa	account-ui	\N	invalid_redirect_uri	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	\N	1775559405051	LOGIN_ERROR	\N	{"redirect_uri":"https://auth.gururajhr.in/auth/callback/account-ui"}
+cf73f9df-2215-478f-bc9e-05e58ab2640f	account-ui	\N	invalid_redirect_uri	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	\N	1775559419914	LOGIN_ERROR	\N	{"redirect_uri":"https://auth.gururajhr.in/auth/callback/account-ui"}
+a39f0ded-3323-4182-96cd-fe4cfac0bfc5	account-ui	\N	invalid_redirect_uri	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	\N	1775559452564	LOGIN_ERROR	\N	{"redirect_uri":"https://auth.gururajhr.in/auth/callback/account-ui"}
+afe808f7-c49a-46a6-bdcc-87c499deea0e	final-fn-pms	\N	expired_code	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	\N	1775559481596	REGISTER_ERROR	\N	{"restart_after_timeout":"true"}
+b4b76c68-0d2f-4398-a24f-34451d809088	pms-service	\N	client_not_found	172.18.0.11	e800c4cb-db3a-4a31-8496-6d3b373e78b4	\N	1775639768157	CLIENT_LOGIN_ERROR	\N	{"grant_type":"client_credentials"}
+eed8189f-8ddf-45fb-8acb-f8d19e16855d	final-fn-pms	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	IqfcJYnAC0-hdESesyHOrLX3	1775559481628	LOGIN	a54df9d5-ff7c-4355-a05d-d319e83416d0	{"auth_method":"openid-connect","response_type":"code","redirect_uri":"https://auth.gururajhr.in/auth/callback/final-fn-pms","consent":"no_consent_required","code_id":"L0WOJ_3G1CikbVbm72YXqFQd","username":"swaragh091@gmail.com","response_mode":"query"}
+6ed68802-42b6-4981-b433-6d602ef036b0	final-fn-pms	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	IqfcJYnAC0-hdESesyHOrLX3	1775559485837	LOGIN	a54df9d5-ff7c-4355-a05d-d319e83416d0	{"auth_method":"openid-connect","auth_type":"code","response_type":"code","redirect_uri":"https://auth.gururajhr.in/auth/callback/final-fn-pms","consent":"no_consent_required","code_id":"IqfcJYnAC0-hdESesyHOrLX3","response_mode":"query","username":"swaragh091@gmail.com"}
+426eb041-6d00-498e-be41-845ab0ba6b03	final-fn-pms	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	IqfcJYnAC0-hdESesyHOrLX3	1775559492608	LOGIN	a54df9d5-ff7c-4355-a05d-d319e83416d0	{"auth_method":"openid-connect","auth_type":"code","response_type":"code","redirect_uri":"https://auth.gururajhr.in/auth/callback/final-fn-pms","consent":"no_consent_required","code_id":"IqfcJYnAC0-hdESesyHOrLX3","response_mode":"query","username":"swaragh091@gmail.com"}
+30bac80a-c536-40af-939b-50d123fd5138	final-fn-pms	\N	\N	172.18.0.13	e800c4cb-db3a-4a31-8496-6d3b373e78b4	IqfcJYnAC0-hdESesyHOrLX3	1775559492663	CODE_TO_TOKEN	a54df9d5-ff7c-4355-a05d-d319e83416d0	{"token_id":"onrtac:2014f869-bf4d-ecb4-5a90-bd1af7b46f54","grant_type":"authorization_code","refresh_token_type":"Refresh","scope":"openid email microprofile-jwt identity_provider_scope profile","refresh_token_id":"863a0a1c-09da-c7a8-56b1-7821273afd9c","code_id":"IqfcJYnAC0-hdESesyHOrLX3","client_auth_method":"client-secret"}
+e0101b5e-fdac-44f0-b4be-1a86a6f82dd0	account-ui	\N	invalid_redirect_uri	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	\N	1775559495678	LOGIN_ERROR	\N	{"redirect_uri":"https://auth.gururajhr.in/auth/callback/account-ui"}
+c436e613-04cf-4cf8-8d99-9a5b23b04595	final-fn-pms	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	IqfcJYnAC0-hdESesyHOrLX3	1775559528169	LOGIN	a54df9d5-ff7c-4355-a05d-d319e83416d0	{"auth_method":"openid-connect","auth_type":"code","response_type":"code","redirect_uri":"https://auth.gururajhr.in/auth/callback/final-fn-pms","consent":"no_consent_required","code_id":"IqfcJYnAC0-hdESesyHOrLX3","response_mode":"query","username":"swaragh091@gmail.com"}
+e7b80f1e-8950-4e22-9b15-a328bcf43e54	final-fn-pms	\N	\N	172.18.0.13	e800c4cb-db3a-4a31-8496-6d3b373e78b4	IqfcJYnAC0-hdESesyHOrLX3	1775559528235	CODE_TO_TOKEN	a54df9d5-ff7c-4355-a05d-d319e83416d0	{"token_id":"onrtac:35d3fce6-2422-1ca7-fee3-ce3451068807","grant_type":"authorization_code","refresh_token_type":"Refresh","scope":"openid email microprofile-jwt identity_provider_scope profile","refresh_token_id":"b16e02eb-32f5-dd8c-f95c-d1ae43b51d7c","code_id":"IqfcJYnAC0-hdESesyHOrLX3","client_auth_method":"client-secret"}
+798262da-f832-43a7-86ab-f96092408b1b	account-ui	\N	invalid_redirect_uri	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	\N	1775559549501	LOGIN_ERROR	\N	{"redirect_uri":"https://auth.gururajhr.in/auth/callback/account-ui"}
+6ecf5474-8031-4f90-ae2d-f92ddbb3aea4	final-fn-pms	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	IqfcJYnAC0-hdESesyHOrLX3	1775559579592	LOGIN	a54df9d5-ff7c-4355-a05d-d319e83416d0	{"auth_method":"openid-connect","auth_type":"code","response_type":"code","redirect_uri":"https://auth.gururajhr.in/auth/callback/final-fn-pms","consent":"no_consent_required","code_id":"IqfcJYnAC0-hdESesyHOrLX3","response_mode":"query","username":"swaragh091@gmail.com"}
+a06e8df8-de6e-4ab0-9f16-d1840fe655a3	final-fn-pms	\N	\N	172.18.0.13	e800c4cb-db3a-4a31-8496-6d3b373e78b4	IqfcJYnAC0-hdESesyHOrLX3	1775559579632	CODE_TO_TOKEN	a54df9d5-ff7c-4355-a05d-d319e83416d0	{"token_id":"onrtac:b6a07e8e-961e-8bcc-d9a9-a4dcb431b18b","grant_type":"authorization_code","refresh_token_type":"Refresh","scope":"openid email microprofile-jwt identity_provider_scope profile","refresh_token_id":"e852316c-0f76-1011-e3e6-752f1000278a","code_id":"IqfcJYnAC0-hdESesyHOrLX3","client_auth_method":"client-secret"}
+07f5b76a-3394-4ec7-adcc-70d795adc846	account-ui	\N	invalid_redirect_uri	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	\N	1775619944782	LOGIN_ERROR	\N	{"redirect_uri":"https://auth.gururajhr.in/auth/callback/account-ui"}
+ed82070f-90af-4a5d-8254-6aaf2153e882	final-fn-pms	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	HWtLJBZJwhnRXSl1BHEXxy4_	1775625916322	LOGIN	a54df9d5-ff7c-4355-a05d-d319e83416d0	{"auth_method":"openid-connect","auth_type":"code","response_type":"code","redirect_uri":"https://auth.gururajhr.in/auth/callback/final-fn-pms","consent":"no_consent_required","code_id":"HWtLJBZJwhnRXSl1BHEXxy4_","username":"swaragh091@gmail.com","response_mode":"query"}
+2c1cb4e3-eacd-448a-bd18-aad0b3b3f6b1	final-fn-pms	\N	\N	172.18.0.10	e800c4cb-db3a-4a31-8496-6d3b373e78b4	HWtLJBZJwhnRXSl1BHEXxy4_	1775625916463	CODE_TO_TOKEN	a54df9d5-ff7c-4355-a05d-d319e83416d0	{"token_id":"onrtac:83dcf18f-a96a-c45d-e099-3304636ed26c","grant_type":"authorization_code","refresh_token_type":"Refresh","scope":"openid email microprofile-jwt identity_provider_scope profile","refresh_token_id":"d7f1ecd7-c811-1b1e-cf8b-7a2932ec7ecd","code_id":"HWtLJBZJwhnRXSl1BHEXxy4_","client_auth_method":"client-secret"}
+a580f83c-daf3-4669-b8f5-af527b0470da	final-fn-pms	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	HWtLJBZJwhnRXSl1BHEXxy4_	1775626350669	LOGIN	a54df9d5-ff7c-4355-a05d-d319e83416d0	{"auth_method":"openid-connect","auth_type":"code","response_type":"code","redirect_uri":"https://auth.gururajhr.in/auth/callback/final-fn-pms","consent":"no_consent_required","code_id":"HWtLJBZJwhnRXSl1BHEXxy4_","response_mode":"query","username":"swaragh091@gmail.com"}
+c54edcf9-430a-4b81-98d6-a7dc35e2b16b	final-fn-pms	\N	\N	172.18.0.13	e800c4cb-db3a-4a31-8496-6d3b373e78b4	HWtLJBZJwhnRXSl1BHEXxy4_	1775626350739	CODE_TO_TOKEN	a54df9d5-ff7c-4355-a05d-d319e83416d0	{"token_id":"onrtac:b4f30732-2a25-26b2-283c-4ff9af787c3b","grant_type":"authorization_code","refresh_token_type":"Refresh","scope":"openid email microprofile-jwt identity_provider_scope profile","refresh_token_id":"ca9cf48e-a6c5-ef77-99bd-66e142f0bb89","code_id":"HWtLJBZJwhnRXSl1BHEXxy4_","client_auth_method":"client-secret"}
+a6813c7a-64e5-4cb2-a827-35ed25e3658d	final-fn-pms	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	HWtLJBZJwhnRXSl1BHEXxy4_	1775626549707	LOGIN	a54df9d5-ff7c-4355-a05d-d319e83416d0	{"auth_method":"openid-connect","auth_type":"code","response_type":"code","redirect_uri":"https://auth.gururajhr.in/auth/callback/final-fn-pms","consent":"no_consent_required","code_id":"HWtLJBZJwhnRXSl1BHEXxy4_","response_mode":"query","username":"swaragh091@gmail.com"}
+93caf6a5-72f9-4389-9c2c-004125c763db	final-fn-pms	\N	\N	172.18.0.13	e800c4cb-db3a-4a31-8496-6d3b373e78b4	HWtLJBZJwhnRXSl1BHEXxy4_	1775626549779	CODE_TO_TOKEN	a54df9d5-ff7c-4355-a05d-d319e83416d0	{"token_id":"onrtac:7939e3af-845e-5a7c-49b5-fea17fdd9294","grant_type":"authorization_code","refresh_token_type":"Refresh","scope":"openid email microprofile-jwt identity_provider_scope profile","refresh_token_id":"1bc934d1-ec72-cd2c-2502-da5d361799d0","code_id":"HWtLJBZJwhnRXSl1BHEXxy4_","client_auth_method":"client-secret"}
+d470db3e-efd2-4c0b-a9aa-ef52fb6ce967	final-fn-pms	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	HWtLJBZJwhnRXSl1BHEXxy4_	1775627203357	LOGIN	a54df9d5-ff7c-4355-a05d-d319e83416d0	{"auth_method":"openid-connect","auth_type":"code","response_type":"code","redirect_uri":"https://auth.gururajhr.in/auth/callback/final-fn-pms","consent":"no_consent_required","code_id":"HWtLJBZJwhnRXSl1BHEXxy4_","response_mode":"query","username":"swaragh091@gmail.com"}
+db5af240-e49d-4a8a-8b8b-c8a0fb15ba63	final-fn-pms	\N	\N	172.18.0.13	e800c4cb-db3a-4a31-8496-6d3b373e78b4	HWtLJBZJwhnRXSl1BHEXxy4_	1775627203466	CODE_TO_TOKEN	a54df9d5-ff7c-4355-a05d-d319e83416d0	{"token_id":"onrtac:20382c76-d053-a91f-9cfe-5497ae68f2c2","grant_type":"authorization_code","refresh_token_type":"Refresh","scope":"openid email microprofile-jwt identity_provider_scope profile","refresh_token_id":"8200deb6-0eb1-234e-7a19-65b8f5f26e46","code_id":"HWtLJBZJwhnRXSl1BHEXxy4_","client_auth_method":"client-secret"}
+d8e9320a-a7f0-41bc-9100-c290dd767e3c	final-fn-pms	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	HWtLJBZJwhnRXSl1BHEXxy4_	1775628339079	LOGIN	a54df9d5-ff7c-4355-a05d-d319e83416d0	{"auth_method":"openid-connect","auth_type":"code","response_type":"code","redirect_uri":"https://auth.gururajhr.in/auth/callback/final-fn-pms","consent":"no_consent_required","code_id":"HWtLJBZJwhnRXSl1BHEXxy4_","response_mode":"query","username":"swaragh091@gmail.com"}
+82cc368d-dcf4-4ac9-808f-e39d99dcf142	final-fn-pms	\N	\N	172.18.0.13	e800c4cb-db3a-4a31-8496-6d3b373e78b4	HWtLJBZJwhnRXSl1BHEXxy4_	1775628339166	CODE_TO_TOKEN	a54df9d5-ff7c-4355-a05d-d319e83416d0	{"token_id":"onrtac:aef9c3f4-0148-3df6-0e16-8f72fd304542","grant_type":"authorization_code","refresh_token_type":"Refresh","scope":"openid email microprofile-jwt identity_provider_scope profile","refresh_token_id":"4f83685a-69eb-b775-5ebd-01930dfdd598","code_id":"HWtLJBZJwhnRXSl1BHEXxy4_","client_auth_method":"client-secret"}
+53fac31d-7b51-4a45-a08c-c45f8dd1375b	final-fn-pms	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	HWtLJBZJwhnRXSl1BHEXxy4_	1775628557164	LOGIN	a54df9d5-ff7c-4355-a05d-d319e83416d0	{"auth_method":"openid-connect","auth_type":"code","response_type":"code","redirect_uri":"https://auth.gururajhr.in/auth/callback/final-fn-pms","consent":"no_consent_required","code_id":"HWtLJBZJwhnRXSl1BHEXxy4_","response_mode":"query","username":"swaragh091@gmail.com"}
+62e68fdb-1d8a-4b03-93f0-532f06c616e9	final-fn-pms	\N	\N	172.18.0.13	e800c4cb-db3a-4a31-8496-6d3b373e78b4	HWtLJBZJwhnRXSl1BHEXxy4_	1775628557231	CODE_TO_TOKEN	a54df9d5-ff7c-4355-a05d-d319e83416d0	{"token_id":"onrtac:3545de85-e084-88c3-d284-0138271554f0","grant_type":"authorization_code","refresh_token_type":"Refresh","scope":"openid email microprofile-jwt identity_provider_scope profile","refresh_token_id":"a52a0b72-85ae-9de1-2e21-d9be50ba7ff9","code_id":"HWtLJBZJwhnRXSl1BHEXxy4_","client_auth_method":"client-secret"}
+90d7556c-f1bd-4530-bb36-70734743ff34	final-fn-pms	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	HWtLJBZJwhnRXSl1BHEXxy4_	1775628756950	LOGIN	a54df9d5-ff7c-4355-a05d-d319e83416d0	{"auth_method":"openid-connect","auth_type":"code","response_type":"code","redirect_uri":"https://auth.gururajhr.in/auth/callback/final-fn-pms","consent":"no_consent_required","code_id":"HWtLJBZJwhnRXSl1BHEXxy4_","response_mode":"query","username":"swaragh091@gmail.com"}
+0504ccef-4028-4148-b101-c761b2f9d4c2	final-fn-pms	\N	\N	172.18.0.13	e800c4cb-db3a-4a31-8496-6d3b373e78b4	HWtLJBZJwhnRXSl1BHEXxy4_	1775628757005	CODE_TO_TOKEN	a54df9d5-ff7c-4355-a05d-d319e83416d0	{"token_id":"onrtac:1a45f07c-305d-2d99-9a9a-72a11720538f","grant_type":"authorization_code","refresh_token_type":"Refresh","scope":"openid email microprofile-jwt identity_provider_scope profile","refresh_token_id":"5e7cb8e1-3b5d-5e5b-9daa-59825766fcf5","code_id":"HWtLJBZJwhnRXSl1BHEXxy4_","client_auth_method":"client-secret"}
+83edd921-f508-4c58-92e2-8830c3979c93	final-fn-pms	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	HWtLJBZJwhnRXSl1BHEXxy4_	1775629541573	LOGIN	a54df9d5-ff7c-4355-a05d-d319e83416d0	{"auth_method":"openid-connect","auth_type":"code","response_type":"code","redirect_uri":"https://auth.gururajhr.in/auth/callback/final-fn-pms","consent":"no_consent_required","code_id":"HWtLJBZJwhnRXSl1BHEXxy4_","response_mode":"query","username":"swaragh091@gmail.com"}
+c1f9a332-71f3-443d-93b2-278146919c2c	final-fn-pms	\N	\N	172.18.0.13	e800c4cb-db3a-4a31-8496-6d3b373e78b4	HWtLJBZJwhnRXSl1BHEXxy4_	1775629541629	CODE_TO_TOKEN	a54df9d5-ff7c-4355-a05d-d319e83416d0	{"token_id":"onrtac:5b62ed5a-359b-6ef0-4a6a-1e7e65b4e2bf","grant_type":"authorization_code","refresh_token_type":"Refresh","scope":"openid email microprofile-jwt identity_provider_scope profile","refresh_token_id":"e84c503f-f1c6-5c8f-d45d-52cb1a593a04","code_id":"HWtLJBZJwhnRXSl1BHEXxy4_","client_auth_method":"client-secret"}
+7f02dcf7-8cc0-4a99-8f7e-4a6e1b1e5187	final-fn-pms	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	HWtLJBZJwhnRXSl1BHEXxy4_	1775629845044	LOGIN	a54df9d5-ff7c-4355-a05d-d319e83416d0	{"auth_method":"openid-connect","auth_type":"code","response_type":"code","redirect_uri":"https://auth.gururajhr.in/auth/callback/final-fn-pms","consent":"no_consent_required","code_id":"HWtLJBZJwhnRXSl1BHEXxy4_","response_mode":"query","username":"swaragh091@gmail.com"}
+1995c815-3dfe-4226-aa63-c66302e444c2	final-fn-pms	\N	\N	172.18.0.13	e800c4cb-db3a-4a31-8496-6d3b373e78b4	HWtLJBZJwhnRXSl1BHEXxy4_	1775629845114	CODE_TO_TOKEN	a54df9d5-ff7c-4355-a05d-d319e83416d0	{"token_id":"onrtac:703513fe-93ad-741c-9772-36d9117a9bab","grant_type":"authorization_code","refresh_token_type":"Refresh","scope":"openid email microprofile-jwt identity_provider_scope profile","refresh_token_id":"57066946-db95-eeac-b473-9a1dc9a67dd9","code_id":"HWtLJBZJwhnRXSl1BHEXxy4_","client_auth_method":"client-secret"}
+9e61e255-30b9-4df0-843a-72455aa71fc4	final-fn-pms	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	HWtLJBZJwhnRXSl1BHEXxy4_	1775630265797	LOGIN	a54df9d5-ff7c-4355-a05d-d319e83416d0	{"auth_method":"openid-connect","auth_type":"code","response_type":"code","redirect_uri":"https://auth.gururajhr.in/auth/callback/final-fn-pms","consent":"no_consent_required","code_id":"HWtLJBZJwhnRXSl1BHEXxy4_","response_mode":"query","username":"swaragh091@gmail.com"}
+099176c7-4e30-4f15-9235-b1d11ec4607f	final-fn-pms	\N	\N	172.18.0.13	e800c4cb-db3a-4a31-8496-6d3b373e78b4	HWtLJBZJwhnRXSl1BHEXxy4_	1775630265864	CODE_TO_TOKEN	a54df9d5-ff7c-4355-a05d-d319e83416d0	{"token_id":"onrtac:07acc8f2-89f2-8f2f-1ccc-59ac6f9e2701","grant_type":"authorization_code","refresh_token_type":"Refresh","scope":"openid email microprofile-jwt identity_provider_scope profile","refresh_token_id":"a1b42a27-7b68-1011-7691-e007b121d925","code_id":"HWtLJBZJwhnRXSl1BHEXxy4_","client_auth_method":"client-secret"}
+a737b6cb-cf34-4da7-aee8-d6696201e44a	auth-service	\N	client_not_found	172.18.0.13	e800c4cb-db3a-4a31-8496-6d3b373e78b4	\N	1775630273842	CLIENT_LOGIN_ERROR	\N	{"grant_type":"client_credentials"}
+62c57156-0d19-4eb8-b70d-bfd8f6eb7e54	final-fn-pms	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	HWtLJBZJwhnRXSl1BHEXxy4_	1775630523218	LOGIN	a54df9d5-ff7c-4355-a05d-d319e83416d0	{"auth_method":"openid-connect","auth_type":"code","response_type":"code","redirect_uri":"https://auth.gururajhr.in/auth/callback/final-fn-pms","consent":"no_consent_required","code_id":"HWtLJBZJwhnRXSl1BHEXxy4_","response_mode":"query","username":"swaragh091@gmail.com"}
+df92f090-16e5-443f-bb83-22303a04ea3e	final-fn-pms	\N	\N	172.18.0.13	e800c4cb-db3a-4a31-8496-6d3b373e78b4	HWtLJBZJwhnRXSl1BHEXxy4_	1775630523282	CODE_TO_TOKEN	a54df9d5-ff7c-4355-a05d-d319e83416d0	{"token_id":"onrtac:ddd13a21-1245-8d42-ee34-ff3e8c81a91c","grant_type":"authorization_code","refresh_token_type":"Refresh","scope":"openid email microprofile-jwt identity_provider_scope profile","refresh_token_id":"b73526df-7683-1aec-614f-bf50a9285c9d","code_id":"HWtLJBZJwhnRXSl1BHEXxy4_","client_auth_method":"client-secret"}
+90b25710-b6db-498c-b3f0-9f4743b612bf	final-fn-pms	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	HWtLJBZJwhnRXSl1BHEXxy4_	1775631279962	LOGIN	a54df9d5-ff7c-4355-a05d-d319e83416d0	{"auth_method":"openid-connect","auth_type":"code","response_type":"code","redirect_uri":"https://auth.gururajhr.in/auth/callback/final-fn-pms","consent":"no_consent_required","code_id":"HWtLJBZJwhnRXSl1BHEXxy4_","response_mode":"query","username":"swaragh091@gmail.com"}
+10ba1acc-4539-4e9c-b97b-1ab946d0e11f	final-fn-pms	\N	\N	172.18.0.13	e800c4cb-db3a-4a31-8496-6d3b373e78b4	HWtLJBZJwhnRXSl1BHEXxy4_	1775631280045	CODE_TO_TOKEN	a54df9d5-ff7c-4355-a05d-d319e83416d0	{"token_id":"onrtac:2d0f4072-d59b-9c0c-a504-dab95e0fbf77","grant_type":"authorization_code","refresh_token_type":"Refresh","scope":"openid email microprofile-jwt identity_provider_scope profile","refresh_token_id":"215b72b3-3bd5-8fc6-4a12-132762d16cfe","code_id":"HWtLJBZJwhnRXSl1BHEXxy4_","client_auth_method":"client-secret"}
+d0d61228-a6d7-491f-b5f6-d0d2a534e72c	final-fn-pms	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	bk8eNyU4V640WjXhW-GsLd91	1775633435546	LOGIN	a54df9d5-ff7c-4355-a05d-d319e83416d0	{"auth_method":"openid-connect","auth_type":"code","response_type":"code","redirect_uri":"https://auth.gururajhr.in/auth/callback/final-fn-pms","consent":"no_consent_required","code_id":"bk8eNyU4V640WjXhW-GsLd91","username":"swaragh091@gmail.com","response_mode":"query"}
+b37c6df8-71a0-4ab5-8115-bc97e7199a13	final-fn-pms	\N	\N	172.18.0.13	e800c4cb-db3a-4a31-8496-6d3b373e78b4	bk8eNyU4V640WjXhW-GsLd91	1775633435609	CODE_TO_TOKEN	a54df9d5-ff7c-4355-a05d-d319e83416d0	{"token_id":"onrtac:18014d53-a0dc-b712-dae1-4caa728da96f","grant_type":"authorization_code","refresh_token_type":"Refresh","scope":"openid email microprofile-jwt identity_provider_scope profile","refresh_token_id":"336c954c-9f7e-d00d-c8ae-ae022f28c5c0","code_id":"bk8eNyU4V640WjXhW-GsLd91","client_auth_method":"client-secret"}
+c1ef36db-9986-4434-9810-6f2b1a9c2c60	final-fn-pms	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	bk8eNyU4V640WjXhW-GsLd91	1775634339541	LOGIN	a54df9d5-ff7c-4355-a05d-d319e83416d0	{"auth_method":"openid-connect","auth_type":"code","response_type":"code","redirect_uri":"https://auth.gururajhr.in/auth/callback/final-fn-pms","consent":"no_consent_required","code_id":"bk8eNyU4V640WjXhW-GsLd91","response_mode":"query","username":"swaragh091@gmail.com"}
+fdd5aca9-8f74-4162-a77f-61b4139094d0	final-fn-pms	\N	\N	172.18.0.13	e800c4cb-db3a-4a31-8496-6d3b373e78b4	bk8eNyU4V640WjXhW-GsLd91	1775634339717	CODE_TO_TOKEN	a54df9d5-ff7c-4355-a05d-d319e83416d0	{"token_id":"onrtac:82dd7946-ab57-b66c-f58b-540a1f796843","grant_type":"authorization_code","refresh_token_type":"Refresh","scope":"openid email microprofile-jwt identity_provider_scope profile","refresh_token_id":"cb5af43b-2b5b-7fff-953f-05860c81b25b","code_id":"bk8eNyU4V640WjXhW-GsLd91","client_auth_method":"client-secret"}
+345d02e6-5e78-4700-ac88-20bf6756270e	final-fn-pms	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	QHPwksCvVIgj3rKfWroHGC1s	1775637504228	LOGIN	a54df9d5-ff7c-4355-a05d-d319e83416d0	{"auth_method":"openid-connect","auth_type":"code","response_type":"code","redirect_uri":"https://auth.gururajhr.in/auth/callback/final-fn-pms","consent":"no_consent_required","code_id":"QHPwksCvVIgj3rKfWroHGC1s","username":"swaragh091@gmail.com","response_mode":"query"}
+90dbde00-02b1-44d2-99a0-37f02a112f0b	final-fn-pms	\N	\N	172.18.0.13	e800c4cb-db3a-4a31-8496-6d3b373e78b4	QHPwksCvVIgj3rKfWroHGC1s	1775637504315	CODE_TO_TOKEN	a54df9d5-ff7c-4355-a05d-d319e83416d0	{"token_id":"onrtac:df477868-6950-0924-927b-65f04e740fa4","grant_type":"authorization_code","refresh_token_type":"Refresh","scope":"openid email microprofile-jwt identity_provider_scope profile","refresh_token_id":"59084d29-6429-607a-abac-0c91993ce860","code_id":"QHPwksCvVIgj3rKfWroHGC1s","client_auth_method":"client-secret"}
+36aac9d5-894c-4200-b2e4-8ab49bf5149d	final-fn-pms	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	QHPwksCvVIgj3rKfWroHGC1s	1775637845581	LOGIN	a54df9d5-ff7c-4355-a05d-d319e83416d0	{"auth_method":"openid-connect","auth_type":"code","response_type":"code","redirect_uri":"https://auth.gururajhr.in/auth/callback/final-fn-pms","consent":"no_consent_required","code_id":"QHPwksCvVIgj3rKfWroHGC1s","response_mode":"query","username":"swaragh091@gmail.com"}
+953032bf-48f3-44c1-bb67-93770b0f6d58	final-fn-pms	\N	\N	172.18.0.13	e800c4cb-db3a-4a31-8496-6d3b373e78b4	QHPwksCvVIgj3rKfWroHGC1s	1775637845634	CODE_TO_TOKEN	a54df9d5-ff7c-4355-a05d-d319e83416d0	{"token_id":"onrtac:dc4f2ee8-8b90-3ec3-1ea7-b127532f618e","grant_type":"authorization_code","refresh_token_type":"Refresh","scope":"openid email microprofile-jwt identity_provider_scope profile","refresh_token_id":"bd653659-30c0-70a9-d36d-99390e1f7593","code_id":"QHPwksCvVIgj3rKfWroHGC1s","client_auth_method":"client-secret"}
+8c35a679-fed5-45d8-a4df-54ef726eeb07	account-ui	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	QHPwksCvVIgj3rKfWroHGC1s	1775638034088	LOGIN	a54df9d5-ff7c-4355-a05d-d319e83416d0	{"auth_method":"openid-connect","auth_type":"code","response_type":"code","redirect_uri":"https://auth.gururajhr.in/auth/callback/account-ui","consent":"no_consent_required","code_id":"QHPwksCvVIgj3rKfWroHGC1s","response_mode":"query","username":"swaragh091@gmail.com"}
+2905b27f-efa9-4f81-94aa-e01949a7d395	account-ui	\N	\N	172.18.0.13	e800c4cb-db3a-4a31-8496-6d3b373e78b4	QHPwksCvVIgj3rKfWroHGC1s	1775638034160	CODE_TO_TOKEN	a54df9d5-ff7c-4355-a05d-d319e83416d0	{"token_id":"onrtac:ed59042d-20ad-8803-c1e9-82465345b5af","grant_type":"authorization_code","refresh_token_type":"Refresh","scope":"openid email microprofile-jwt identity_provider_scope profile","refresh_token_id":"bf38325b-6d14-80d0-e2df-b6643fad0c90","code_id":"QHPwksCvVIgj3rKfWroHGC1s","client_auth_method":"client-secret"}
+80267bba-4784-4854-90a2-98566a90462b	final-fn-pms	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	QHPwksCvVIgj3rKfWroHGC1s	1775638559503	LOGIN	a54df9d5-ff7c-4355-a05d-d319e83416d0	{"auth_method":"openid-connect","auth_type":"code","response_type":"code","redirect_uri":"https://auth.gururajhr.in/auth/callback/final-fn-pms","consent":"no_consent_required","code_id":"QHPwksCvVIgj3rKfWroHGC1s","response_mode":"query","username":"swaragh091@gmail.com"}
+2b6c9447-5772-4ee8-a438-6c1a74ba5e03	final-fn-pms	\N	\N	172.18.0.13	e800c4cb-db3a-4a31-8496-6d3b373e78b4	QHPwksCvVIgj3rKfWroHGC1s	1775638559617	CODE_TO_TOKEN	a54df9d5-ff7c-4355-a05d-d319e83416d0	{"token_id":"onrtac:38a7b714-7295-51b4-c1ac-e188603c8600","grant_type":"authorization_code","refresh_token_type":"Refresh","scope":"openid email microprofile-jwt identity_provider_scope profile","refresh_token_id":"97d270de-7ff9-eaf5-d5ef-f0e1cb6041ef","code_id":"QHPwksCvVIgj3rKfWroHGC1s","client_auth_method":"client-secret"}
+4c63d05a-d4b8-487e-9230-0e726645c3b7	pms-service	\N	client_not_found	172.18.0.11	e800c4cb-db3a-4a31-8496-6d3b373e78b4	\N	1775639768201	CLIENT_LOGIN_ERROR	\N	{"grant_type":"client_credentials"}
+63a35162-2184-406f-b988-38780b7b8571	final-fn-pms	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	QHPwksCvVIgj3rKfWroHGC1s	1775638774497	LOGIN	a54df9d5-ff7c-4355-a05d-d319e83416d0	{"auth_method":"openid-connect","auth_type":"code","response_type":"code","redirect_uri":"https://auth.gururajhr.in/auth/callback/final-fn-pms","consent":"no_consent_required","code_id":"QHPwksCvVIgj3rKfWroHGC1s","response_mode":"query","username":"swaragh091@gmail.com"}
+07e63260-7ab5-4b72-b75b-ac94eb694533	final-fn-pms	\N	\N	172.18.0.13	e800c4cb-db3a-4a31-8496-6d3b373e78b4	QHPwksCvVIgj3rKfWroHGC1s	1775638774575	CODE_TO_TOKEN	a54df9d5-ff7c-4355-a05d-d319e83416d0	{"token_id":"onrtac:00fde3cd-f0d3-239c-e630-0105b2ce98ed","grant_type":"authorization_code","refresh_token_type":"Refresh","scope":"openid email microprofile-jwt identity_provider_scope profile","refresh_token_id":"1993f087-1166-1327-5a11-07033903de57","code_id":"QHPwksCvVIgj3rKfWroHGC1s","client_auth_method":"client-secret"}
+b93bd2c9-c112-45da-bce8-bcb5a55c64e0	final-fn-pms	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	QHPwksCvVIgj3rKfWroHGC1s	1775638970238	LOGIN	a54df9d5-ff7c-4355-a05d-d319e83416d0	{"auth_method":"openid-connect","auth_type":"code","response_type":"code","redirect_uri":"https://auth.gururajhr.in/auth/callback/final-fn-pms","consent":"no_consent_required","code_id":"QHPwksCvVIgj3rKfWroHGC1s","response_mode":"query","username":"swaragh091@gmail.com"}
+7737d3d8-73ed-4887-8264-f5eb409ea2d8	final-fn-pms	\N	\N	172.18.0.13	e800c4cb-db3a-4a31-8496-6d3b373e78b4	QHPwksCvVIgj3rKfWroHGC1s	1775638970304	CODE_TO_TOKEN	a54df9d5-ff7c-4355-a05d-d319e83416d0	{"token_id":"onrtac:3f1c87bb-69d9-9463-8c5c-f78be9b97038","grant_type":"authorization_code","refresh_token_type":"Refresh","scope":"openid email microprofile-jwt identity_provider_scope profile","refresh_token_id":"3ee12c75-246b-9391-575e-7afc03d82035","code_id":"QHPwksCvVIgj3rKfWroHGC1s","client_auth_method":"client-secret"}
+d0caf2c7-ea02-4d92-89bc-aa060a363786	final-fn-pms	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	QHPwksCvVIgj3rKfWroHGC1s	1775639152740	LOGIN	a54df9d5-ff7c-4355-a05d-d319e83416d0	{"auth_method":"openid-connect","auth_type":"code","response_type":"code","redirect_uri":"https://auth.gururajhr.in/auth/callback/final-fn-pms","consent":"no_consent_required","code_id":"QHPwksCvVIgj3rKfWroHGC1s","response_mode":"query","username":"swaragh091@gmail.com"}
+d0516b27-39f6-43d1-9b79-28c04c7004ef	final-fn-pms	\N	\N	172.18.0.13	e800c4cb-db3a-4a31-8496-6d3b373e78b4	QHPwksCvVIgj3rKfWroHGC1s	1775639152899	CODE_TO_TOKEN	a54df9d5-ff7c-4355-a05d-d319e83416d0	{"token_id":"onrtac:a192099f-a5f3-16da-8d66-df73de90ed62","grant_type":"authorization_code","refresh_token_type":"Refresh","scope":"openid email microprofile-jwt identity_provider_scope profile","refresh_token_id":"b7fcbb6a-a3bd-de04-a6fd-f3ebd74b622d","code_id":"QHPwksCvVIgj3rKfWroHGC1s","client_auth_method":"client-secret"}
+d14dfd75-6f2e-4779-8faa-052d1ad3f0d7	account-ui	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	QHPwksCvVIgj3rKfWroHGC1s	1775639173843	LOGIN	a54df9d5-ff7c-4355-a05d-d319e83416d0	{"auth_method":"openid-connect","auth_type":"code","response_type":"code","redirect_uri":"https://auth.gururajhr.in/auth/callback/account-ui","consent":"no_consent_required","code_id":"QHPwksCvVIgj3rKfWroHGC1s","response_mode":"query","username":"swaragh091@gmail.com"}
+0430eaaf-2184-4b2b-ab1b-e2a59bb7a0ca	account-ui	\N	\N	172.18.0.13	e800c4cb-db3a-4a31-8496-6d3b373e78b4	QHPwksCvVIgj3rKfWroHGC1s	1775639173878	CODE_TO_TOKEN	a54df9d5-ff7c-4355-a05d-d319e83416d0	{"token_id":"onrtac:0d52baab-5666-e12d-dea6-28b2faaa6da0","grant_type":"authorization_code","refresh_token_type":"Refresh","scope":"openid email microprofile-jwt identity_provider_scope profile","refresh_token_id":"6a8ac3a0-7cdc-5bc8-7ab5-34354da9a5d4","code_id":"QHPwksCvVIgj3rKfWroHGC1s","client_auth_method":"client-secret"}
+8a9fb18d-9b55-46ab-a248-7f4dcd5269e2	final-fn-pms	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	QHPwksCvVIgj3rKfWroHGC1s	1775639345114	LOGIN	a54df9d5-ff7c-4355-a05d-d319e83416d0	{"auth_method":"openid-connect","auth_type":"code","response_type":"code","redirect_uri":"https://auth.gururajhr.in/auth/callback/final-fn-pms","consent":"no_consent_required","code_id":"QHPwksCvVIgj3rKfWroHGC1s","response_mode":"query","username":"swaragh091@gmail.com"}
+d6ba5d6a-1c88-45e7-beba-6d68f66d2613	final-fn-pms	\N	\N	172.18.0.13	e800c4cb-db3a-4a31-8496-6d3b373e78b4	QHPwksCvVIgj3rKfWroHGC1s	1775639345204	CODE_TO_TOKEN	a54df9d5-ff7c-4355-a05d-d319e83416d0	{"token_id":"onrtac:1fe1bb44-d780-5124-38e1-2417fe1139cd","grant_type":"authorization_code","refresh_token_type":"Refresh","scope":"openid email microprofile-jwt identity_provider_scope profile","refresh_token_id":"ac66a81f-842f-21ff-ca16-71861381b121","code_id":"QHPwksCvVIgj3rKfWroHGC1s","client_auth_method":"client-secret"}
+54d280c5-2662-4b0f-83a8-a1200189bca9	final-fn-pms	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	QHPwksCvVIgj3rKfWroHGC1s	1775639710540	LOGIN	a54df9d5-ff7c-4355-a05d-d319e83416d0	{"auth_method":"openid-connect","auth_type":"code","response_type":"code","redirect_uri":"https://auth.gururajhr.in/auth/callback/final-fn-pms","consent":"no_consent_required","code_id":"QHPwksCvVIgj3rKfWroHGC1s","response_mode":"query","username":"swaragh091@gmail.com"}
+68b3a940-6b1b-4e5a-997d-0bb163c772eb	final-fn-pms	\N	\N	172.18.0.13	e800c4cb-db3a-4a31-8496-6d3b373e78b4	QHPwksCvVIgj3rKfWroHGC1s	1775639710648	CODE_TO_TOKEN	a54df9d5-ff7c-4355-a05d-d319e83416d0	{"token_id":"onrtac:7190e9bd-d467-f47d-fa1e-2720364cab98","grant_type":"authorization_code","refresh_token_type":"Refresh","scope":"openid email microprofile-jwt identity_provider_scope profile","refresh_token_id":"3949a0b2-6ca2-c30c-5d73-2d23b70c21a9","code_id":"QHPwksCvVIgj3rKfWroHGC1s","client_auth_method":"client-secret"}
+436d698a-b0ba-410a-8f53-d0a7675a9263	pms-service	\N	client_not_found	172.18.0.11	e800c4cb-db3a-4a31-8496-6d3b373e78b4	\N	1775639785516	CLIENT_LOGIN_ERROR	\N	{"grant_type":"client_credentials"}
+a63c877b-cbc5-43aa-a9c2-a22eed7ccb88	pms-service	\N	client_not_found	172.18.0.11	e800c4cb-db3a-4a31-8496-6d3b373e78b4	\N	1775639785562	CLIENT_LOGIN_ERROR	\N	{"grant_type":"client_credentials"}
+400139ba-bd93-4945-88e4-8a1c40ca88b5	pms-service	\N	client_not_found	172.18.0.11	e800c4cb-db3a-4a31-8496-6d3b373e78b4	\N	1775639869956	CLIENT_LOGIN_ERROR	\N	{"grant_type":"client_credentials"}
+12ae9191-527f-4b14-9f8c-8a4faae784f0	pms-service	\N	client_not_found	172.18.0.11	e800c4cb-db3a-4a31-8496-6d3b373e78b4	\N	1775639870062	CLIENT_LOGIN_ERROR	\N	{"grant_type":"client_credentials"}
+39b2686b-16bc-4299-af9f-7a0e7cadce44	account-ui	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	QHPwksCvVIgj3rKfWroHGC1s	1775641432317	LOGIN	a54df9d5-ff7c-4355-a05d-d319e83416d0	{"auth_method":"openid-connect","auth_type":"code","response_type":"code","redirect_uri":"https://auth.gururajhr.in/auth/callback/account-ui","consent":"no_consent_required","code_id":"QHPwksCvVIgj3rKfWroHGC1s","response_mode":"query","username":"swaragh091@gmail.com"}
+3452c9f5-d9e7-4de9-a92b-d01d67f29245	final-fn-pms	\N	user_not_found	172.18.0.6	e800c4cb-db3a-4a31-8496-6d3b373e78b4	\N	1775643544010	LOGIN_ERROR	\N	{"auth_method":"openid-connect","grant_type":"password","client_auth_method":"client-secret","username":"test@example.com"}
+8ea9000f-fdbb-4637-bb82-c2ac9859d9ae	account-ui	\N	\N	172.18.0.13	e800c4cb-db3a-4a31-8496-6d3b373e78b4	QHPwksCvVIgj3rKfWroHGC1s	1775641432485	CODE_TO_TOKEN	a54df9d5-ff7c-4355-a05d-d319e83416d0	{"token_id":"onrtac:01f649b1-a90f-c68e-cf1a-bcdc6a78ba3a","grant_type":"authorization_code","refresh_token_type":"Refresh","scope":"openid email microprofile-jwt identity_provider_scope profile","refresh_token_id":"c2fd5eff-8871-d349-9f16-d1c8a1adf527","code_id":"QHPwksCvVIgj3rKfWroHGC1s","client_auth_method":"client-secret"}
+8e94c016-93ee-402f-9e33-f84a21201050	final-fn-pms	\N	invalid_client_credentials	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	\N	1775641505081	CLIENT_LOGIN_ERROR	\N	{"grant_type":"client_credentials"}
+f103baa7-ce5e-496c-8a53-e1bbf96fd826	final-fn-pms	\N	invalid_client_credentials	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	\N	1775641521497	CLIENT_LOGIN_ERROR	\N	{"grant_type":"client_credentials"}
+54d60db2-27cc-4dd9-a8d6-357393b47262	final-fn-pms	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	QHPwksCvVIgj3rKfWroHGC1s	1775642106503	LOGIN	a54df9d5-ff7c-4355-a05d-d319e83416d0	{"auth_method":"openid-connect","auth_type":"code","response_type":"code","redirect_uri":"https://auth.gururajhr.in/auth/callback/final-fn-pms","consent":"no_consent_required","code_id":"QHPwksCvVIgj3rKfWroHGC1s","response_mode":"query","username":"swaragh091@gmail.com"}
+a4f87206-f7ee-4a38-971a-35eb406e07d9	final-fn-pms	\N	\N	172.18.0.13	e800c4cb-db3a-4a31-8496-6d3b373e78b4	QHPwksCvVIgj3rKfWroHGC1s	1775642106592	CODE_TO_TOKEN	a54df9d5-ff7c-4355-a05d-d319e83416d0	{"token_id":"onrtac:3e55ff00-edfb-eff5-2176-76602eb2d4cd","grant_type":"authorization_code","refresh_token_type":"Refresh","scope":"openid email microprofile-jwt identity_provider_scope profile","refresh_token_id":"7e8dc483-b2eb-144c-ff81-f19276320394","code_id":"QHPwksCvVIgj3rKfWroHGC1s","client_auth_method":"client-secret"}
+5697522d-2b92-4d79-b2f2-e1b35e36c711	account-ui	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	QHPwksCvVIgj3rKfWroHGC1s	1775642151833	LOGIN	a54df9d5-ff7c-4355-a05d-d319e83416d0	{"auth_method":"openid-connect","auth_type":"code","response_type":"code","redirect_uri":"https://auth.gururajhr.in/auth/callback/account-ui","consent":"no_consent_required","code_id":"QHPwksCvVIgj3rKfWroHGC1s","response_mode":"query","username":"swaragh091@gmail.com"}
+e905fdff-ecb0-4223-ae5e-7460097ca262	account-ui	\N	\N	172.18.0.13	e800c4cb-db3a-4a31-8496-6d3b373e78b4	QHPwksCvVIgj3rKfWroHGC1s	1775642151874	CODE_TO_TOKEN	a54df9d5-ff7c-4355-a05d-d319e83416d0	{"token_id":"onrtac:a1e0bae6-3d2f-d8ce-80d2-41c851819417","grant_type":"authorization_code","refresh_token_type":"Refresh","scope":"openid email microprofile-jwt identity_provider_scope profile","refresh_token_id":"750b4e48-4768-ac34-9a98-6037ed807ed7","code_id":"QHPwksCvVIgj3rKfWroHGC1s","client_auth_method":"client-secret"}
+1e8fd9de-0da6-4a89-b8de-4fee880750d5	final-fn-pms	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	QHPwksCvVIgj3rKfWroHGC1s	1775642413860	LOGIN	a54df9d5-ff7c-4355-a05d-d319e83416d0	{"auth_method":"openid-connect","auth_type":"code","response_type":"code","redirect_uri":"https://auth.gururajhr.in/auth/callback/final-fn-pms","consent":"no_consent_required","code_id":"QHPwksCvVIgj3rKfWroHGC1s","response_mode":"query","username":"swaragh091@gmail.com"}
+8f6af4ae-df5c-4205-966b-782d277c541a	final-fn-pms	\N	\N	172.18.0.13	e800c4cb-db3a-4a31-8496-6d3b373e78b4	QHPwksCvVIgj3rKfWroHGC1s	1775642413955	CODE_TO_TOKEN	a54df9d5-ff7c-4355-a05d-d319e83416d0	{"token_id":"onrtac:2abefbce-2fe8-6dc0-b7a9-cba8de93be89","grant_type":"authorization_code","refresh_token_type":"Refresh","scope":"openid email microprofile-jwt identity_provider_scope profile","refresh_token_id":"7825d1c9-625d-0325-45ac-5f0edca64f37","code_id":"QHPwksCvVIgj3rKfWroHGC1s","client_auth_method":"client-secret"}
+ccfcb364-7541-49ee-a6dc-11b9433c096b	final-fn-pms	\N	invalid_client	172.18.0.13	e800c4cb-db3a-4a31-8496-6d3b373e78b4	\N	1775642543864	CLIENT_LOGIN_ERROR	\N	{"reason":"Client not enabled to retrieve service account","grant_type":"client_credentials","client_auth_method":"client-secret"}
+62222f41-2a24-4cbc-9aa8-7b7399797b41	final-fn-pms	\N	invalid_client	172.18.0.13	e800c4cb-db3a-4a31-8496-6d3b373e78b4	\N	1775642562251	CLIENT_LOGIN_ERROR	\N	{"reason":"Client not enabled to retrieve service account","grant_type":"client_credentials","client_auth_method":"client-secret"}
+dd1d45e4-f2a0-4f98-a291-6d2b70b8dc03	final-fn-pms	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	QHPwksCvVIgj3rKfWroHGC1s	1775642750958	LOGIN	a54df9d5-ff7c-4355-a05d-d319e83416d0	{"auth_method":"openid-connect","auth_type":"code","response_type":"code","redirect_uri":"https://auth.gururajhr.in/auth/callback/final-fn-pms","consent":"no_consent_required","code_id":"QHPwksCvVIgj3rKfWroHGC1s","response_mode":"query","username":"swaragh091@gmail.com"}
+0aaf86fa-50f5-42ef-aa7f-a008b971093a	final-fn-pms	\N	\N	172.18.0.13	e800c4cb-db3a-4a31-8496-6d3b373e78b4	QHPwksCvVIgj3rKfWroHGC1s	1775642751021	CODE_TO_TOKEN	a54df9d5-ff7c-4355-a05d-d319e83416d0	{"token_id":"onrtac:a53edf80-d984-b4bd-4769-25c69b844013","grant_type":"authorization_code","refresh_token_type":"Refresh","scope":"openid email microprofile-jwt identity_provider_scope profile","refresh_token_id":"c50752bc-cc60-7da1-1193-52f037473754","code_id":"QHPwksCvVIgj3rKfWroHGC1s","client_auth_method":"client-secret"}
+d97eff52-714b-4820-baa7-17e3dcd68180	final-fn-pms	\N	invalid_user_credentials	172.18.0.6	e800c4cb-db3a-4a31-8496-6d3b373e78b4	\N	1775643595027	LOGIN_ERROR	49bf45ab-6c52-4742-8cc8-7f7b11640ef1	{"auth_method":"openid-connect","grant_type":"password","client_auth_method":"client-secret","username":"swaragh82@gmail.com"}
+821a7053-84b0-4bee-84de-bc3691b2aafa	final-fn-pms	\N	\N	172.18.0.1	e800c4cb-db3a-4a31-8496-6d3b373e78b4	EtKMnfZGfydHE06QDhK3T-YJ	1775644651717	LOGIN	a54df9d5-ff7c-4355-a05d-d319e83416d0	{"auth_method":"openid-connect","auth_type":"code","response_type":"code","redirect_uri":"https://auth.gururajhr.in/auth/callback/final-fn-pms","consent":"no_consent_required","code_id":"EtKMnfZGfydHE06QDhK3T-YJ","username":"swaragh091@gmail.com","response_mode":"query"}
+995d5c5f-5b2c-438b-86a9-703718a686c3	final-fn-pms	\N	\N	172.18.0.6	e800c4cb-db3a-4a31-8496-6d3b373e78b4	EtKMnfZGfydHE06QDhK3T-YJ	1775644652273	CODE_TO_TOKEN	a54df9d5-ff7c-4355-a05d-d319e83416d0	{"token_id":"onrtac:7cedd607-17b8-90c4-0581-b0bf5b1cc7a0","grant_type":"authorization_code","refresh_token_type":"Refresh","scope":"openid email microprofile-jwt identity_provider_scope profile","refresh_token_id":"d285c7ed-804c-609a-b30c-06f3dc86cffa","code_id":"EtKMnfZGfydHE06QDhK3T-YJ","client_auth_method":"client-secret"}
+f1d6b3f9-d90b-466a-aa08-20207fa09c32	pms-service	\N	client_not_found	172.18.0.11	e800c4cb-db3a-4a31-8496-6d3b373e78b4	\N	1775644794416	CLIENT_LOGIN_ERROR	\N	{"grant_type":"client_credentials"}
+6b0ec3fa-b4e8-47d8-9dc5-ba97cb6874a9	pms-service	\N	client_not_found	172.18.0.11	e800c4cb-db3a-4a31-8496-6d3b373e78b4	\N	1775644794492	CLIENT_LOGIN_ERROR	\N	{"grant_type":"client_credentials"}
 \.
 
 
@@ -6661,6 +6370,7 @@ COPY public.idp_mapper_config (idp_mapper_id, value, name) FROM stdin;
 --
 
 COPY public.jgroups_ping (address, name, cluster_name, ip, coord) FROM stdin;
+uuid://00000000-0000-0000-0000-000000000008	d4d30e848ff6-8205	ISPN	172.18.0.3:7800	t
 \.
 
 
@@ -6668,9 +6378,9 @@ COPY public.jgroups_ping (address, name, cluster_name, ip, coord) FROM stdin;
 -- Data for Name: keycloak_group; Type: TABLE DATA; Schema: public; Owner: keycloak
 --
 
-COPY public.keycloak_group (id, name, parent_group, realm_id, type) FROM stdin;
-f53ca577-7822-45d5-96a8-baff966d64b4	appointment	 	e800c4cb-db3a-4a31-8496-6d3b373e78b4	0
-2f87ccb8-ffae-470f-83a1-6a54fa9bc0cc	spidy	 	30f13b6b-cd7a-4695-be38-a43d23a0e1a4	0
+COPY public.keycloak_group (id, name, parent_group, realm_id, type, description) FROM stdin;
+f53ca577-7822-45d5-96a8-baff966d64b4	appointment	 	e800c4cb-db3a-4a31-8496-6d3b373e78b4	0	\N
+2f87ccb8-ffae-470f-83a1-6a54fa9bc0cc	spidy	 	30f13b6b-cd7a-4695-be38-a43d23a0e1a4	0	\N
 \.
 
 
@@ -6792,6 +6502,7 @@ ba68a950-3a4e-45df-87e0-86c4263bd522	51df704a-6478-4b83-bdef-23aee1962fb3	t	${ro
 37206610-c1ba-40dc-80c9-1f34bac48d6c	51df704a-6478-4b83-bdef-23aee1962fb3	t	${role_query-groups}	query-groups	185230e8-ba54-44fa-8d4c-b14ee2caaec2	51df704a-6478-4b83-bdef-23aee1962fb3	\N
 42d79572-18d5-4b02-bc87-613088febf1b	0cc481a4-52f3-4761-8a43-121835860b3d	t	${role_realm-admin}	realm-admin	e800c4cb-db3a-4a31-8496-6d3b373e78b4	0cc481a4-52f3-4761-8a43-121835860b3d	\N
 6182624c-c824-48e7-91c7-ffd6e4374fad	0cc481a4-52f3-4761-8a43-121835860b3d	t	${role_create-client}	create-client	e800c4cb-db3a-4a31-8496-6d3b373e78b4	0cc481a4-52f3-4761-8a43-121835860b3d	\N
+6246ae48-3b78-43fa-9dbb-50b3e0fbed2f	30f13b6b-cd7a-4695-be38-a43d23a0e1a4	f	${role_uma_authorization}	uma_authorization	30f13b6b-cd7a-4695-be38-a43d23a0e1a4	\N	\N
 be7d0d48-e150-4cb9-bed9-25cb083a279c	0cc481a4-52f3-4761-8a43-121835860b3d	t	${role_view-realm}	view-realm	e800c4cb-db3a-4a31-8496-6d3b373e78b4	0cc481a4-52f3-4761-8a43-121835860b3d	\N
 abcf868b-a3cd-456e-8ec4-c47ca9d4a0de	0cc481a4-52f3-4761-8a43-121835860b3d	t	${role_view-users}	view-users	e800c4cb-db3a-4a31-8496-6d3b373e78b4	0cc481a4-52f3-4761-8a43-121835860b3d	\N
 715342da-ebe2-489a-ad55-de11c5dc3c0e	0cc481a4-52f3-4761-8a43-121835860b3d	t	${role_view-clients}	view-clients	e800c4cb-db3a-4a31-8496-6d3b373e78b4	0cc481a4-52f3-4761-8a43-121835860b3d	\N
@@ -6830,6 +6541,7 @@ a6bd3f70-5e90-43bb-ac14-064a5b376e38	1d90f795-0248-4621-977e-f409f6b3081f	t	${ro
 4cfad5c7-f9e7-4a41-96eb-c030ab2d7905	51df704a-6478-4b83-bdef-23aee1962fb3	t	${role_impersonation}	impersonation	185230e8-ba54-44fa-8d4c-b14ee2caaec2	51df704a-6478-4b83-bdef-23aee1962fb3	\N
 1e3a41fe-6765-468e-bf42-692259897425	0cc481a4-52f3-4761-8a43-121835860b3d	t	${role_impersonation}	impersonation	e800c4cb-db3a-4a31-8496-6d3b373e78b4	0cc481a4-52f3-4761-8a43-121835860b3d	\N
 5523d55b-c9ff-41a8-862d-cbe1dbd6c24e	d7c6d5e4-7e6d-42c1-a938-d935d14a695c	f	${role_default-roles}	default-roles-main	d7c6d5e4-7e6d-42c1-a938-d935d14a695c	\N	\N
+b01a1c50-4613-40ce-ae69-b5b1da4fc223	63c427ab-a4a2-430b-ab13-99c04b861734	t	\N	uma_protection	30f13b6b-cd7a-4695-be38-a43d23a0e1a4	63c427ab-a4a2-430b-ab13-99c04b861734	\N
 fe783d34-f250-471c-bdcf-a73043557019	099af096-acca-48a2-8733-9bae13d0e923	t	${role_create-client}	create-client	185230e8-ba54-44fa-8d4c-b14ee2caaec2	099af096-acca-48a2-8733-9bae13d0e923	\N
 dbac4880-1929-46d9-9151-2acce4ea0e61	099af096-acca-48a2-8733-9bae13d0e923	t	${role_view-realm}	view-realm	185230e8-ba54-44fa-8d4c-b14ee2caaec2	099af096-acca-48a2-8733-9bae13d0e923	\N
 fa54477e-79ea-4b56-97f2-72a000110a54	099af096-acca-48a2-8733-9bae13d0e923	t	${role_view-users}	view-users	185230e8-ba54-44fa-8d4c-b14ee2caaec2	099af096-acca-48a2-8733-9bae13d0e923	\N
@@ -7066,8 +6778,6 @@ bbe57138-7fea-4539-b973-0f27ad0a95c8	1b103566-36ae-4bf2-8e5c-275af5c59e2f	t	${ro
 97ee65e2-c1da-499e-a6c9-3b24ee7fd26e	20eb4d21-44c0-4791-8cf7-8890b8c5cb66	t	${role_impersonation}	impersonation	30f13b6b-cd7a-4695-be38-a43d23a0e1a4	20eb4d21-44c0-4791-8cf7-8890b8c5cb66	\N
 1d6ed1ae-4031-4588-8280-c19bfd3ddcd8	56d005d0-7a8a-4881-a001-b25ed7c35737	t	${role_read-token}	read-token	30f13b6b-cd7a-4695-be38-a43d23a0e1a4	56d005d0-7a8a-4881-a001-b25ed7c35737	\N
 4dd11b78-ed98-4acb-9c4b-2fa26e94bb0f	30f13b6b-cd7a-4695-be38-a43d23a0e1a4	f	${role_offline-access}	offline_access	30f13b6b-cd7a-4695-be38-a43d23a0e1a4	\N	\N
-6246ae48-3b78-43fa-9dbb-50b3e0fbed2f	30f13b6b-cd7a-4695-be38-a43d23a0e1a4	f	${role_uma_authorization}	uma_authorization	30f13b6b-cd7a-4695-be38-a43d23a0e1a4	\N	\N
-b01a1c50-4613-40ce-ae69-b5b1da4fc223	63c427ab-a4a2-430b-ab13-99c04b861734	t	\N	uma_protection	30f13b6b-cd7a-4695-be38-a43d23a0e1a4	63c427ab-a4a2-430b-ab13-99c04b861734	\N
 b26c2f18-5cf6-4ec4-b5d2-55b3bd93aaa0	1ae7f743-0c60-4e49-8359-ed59f3dcc653	t	sgvf	user	e800c4cb-db3a-4a31-8496-6d3b373e78b4	1ae7f743-0c60-4e49-8359-ed59f3dcc653	\N
 b4b41678-ee62-4791-bed7-c75eea03529a	1ae7f743-0c60-4e49-8359-ed59f3dcc653	t	\N	uma_protection	e800c4cb-db3a-4a31-8496-6d3b373e78b4	1ae7f743-0c60-4e49-8359-ed59f3dcc653	\N
 3569494d-4437-4b76-a158-f7cb43d6b47d	d5a09c17-e092-4aec-b745-884946c5cb9a	t	${role_manage-users}	manage-users	185230e8-ba54-44fa-8d4c-b14ee2caaec2	d5a09c17-e092-4aec-b745-884946c5cb9a	\N
@@ -7136,6 +6846,7 @@ baf066a6-fb7e-48d7-8f40-3a9567027ca8	7f966227-3189-4911-8305-01f3430303be	t	user
 
 COPY public.migration_model (id, version, update_time) FROM stdin;
 a1col	26.2.5	1751286182
+u79c5	26.5.7	1775554133
 \.
 
 
@@ -7151,7 +6862,7 @@ COPY public.offline_client_session (user_session_id, client_id, offline_flag, "t
 -- Data for Name: offline_user_session; Type: TABLE DATA; Schema: public; Owner: keycloak
 --
 
-COPY public.offline_user_session (user_session_id, user_id, realm_id, created_on, offline_flag, data, last_session_refresh, broker_session_id, version) FROM stdin;
+COPY public.offline_user_session (user_session_id, user_id, realm_id, created_on, offline_flag, data, last_session_refresh, broker_session_id, version, remember_me) FROM stdin;
 \.
 
 
@@ -7172,26 +6883,20 @@ COPY public.org_domain (id, name, verified, org_id) FROM stdin;
 
 
 --
+-- Data for Name: org_invitation; Type: TABLE DATA; Schema: public; Owner: keycloak
+--
+
+COPY public.org_invitation (id, organization_id, email, first_name, last_name, created_at, expires_at, invite_link) FROM stdin;
+\.
+
+
+--
 -- Data for Name: policy_config; Type: TABLE DATA; Schema: public; Owner: keycloak
 --
 
 COPY public.policy_config (policy_id, name, value) FROM stdin;
-b9f407d6-1785-48b9-911f-af78b889b12a	code	// by default, grants any permission associated with this policy\n$evaluation.grant();\n
-297df1e8-1f2a-44fd-b796-b0263eebddf7	defaultResourceType	urn:admin-ui:resources:default
-bb1f6644-46c1-4a45-9cf8-484826f90694	fetchRoles	false
-bb1f6644-46c1-4a45-9cf8-484826f90694	roles	[{"id":"899289e2-ae72-49ff-932c-390490fd9b46","required":false}]
-180698d4-9860-4ae5-99a9-f233b6d41843	fetchRoles	false
-180698d4-9860-4ae5-99a9-f233b6d41843	roles	[{"id":"85d21f8d-6505-4bd1-ab2a-caa5182f4e22","required":true}]
-2daa6107-e287-4cd3-a9fa-1201305e2aa0	defaultResourceType	
 14f8f1c3-ab39-4cec-ad96-15e15f6ef68a	code	// by default, grants any permission associated with this policy\n$evaluation.grant();\n
 e6c1b01b-2a9c-4b1a-b3c9-c910f851c8dd	defaultResourceType	urn:starter:resources:default
-9158c35a-6779-440a-a619-8b59168d18e0	code	// by default, grants any permission associated with this policy\n$evaluation.grant();\n
-ebdd394c-4388-4ec4-9a9d-0efe1ca0862b	defaultResourceType	urn:admin-ui:resources:default
-199858fb-0948-4ac3-90f3-15fe47b05abe	code	// by default, grants any permission associated with this policy\n$evaluation.grant();\n
-8582ad32-16a0-4a0b-b2c3-738c580eb064	defaultResourceType	urn:account-ui:resources:default
-75ea8fd3-b331-4120-8f59-45b1a674fc69	fetchRoles	false
-75ea8fd3-b331-4120-8f59-45b1a674fc69	roles	[{"id":"b26c2f18-5cf6-4ec4-b5d2-55b3bd93aaa0","required":false}]
-7fe124bf-13b7-44a1-a557-4a368ff8fd78	defaultResourceType	
 \.
 
 
@@ -9530,7 +9235,7 @@ tesing1	60	300	300	\N	\N	\N	t	f	0	\N	tesing1	0	\N	f	f	f	f	NONE	1800	36000	f	f	7f
 tesing 	60	300	300	\N	\N	\N	f	f	0	\N	tesing 	0	\N	t	f	f	f	NONE	1800	36000	f	f	34f7575f-7a13-4bdf-8b87-aeec5569417f	1800	f	\N	f	f	f	f	0	1	30	6	HmacSHA1	totp	af28b526-1a61-48a1-8cc8-6ba98f3fdba9	d1619290-2090-4672-98f3-2fdd3859817a	2bc42c70-82be-4f1a-b36f-b548ccd46bb3	411f2041-2eb5-4438-b179-a26132566dd7	8b84bedd-7ae8-4088-abe0-8858ac0b0999	2592000	f	900	t	f	c6dd7f78-fb1e-4f1a-8dde-b5cd9f952626	0	f	0	0	39dd3684-8181-42c2-b365-4c7519c3d8ea
 platform	60	300	300	\N	\N	\N	t	f	0	\N	platform	0	length(8) and upperCase(1) and lowerCase(1) and digits(1) and specialChars(1) and passwordHistory(3)	f	f	f	f	NONE	1800	36000	f	f	d18e72e3-fcfe-4f77-ab04-6ba32210d849	1800	f	\N	f	f	f	f	0	1	30	6	HmacSHA1	totp	f22bc414-3178-444b-9301-6699f30dc8f9	5d23b0f3-a44d-41da-a83e-d4230e195e61	b038cfff-641d-4380-bef3-23db01800bc5	165721af-a2f4-4b3f-9187-9d089198ea08	fd6bb93e-b3a7-4d07-a04f-12e4d60f3a28	2592000	f	900	t	f	9f289921-7745-4348-9765-a81143438f32	0	f	0	0	df55328e-a236-4cb0-b4a8-4e533a6a8d68
 check12	60	300	300	\N	\N	\N	t	f	0	\N	check12	0	\N	f	f	f	f	NONE	1800	36000	f	f	d5a09c17-e092-4aec-b745-884946c5cb9a	1800	f	\N	f	f	f	f	0	1	30	6	HmacSHA1	totp	570f50fb-7df8-4440-be2d-a00ecefc726c	2a5d5ff0-af23-4268-8018-c75e60f65b95	af97543a-998f-49af-8e02-fcdc22b9dbf2	d83bea89-efd7-460d-8f66-ad0836cb2b62	29e4ae07-38c5-4941-92b0-1e325bfd3d02	2592000	f	900	t	f	920de6ea-489c-4683-a69b-ed33c194d453	0	f	0	0	191b9db7-974d-4138-917a-6acf61b222c1
-e800c4cb-db3a-4a31-8496-6d3b373e78b4	60	30000	300	keycloak.v3	keycloak.v2	keycloak	t	t	864000	keycloak.v2	my-projects	0	length(8) and upperCase(1) and lowerCase(1) and digits(1) and specialChars(1) and passwordHistory(3)	t	t	t	f	EXTERNAL	1800	36000	f	t	51df704a-6478-4b83-bdef-23aee1962fb3	1800	t	en	t	t	f	f	0	1	30	6	HmacSHA1	totp	28239a27-bc99-4ecd-9651-6e4a5ab3b442	1f5a1926-0609-475e-b3e7-0490af7b520a	8c3363e2-9228-4899-a531-65f62c11028a	e9189d9f-d921-4bdf-a535-083084c23ef1	286ea7d0-8bbc-41cb-a141-4690e487fbf2	2592000	t	900	t	f	1eb378d9-8a7f-4a6f-9522-fd3a3f965e20	5	f	0	0	e496503f-280d-43be-a30f-9024d1544351
+e800c4cb-db3a-4a31-8496-6d3b373e78b4	60	30000	300	keycloak.v3	keycloak.v2	keycloak	t	t	864000	keycloak.v2	my-projects	0	length(8) and upperCase(1) and lowerCase(1) and digits(1) and specialChars(1) and passwordHistory(3)	t	t	t	f	EXTERNAL	1800	36000	f	f	51df704a-6478-4b83-bdef-23aee1962fb3	1800	t	en	t	t	f	f	0	1	30	6	HmacSHA1	totp	28239a27-bc99-4ecd-9651-6e4a5ab3b442	1f5a1926-0609-475e-b3e7-0490af7b520a	8c3363e2-9228-4899-a531-65f62c11028a	e9189d9f-d921-4bdf-a535-083084c23ef1	286ea7d0-8bbc-41cb-a141-4690e487fbf2	2592000	t	900	t	f	1eb378d9-8a7f-4a6f-9522-fd3a3f965e20	5	f	0	0	e496503f-280d-43be-a30f-9024d1544351
 \.
 
 
@@ -10120,9 +9825,9 @@ tesing 	jboss-logging
 tesing1	jboss-logging
 platform	jboss-logging
 check12	jboss-logging
+30f13b6b-cd7a-4695-be38-a43d23a0e1a4	jboss-logging
 e800c4cb-db3a-4a31-8496-6d3b373e78b4	jboss-logging
 e800c4cb-db3a-4a31-8496-6d3b373e78b4	email
-30f13b6b-cd7a-4695-be38-a43d23a0e1a4	jboss-logging
 \.
 
 
@@ -10162,25 +9867,29 @@ tesing 		from
 tesing 	true	starttls
 tesing 		port
 tesing 	true	ssl
+platform		host
+platform		from
+platform	true	starttls
+platform		port
+platform	true	ssl
+e800c4cb-db3a-4a31-8496-6d3b373e78b4		allowutf8
 e800c4cb-db3a-4a31-8496-6d3b373e78b4	true	debug
 e800c4cb-db3a-4a31-8496-6d3b373e78b4	swaragh	replyToDisplayName
 e800c4cb-db3a-4a31-8496-6d3b373e78b4	true	starttls
 e800c4cb-db3a-4a31-8496-6d3b373e78b4	true	auth
+e800c4cb-db3a-4a31-8496-6d3b373e78b4	10000	writeTimeout
 e800c4cb-db3a-4a31-8496-6d3b373e78b4		envelopeFrom
 e800c4cb-db3a-4a31-8496-6d3b373e78b4	false	ssl
-e800c4cb-db3a-4a31-8496-6d3b373e78b4	aqxtriojfqultloy	password
+e800c4cb-db3a-4a31-8496-6d3b373e78b4	10000	timeout
+e800c4cb-db3a-4a31-8496-6d3b373e78b4	hgpi omcy efxa jvri	password
 e800c4cb-db3a-4a31-8496-6d3b373e78b4	587	port
 e800c4cb-db3a-4a31-8496-6d3b373e78b4	smtp.gmail.com	host
 e800c4cb-db3a-4a31-8496-6d3b373e78b4	swaragh82@gmail.com	replyTo
 e800c4cb-db3a-4a31-8496-6d3b373e78b4	swaragh82@gmail.com	from
 e800c4cb-db3a-4a31-8496-6d3b373e78b4	admin-ui	fromDisplayName
 e800c4cb-db3a-4a31-8496-6d3b373e78b4	basic	authType
-e800c4cb-db3a-4a31-8496-6d3b373e78b4	swaragh82@gmail.com	user
-platform		host
-platform		from
-platform	true	starttls
-platform		port
-platform	true	ssl
+e800c4cb-db3a-4a31-8496-6d3b373e78b4	swaragh091@gmail.com	user
+e800c4cb-db3a-4a31-8496-6d3b373e78b4	10000	connectionTimeout
 \.
 
 
@@ -10214,7 +9923,6 @@ ae8dc4b9-da65-40a4-a270-a643f691ae26	/admin/my-projects/console/*
 4a337a89-e965-40e9-b06b-e910ea3ab309	http://localhost:2020/auth/callback/pms
 7980964d-0724-4a39-b036-274cbf2805c4	http://localhost:4000/auth/callback/nodeapp
 64455bad-11ea-4329-b885-582a59f3ef01	http://localhost:4000/auth/callback/nodesecapp
-f8394892-b347-42ff-b66b-0a2a6e8588a6	http://localhost:4000/auth/callback/admin-ui
 cc128c56-c521-42a0-b5e3-8946ec058dc5	/realms/tesing%20/account/*
 3de8d89d-0421-4fab-b73b-8a7ea696340a	/realms/tesing%20/account/*
 16010462-b770-4ee7-836b-b0258941828e	/admin/tesing%20/console/*
@@ -10302,10 +10010,6 @@ a947f5e2-d347-469f-9a81-d626e4ef3af4	https://auth.local.test:4000/auth/callback/
 f4aa8b57-9f49-4387-ac19-812ad5f0090f	https://auth.local.test:4000/auth/callback/kenchi1
 64e1c831-7b65-4b68-bec8-4d9329eb67fb	https://auth.local.test:4000/auth/callback/work
 0c4d51b6-ce89-49ce-b39f-20d5592087f5	https://auth.local.test:4000/auth/callback/space
-1ae7f743-0c60-4e49-8359-ed59f3dcc653	https://auth.local.test/auth/callback/account-ui
-1ae7f743-0c60-4e49-8359-ed59f3dcc653	https://account.local.test:5174/*
-63c427ab-a4a2-430b-ab13-99c04b861734	https://auth.local.test/auth/callback/admin-ui
-62181cb8-5777-40b7-b17c-0b6c8b648d4f	https://auth.local.test/auth/callback/docker
 b1302a31-b401-4d5f-bdf2-da43e2ee436c	https://auth.local.test:4000/auth/callback/after
 59640b1b-5e83-489f-9144-16e4d0e45543	https://auth.local.test/auth/callback/after1
 3555bdac-49ef-4b27-923f-fe05666ce2b2	https://auth.local.test/auth/callback/pms-local-v1
@@ -10314,6 +10018,17 @@ ab135ac3-c4d5-4a98-9528-1bdc89a60cbd	https://auth.local.test/auth/callback/9890
 0173cc9c-88a8-487c-a3c6-b9c5fb2ed055	https://auth.local.test/auth/callback/author
 77fa6a87-4221-416b-b113-a268db28ed6b	https://auth.local.test/auth/callback/token-test
 25d79daa-2326-419a-b646-18fcc33bb3f8	https://auth.local.test/auth/callback/new-token
+985ac8b3-510f-46a5-84ed-843977dcf115	https://auth.gururajhr.in/auth/callback/final-fn-pms
+6727e456-b726-4690-9350-a7e8e11393d2	https://auth.gururajhr.in/auth/callback/*
+1ae7f743-0c60-4e49-8359-ed59f3dcc653	https://auth.local.test/auth/callback/account-ui
+1ae7f743-0c60-4e49-8359-ed59f3dcc653	https://auth.gururajhr.in/auth/callback/account-ui
+1ae7f743-0c60-4e49-8359-ed59f3dcc653	https://account.local.test:5174/*
+f8394892-b347-42ff-b66b-0a2a6e8588a6	https://auth.gururajhr.in/auth/callback/admin-ui
+f8394892-b347-42ff-b66b-0a2a6e8588a6	http://localhost:4000/auth/callback/admin-ui
+62181cb8-5777-40b7-b17c-0b6c8b648d4f	https://auth.gururajhr.in/auth/callback/docker
+62181cb8-5777-40b7-b17c-0b6c8b648d4f	https://auth.local.test/auth/callback/docker
+63c427ab-a4a2-430b-ab13-99c04b861734	https://auth.local.test/auth/callback/admin-ui
+63c427ab-a4a2-430b-ab13-99c04b861734	https://auth.gururajhr.in/auth/callback/admin-ui
 \.
 
 
@@ -10429,6 +10144,15 @@ a5d1cba8-70c4-49d9-9fa1-8e5ae73b1705	update_user_locale	Update User Locale	check
 2c739255-31e0-4d81-bd40-e22b7c0c6daa	webauthn-register	Webauthn Register	check12	t	f	webauthn-register	70
 0bbfb952-5fb0-4098-9543-513cdc242dad	webauthn-register-passwordless	Webauthn Register Passwordless	check12	t	f	webauthn-register-passwordless	80
 c3947a1f-d7e7-4313-9f53-3fffb0b95b7d	VERIFY_PROFILE	Verify Profile	check12	t	f	VERIFY_PROFILE	90
+60cda4e7-ae17-4148-8098-6e4ded298059	idp_link	Linking Identity Provider	30f13b6b-cd7a-4695-be38-a43d23a0e1a4	t	f	idp_link	120
+cf5b8678-a768-435b-8e91-5ddc64d9743d	idp_link	Linking Identity Provider	ab4c62f9-5c7e-4410-ae31-ae16c76fb815	t	f	idp_link	120
+c723b94f-d1f5-43fb-a518-21765cd0de25	idp_link	Linking Identity Provider	d7c6d5e4-7e6d-42c1-a938-d935d14a695c	t	f	idp_link	120
+911d8798-e978-432d-ab3c-fc52ecfc9a70	idp_link	Linking Identity Provider	tesing1	t	f	idp_link	120
+b8388f6e-04bb-4278-a6cf-f6081857827a	idp_link	Linking Identity Provider	185230e8-ba54-44fa-8d4c-b14ee2caaec2	t	f	idp_link	120
+3c02fc93-0474-4ab8-9911-4001d608a0af	idp_link	Linking Identity Provider	tesing 	t	f	idp_link	120
+3a2b0e08-d35d-40bc-8ed4-a45365379850	idp_link	Linking Identity Provider	platform	t	f	idp_link	120
+c12d6150-fbdf-4a98-8aa9-fc8865230e63	idp_link	Linking Identity Provider	check12	t	f	idp_link	120
+441af952-fc8b-4888-82f0-9d5f66c7c226	idp_link	Linking Identity Provider	e800c4cb-db3a-4a31-8496-6d3b373e78b4	t	f	idp_link	120
 \.
 
 
@@ -10445,9 +10169,6 @@ COPY public.resource_attribute (id, name, value, resource_id) FROM stdin;
 --
 
 COPY public.resource_policy (resource_id, policy_id) FROM stdin;
-e5e11006-ba59-4a1a-9f5d-bee3499984ba	81b579d9-1be2-45e6-9733-9568e3051ff1
-1777d2c3-8115-4ab2-9428-5c4c78fbcd85	2daa6107-e287-4cd3-a9fa-1201305e2aa0
-fb5f0e8c-6977-487a-9a17-42345f2a47e0	7fe124bf-13b7-44a1-a557-4a368ff8fd78
 \.
 
 
@@ -10456,15 +10177,6 @@ fb5f0e8c-6977-487a-9a17-42345f2a47e0	7fe124bf-13b7-44a1-a557-4a368ff8fd78
 --
 
 COPY public.resource_scope (resource_id, scope_id) FROM stdin;
-e5e11006-ba59-4a1a-9f5d-bee3499984ba	68664215-1b71-4df8-8e16-2e8ff2341e00
-e5e11006-ba59-4a1a-9f5d-bee3499984ba	24f27e50-0a30-44dd-87ce-286b97ed929e
-e5e11006-ba59-4a1a-9f5d-bee3499984ba	70736a77-aadd-4941-b063-2c18b9116a3d
-e5e11006-ba59-4a1a-9f5d-bee3499984ba	8dc81d02-501b-4032-a9e4-a0db9e587c9d
-1777d2c3-8115-4ab2-9428-5c4c78fbcd85	68664215-1b71-4df8-8e16-2e8ff2341e00
-1777d2c3-8115-4ab2-9428-5c4c78fbcd85	24f27e50-0a30-44dd-87ce-286b97ed929e
-1777d2c3-8115-4ab2-9428-5c4c78fbcd85	70736a77-aadd-4941-b063-2c18b9116a3d
-1777d2c3-8115-4ab2-9428-5c4c78fbcd85	8dc81d02-501b-4032-a9e4-a0db9e587c9d
-fb5f0e8c-6977-487a-9a17-42345f2a47e0	22acfd30-f660-43f7-a263-52d232b6bd36
 \.
 
 
@@ -10473,10 +10185,7 @@ fb5f0e8c-6977-487a-9a17-42345f2a47e0	22acfd30-f660-43f7-a263-52d232b6bd36
 --
 
 COPY public.resource_server (id, allow_rs_remote_mgmt, policy_enforce_mode, decision_strategy) FROM stdin;
-f8394892-b347-42ff-b66b-0a2a6e8588a6	t	0	1
 28a8141e-7720-4711-9491-a5b2441fd3cb	t	0	1
-63c427ab-a4a2-430b-ab13-99c04b861734	t	0	1
-1ae7f743-0c60-4e49-8359-ed59f3dcc653	t	0	1
 \.
 
 
@@ -10493,20 +10202,8 @@ COPY public.resource_server_perm_ticket (id, owner, requester, created_timestamp
 --
 
 COPY public.resource_server_policy (id, name, description, type, decision_strategy, logic, resource_server_id, owner) FROM stdin;
-b9f407d6-1785-48b9-911f-af78b889b12a	Default Policy	A policy that grants access only for users within this realm	js	0	0	f8394892-b347-42ff-b66b-0a2a6e8588a6	\N
-297df1e8-1f2a-44fd-b796-b0263eebddf7	Default Permission	A permission that applies to the default resource type	resource	1	0	f8394892-b347-42ff-b66b-0a2a6e8588a6	\N
-bb1f6644-46c1-4a45-9cf8-484826f90694	admin-access		role	1	0	f8394892-b347-42ff-b66b-0a2a6e8588a6	\N
-81b579d9-1be2-45e6-9733-9568e3051ff1	user-management-permission		resource	1	0	f8394892-b347-42ff-b66b-0a2a6e8588a6	\N
-180698d4-9860-4ae5-99a9-f233b6d41843	admin-policy		role	1	0	f8394892-b347-42ff-b66b-0a2a6e8588a6	\N
-2daa6107-e287-4cd3-a9fa-1201305e2aa0	chethan		scope	1	0	f8394892-b347-42ff-b66b-0a2a6e8588a6	\N
 14f8f1c3-ab39-4cec-ad96-15e15f6ef68a	Default Policy	A policy that grants access only for users within this realm	js	0	0	28a8141e-7720-4711-9491-a5b2441fd3cb	\N
 e6c1b01b-2a9c-4b1a-b3c9-c910f851c8dd	Default Permission	A permission that applies to the default resource type	resource	1	0	28a8141e-7720-4711-9491-a5b2441fd3cb	\N
-9158c35a-6779-440a-a619-8b59168d18e0	Default Policy	A policy that grants access only for users within this realm	js	0	0	63c427ab-a4a2-430b-ab13-99c04b861734	\N
-ebdd394c-4388-4ec4-9a9d-0efe1ca0862b	Default Permission	A permission that applies to the default resource type	resource	1	0	63c427ab-a4a2-430b-ab13-99c04b861734	\N
-199858fb-0948-4ac3-90f3-15fe47b05abe	Default Policy	A policy that grants access only for users within this realm	js	0	0	1ae7f743-0c60-4e49-8359-ed59f3dcc653	\N
-8582ad32-16a0-4a0b-b2c3-738c580eb064	Default Permission	A permission that applies to the default resource type	resource	1	0	1ae7f743-0c60-4e49-8359-ed59f3dcc653	\N
-75ea8fd3-b331-4120-8f59-45b1a674fc69	adminPolicy	Applies to admin role	role	1	0	1ae7f743-0c60-4e49-8359-ed59f3dcc653	\N
-7fe124bf-13b7-44a1-a557-4a368ff8fd78	admin	srfgv	resource	1	0	1ae7f743-0c60-4e49-8359-ed59f3dcc653	\N
 \.
 
 
@@ -10515,13 +10212,7 @@ ebdd394c-4388-4ec4-9a9d-0efe1ca0862b	Default Permission	A permission that applie
 --
 
 COPY public.resource_server_resource (id, name, type, icon_uri, owner, resource_server_id, owner_managed_access, display_name) FROM stdin;
-2f31e386-cd06-455d-b2a9-4fecbc5ba99a	Default Resource	urn:admin-ui:resources:default	\N	f8394892-b347-42ff-b66b-0a2a6e8588a6	f8394892-b347-42ff-b66b-0a2a6e8588a6	f	\N
-e5e11006-ba59-4a1a-9f5d-bee3499984ba	user-management	api		f8394892-b347-42ff-b66b-0a2a6e8588a6	f8394892-b347-42ff-b66b-0a2a6e8588a6	f	user-management
-1777d2c3-8115-4ab2-9428-5c4c78fbcd85	appointment	api		f8394892-b347-42ff-b66b-0a2a6e8588a6	f8394892-b347-42ff-b66b-0a2a6e8588a6	t	appointment
 45874fb3-07d0-4e33-9244-842108648f1c	Default Resource	urn:starter:resources:default	\N	28a8141e-7720-4711-9491-a5b2441fd3cb	28a8141e-7720-4711-9491-a5b2441fd3cb	f	\N
-86427173-2dfb-4e07-a798-1c7f6b7455b6	Default Resource	urn:admin-ui:resources:default	\N	63c427ab-a4a2-430b-ab13-99c04b861734	63c427ab-a4a2-430b-ab13-99c04b861734	f	\N
-f7da2a02-ddd4-4150-ac16-a52918253fba	Default Resource	urn:account-ui:resources:default	\N	1ae7f743-0c60-4e49-8359-ed59f3dcc653	1ae7f743-0c60-4e49-8359-ed59f3dcc653	f	\N
-fb5f0e8c-6977-487a-9a17-42345f2a47e0	admin	api		1ae7f743-0c60-4e49-8359-ed59f3dcc653	1ae7f743-0c60-4e49-8359-ed59f3dcc653	t	admin
 \.
 
 
@@ -10530,11 +10221,6 @@ fb5f0e8c-6977-487a-9a17-42345f2a47e0	admin	api		1ae7f743-0c60-4e49-8359-ed59f3dc
 --
 
 COPY public.resource_server_scope (id, name, icon_uri, resource_server_id, display_name) FROM stdin;
-24f27e50-0a30-44dd-87ce-286b97ed929e	view		f8394892-b347-42ff-b66b-0a2a6e8588a6	view
-68664215-1b71-4df8-8e16-2e8ff2341e00	delete		f8394892-b347-42ff-b66b-0a2a6e8588a6	delete
-70736a77-aadd-4941-b063-2c18b9116a3d	create		f8394892-b347-42ff-b66b-0a2a6e8588a6	create
-8dc81d02-501b-4032-a9e4-a0db9e587c9d	edit		f8394892-b347-42ff-b66b-0a2a6e8588a6	edit
-22acfd30-f660-43f7-a263-52d232b6bd36	create		1ae7f743-0c60-4e49-8359-ed59f3dcc653	create
 \.
 
 
@@ -10543,13 +10229,7 @@ COPY public.resource_server_scope (id, name, icon_uri, resource_server_id, displ
 --
 
 COPY public.resource_uris (resource_id, value) FROM stdin;
-2f31e386-cd06-455d-b2a9-4fecbc5ba99a	/*
-e5e11006-ba59-4a1a-9f5d-bee3499984ba	/users/*
-1777d2c3-8115-4ab2-9428-5c4c78fbcd85	/users/*
 45874fb3-07d0-4e33-9244-842108648f1c	/*
-86427173-2dfb-4e07-a798-1c7f6b7455b6	/*
-f7da2a02-ddd4-4150-ac16-a52918253fba	/*
-fb5f0e8c-6977-487a-9a17-42345f2a47e0	/admin/*
 \.
 
 
@@ -10601,10 +10281,6 @@ f634a2cd-3c38-48ad-917a-545b03b20586	d6c0a1c2-0fd4-40c7-8fa6-78c3dff4cd09
 --
 
 COPY public.scope_policy (scope_id, policy_id) FROM stdin;
-68664215-1b71-4df8-8e16-2e8ff2341e00	2daa6107-e287-4cd3-a9fa-1201305e2aa0
-24f27e50-0a30-44dd-87ce-286b97ed929e	2daa6107-e287-4cd3-a9fa-1201305e2aa0
-70736a77-aadd-4941-b063-2c18b9116a3d	2daa6107-e287-4cd3-a9fa-1201305e2aa0
-8dc81d02-501b-4032-a9e4-a0db9e587c9d	2daa6107-e287-4cd3-a9fa-1201305e2aa0
 \.
 
 
@@ -10613,7 +10289,8 @@ COPY public.scope_policy (scope_id, policy_id) FROM stdin;
 --
 
 COPY public.server_config (server_config_key, value, version) FROM stdin;
-crt_jgroups	{"prvKey":"MIIEpAIBAAKCAQEAriifr0h3EZAaOhJqFN81r52tTjViZlk0kyFLKfhSGe8w4mw2NrgGeXLRSGo4sCodOEqbuyCr/a0UXRQ8o68EV0ubtE1CsF8JSqpy5fmCFw6Y7UlFJhOMO+i3INIBkdM4p+BSi8IKrqBIuzblGe4o1n+TR/Rcb0Jl7cnw227vvQHUjO6qLW3PMCSRji4bZlymEF3f0sceIyUVFneAEje3Dsay3HXMlhiJvmHdMO+i/hi1htL6ZsUL+YHhBIZeBjXJ9ibOMbUS0vXW9TELl6519PKHjfFjno4ESZieG+lVECfd0jGMOlzQK4cWi+Fsy3VEPuAWeUaeBNxIS0GMTXCyDwIDAQABAoIBAD9MrJ187SoJAj9RKhVj+5NU8ASZCqbAjYdcdoFOrCiY81+YjSvePxwtSzvSv7/nzq8DDw84lMqi+d/K1y93EVDZPkKOQkrwf+QPh6tmwI241ISKOQPZ3wJ3Vvgq3D8wUktSES6S3GcUAtto3GRMV7N+sv1YJ7CYpYuD9nMLIz/CrIIN8InLbSlQKBxg3F/JPiB0Z1SaeNWDUVp87LZn4H5DBc9+MFRN8tBcdrrj36REedu9E8O4CR9Ltigrn5PeuQsFdKvZ6wXpMk6k8l2BgRQA7Ig9Y3Bx2t7NAmQey0zQbSELtSzUkqP499W5ZVezPF9jJL0occzUeKa44ZlfI0ECgYEA5aV0UJyhL/7Qc/7yRI/Nk6Oq4DIwyJeYc1VD3TYPllZ5pCzwWA0HG3VUOP0mZcauzbO2cKXvm3OV7niFoZSYGRm3Y9YbbH9jbes4RczPw2YPnG6yKyW/lWu2k8TfZTCZJqjrdCp6WiFDZLuCdYH9dfX3ldpccC1FL/ZD4IaJCekCgYEAwiUOE1MGPQpoxyVMVsRFaT6Lc23XO3NuSzLBHzENyY7dXvZTB+sPCGtdyGfyZTzfPi/6tgYBXYd110AFo7sEQMUQtrxBO7ch3M9tvC32DkfYz2yxUSvBizCCYHpc9IUyhqdaD19aRwERqEjQKo+ptyDj/LodN+NNRFGJCcUXaTcCgYEAuA7vdfjD3EMAcigBp2AWpeGFAGJZ5TxTrQTG+tLslVND9YkrLXdrnd9hHLgRgXtH+YizjgABVnfC0Lp6aHI/ocaRzQv7OO+1EpF3rcIlN3hixL+YP6rmre0CDde6MVFNPsYeySGOpRSJ/n+nZWVFb7kvskSs2CAAlxtrddZ+mZkCgYBJbN4/7LyFRXSPLMoMXrqprR/sjfRC5csm4ZEsjM7cFg4fJiYM7peG5aRYcQe5xiXgTSESyn6lst+cgvgfDlHzdRR3KAe73+0Mp96mtvNCP2X+POtq+ZN/Yt9MQbr6N43+Yziqa7Om+v6EmNUx45eaTPQs1u7J/ktwtS2Q5luOTQKBgQCbhJltfaVzEF/y32hsq9v/+Au/ihE9Bot1+sZXdi0SqMYlZY+vtM7uz/LwnUlEdEPRJyaeneNS5cWSndIEwskebQ5LfgHS4hGWdE8syruTdaz056JxOnbJoZDYKfN8Od/ks1yahnFjaGxJWwXEE7Wb2ddg3hlk2ZS2nx/Y1MUyhQ==","pubKey":"MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAriifr0h3EZAaOhJqFN81r52tTjViZlk0kyFLKfhSGe8w4mw2NrgGeXLRSGo4sCodOEqbuyCr/a0UXRQ8o68EV0ubtE1CsF8JSqpy5fmCFw6Y7UlFJhOMO+i3INIBkdM4p+BSi8IKrqBIuzblGe4o1n+TR/Rcb0Jl7cnw227vvQHUjO6qLW3PMCSRji4bZlymEF3f0sceIyUVFneAEje3Dsay3HXMlhiJvmHdMO+i/hi1htL6ZsUL+YHhBIZeBjXJ9ibOMbUS0vXW9TELl6519PKHjfFjno4ESZieG+lVECfd0jGMOlzQK4cWi+Fsy3VEPuAWeUaeBNxIS0GMTXCyDwIDAQAB","crt":"MIICnTCCAYUCBgGcBDr+fTANBgkqhkiG9w0BAQsFADASMRAwDgYDVQQDDAdqZ3JvdXBzMB4XDTI2MDEyODEwNTAwMVoXDTI2MDMyOTEwNTE0MFowEjEQMA4GA1UEAwwHamdyb3VwczCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAK4on69IdxGQGjoSahTfNa+drU41YmZZNJMhSyn4UhnvMOJsNja4Bnly0UhqOLAqHThKm7sgq/2tFF0UPKOvBFdLm7RNQrBfCUqqcuX5ghcOmO1JRSYTjDvotyDSAZHTOKfgUovCCq6gSLs25RnuKNZ/k0f0XG9CZe3J8Ntu770B1Izuqi1tzzAkkY4uG2ZcphBd39LHHiMlFRZ3gBI3tw7Gstx1zJYYib5h3TDvov4YtYbS+mbFC/mB4QSGXgY1yfYmzjG1EtL11vUxC5eudfTyh43xY56OBEmYnhvpVRAn3dIxjDpc0CuHFovhbMt1RD7gFnlGngTcSEtBjE1wsg8CAwEAATANBgkqhkiG9w0BAQsFAAOCAQEAldprdWqfvLMm6o9hgw1t4Wo8hlgThyf+SIiKKDkudFUwAuHWcNf3z58n/vc/Iva5ygb4zGNcqdR0bhpPAQaZ4dIG6bzSjr1JpdJ8rcQM0WyjdhFmF17OlNkYKl+8zQ9fPtFAUOit0HrO8TJq4ljPCz4bM+v4c6W4Z20Xv2WJw291qpj4/G/GuBVBqKbYE4w1n6TAN+1z2Y1m0euWPm803CMDCukJuk+1E9y3iE8mRazW/q39bsPTMV1pN+n2Nt5WgRWOqrfAfvMnGRDlIBTvJo3GyDHM/rMlAaseQTFksgz0b0SHOWlxwyb5k7Q2FEBPL+HfJXYFYDIPDImFWS3JOQ==","alias":"1ca0f144-59cf-4aec-9757-a5adee9c0f08","generatedMillis":1769597501305}	0
+crt_jgroups	{"prvKey":"MIIEpAIBAAKCAQEAuZj/U4xPyX5QLGaST4j/pD66wcKw4bKqmYor/rD6UUl2h99697jaSEZwxO/6097DQeTqCepj3I5gpjnKvmq8bAs7kASHAdXzYOsbcmAH6t7icPtFFpRypAjr13224MUuP2Ynzqfa70IEBP1nLJGGKaFJIOS2KPIdVI0L1NgBKy/gNpOjpL65uY0UaWAoc3mmrOSL4pdvSin9To41CKJkdLx0x2uqL+NeiGAHt0wdIL8BFLuG9Z2HIoHDBQ24DGQ20IhijKcCI46FLUpLXlL4MQo38/zcN9gm6VxozI2hTQhLThZihMSsMw/BX921rnHJD5IJ9+UZuBNRhARxOf2/YwIDAQABAoIBABnTc+gM1Mdth7t99GsT3brdrcArltB5O6sM4o1Y1CQ+jDtg+iwBcYJwJt4IpMcZruL69yQ1FPtKZqGK1i8EDD8emwWx05WKT4kTfii+uytQI4NkO5tmQcOYqDS+vhVt6r8QuIZVri3v6j5FgrddcqVVV6c3nC97bWBoFhbijdsT3C304g7YctWdAkOWAzgVFfEpwR/nNVVYxxPpGuHh1tiY8/zCViFnhjY2jL6Xs/9Hg3P5/NvdOb4axwmXg4D9qALinL4cqVIay0yreLpsoqfuxacCtFCO8lIoI930jt84X06kW+BpxWPkqQj4mvI2fzijZVdRDuxvjAmsQ7wsH40CgYEA5BfcqcPIFe/XCLT9y9ne5vba05Cj1TyaEa6oGFmN9JB0ni1tyhckPcT+hUffYhsFedDL5KC23d9E4rtTdTdR5Wy7rypQe/xi6OpW1RpGsRCFTUArGvxy8JmZ1H6rC7qBvfjZX6LVmCbTkwITQpnOn6wb+trMAeSqiCyX+PNZ9Y8CgYEA0E4gSWZGnG5wud93b10AzYsf9XEdqRylylceKbzUKRUlI6cFnLtY//RqMusKPQl41KGc8IBhuX4sfgbRNP4p/xGBAHLf+qSlzyusBbcW9PWOtiFUxTmQOK5DvJIIAjrrw42WbuUWe4P5O2qA3KKnXDj8QaacMf0jhTD0/DNi9u0CgYAln3H8ZpjIVYlInGIIj+Vef3VU1FTRxW88X2zGp27s2i8CMEgdv3dw4N+CqHpGOmLK1w/qpD/FlSBNrcx0Vy2hBDBpEje4W8cM2Cp+eBkU976lIWJ6zw0+dneTP1mDU7420ac5SSimMjFP3FXE9I3KdJ8g35oq7cbbM0/V9n3uLQKBgQCqaJ+FLIRriPXzOVtN4Xm8rSox8p3fMS54P5jPcEjoawH9DrBKrgF7MwqGKT4w/MS6vpPTNFO+GfhwCUew4JSetEUihtexBm0W9JU//65qK1Dasp3U0uinVfjYFWcz29vwGK6Ofh9MYITOFKzi0rWzfnLvikuRoZMjbQ+eGrPFaQKBgQDBo1Bz57LN+WjOKFSJl340t7W93j1yY7EzC6XL0uCqG0hGYHTFnR3s7qRdMHbNHQ9MjY5Gy8KYBqTFrxchTJgbc4HQo5DhVA2+yLfu23qySPflWegTzaVc0zizxjB75wgdST4chQbjpK7nx1b7oavsAGaJQiLg9UErLZkhpZtUlw==","pubKey":"MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAuZj/U4xPyX5QLGaST4j/pD66wcKw4bKqmYor/rD6UUl2h99697jaSEZwxO/6097DQeTqCepj3I5gpjnKvmq8bAs7kASHAdXzYOsbcmAH6t7icPtFFpRypAjr13224MUuP2Ynzqfa70IEBP1nLJGGKaFJIOS2KPIdVI0L1NgBKy/gNpOjpL65uY0UaWAoc3mmrOSL4pdvSin9To41CKJkdLx0x2uqL+NeiGAHt0wdIL8BFLuG9Z2HIoHDBQ24DGQ20IhijKcCI46FLUpLXlL4MQo38/zcN9gm6VxozI2hTQhLThZihMSsMw/BX921rnHJD5IJ9+UZuBNRhARxOf2/YwIDAQAB","crt":"MIICnTCCAYUCBgGdZ0X1djANBgkqhkiG9w0BAQsFADASMRAwDgYDVQQDDAdqZ3JvdXBzMB4XDTI2MDQwNzA5MjcxMVoXDTI2MDYwNjA5Mjg1MFowEjEQMA4GA1UEAwwHamdyb3VwczCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBALmY/1OMT8l+UCxmkk+I/6Q+usHCsOGyqpmKK/6w+lFJdoffeve42khGcMTv+tPew0Hk6gnqY9yOYKY5yr5qvGwLO5AEhwHV82DrG3JgB+re4nD7RRaUcqQI69d9tuDFLj9mJ86n2u9CBAT9ZyyRhimhSSDktijyHVSNC9TYASsv4DaTo6S+ubmNFGlgKHN5pqzki+KXb0op/U6ONQiiZHS8dMdrqi/jXohgB7dMHSC/ARS7hvWdhyKBwwUNuAxkNtCIYoynAiOOhS1KS15S+DEKN/P83DfYJulcaMyNoU0IS04WYoTErDMPwV/dta5xyQ+SCfflGbgTUYQEcTn9v2MCAwEAATANBgkqhkiG9w0BAQsFAAOCAQEAqdUy0MqF2quwW+CHO/K7D1MVUuRy/yLP2/A6t7SUDM+9IEQq6QGe7RDrHFvdgnt3Ug301ZGdlr+eIMOsFqjS62ufKfSNQpY5C5wB78WaYl58sjgKs2XIWFUDV22ZsmqCX91LR5CklA+zDdpWRAI1994JC9uQhJH8dyNdNwM7vOpejnlR40SA+DRXS/omzbTHlnZGWlPI3YhlJhNOfHG48/BPmdAybSVS5RshaFUnOQk0XXKuR5tm0QUZrAJIonhUy6IYe6aaKEUnfmudy2KWCBeC12Yvr901Rkqe6CHgp23oaK+QDrlYoZRqWYuCFzDaFqz9rf1/E12/dl9UyCmwYg==","alias":"86ff8643-0ff2-44c9-a440-b6beaf598e5f","generatedMillis":1775554131435}	1
+JGROUPS_ADDRESS_SEQUENCE	8	8
 \.
 
 
@@ -10629,12 +10306,13 @@ tenant_id	0988a8ee-4838-4a9c-9332-075ce50d5f82	3e8ab0bc-7635-4c1b-abc1-8c430b9cc
 locale	en	6ca806d5-25c1-4091-93af-72f981699ade	8dabbd33-6a88-42b8-bd29-3d67e87fc7bd	\N	\N	\N
 locale	en	be7c0f73-4c08-45ea-bd14-7b8968cbc5a4	9acd7880-1fa8-4fb8-ab9b-fbd76f726313	\N	\N	\N
 locale	en	eb485a12-b05a-456d-86a0-159c4dcb9c34	47c5f1cd-cade-4c4d-8331-193a8eaa29ad	\N	\N	\N
-bio	I am hungry for life	f9dd5f8d-1448-40b5-ba6a-4dea01409c5d	b4663a62-9bd9-418b-9ffa-4cda3abbee26	\N	\N	\N
 identity_provider	google	a671aa2d-2d27-4418-9cef-dc5a42ffcf2e	2d2da90a-b807-44fb-9e66-d2667f13d912	\N	\N	\N
 identity_provider	google	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16	13521cde-cddc-404d-82a5-e565bb7bef56	\N	\N	\N
 identity_provider	google	75ac8f0d-5add-4fbe-94d7-3c44a4baed62	4c90eee9-86a3-41ea-85e4-274c5e3efc18	\N	\N	\N
 identity_provider	google	59b06eaf-74e2-47de-9b9e-183c4b5cce2b	1254cf50-ab09-430d-a68b-95272e97c5d0	\N	\N	\N
 locale	en	0ec68e26-9025-43a4-807b-14de2597eb73	df958dee-8078-47c2-a207-d8dc22a7cb53	\N	\N	\N
+locale	en	7dc436ae-5e5e-43e3-981b-994ee0ce54f7	54fa6ea3-0c4c-4774-b93c-6815ae7cab81	\N	\N	\N
+locale	en	a54df9d5-ff7c-4355-a05d-d319e83416d0	6d581e4b-adc5-4cb8-9ba1-664cff99b5eb	\N	\N	\N
 \.
 
 
@@ -10713,7 +10391,6 @@ fec946f2-2435-42e9-bf61-f75e14418ea5	\N	81664f95-779c-4f47-adf1-fe1be3998ee8	f	t
 427fb550-696f-4152-aab4-5deebf724536	\N	a4826f50-7c93-422b-8bb2-0bf50d6b35c6	f	t	\N	\N	\N	e800c4cb-db3a-4a31-8496-6d3b373e78b4	service-account-dingg	1761805892911	6fbabaa5-6401-4f5d-8fe6-28465bbe147e	0
 6280cf0c-6412-4015-b5a4-f7133c1258bb	\N	504b8a06-9d2d-4898-8fa6-9b98a1af15fc	f	t	\N	\N	\N	e800c4cb-db3a-4a31-8496-6d3b373e78b4	service-account-any	1761808419175	c1759352-1528-4ccc-87a7-54a45976b529	0
 f32174d4-77df-46f1-bfcb-3a21d42e1959	\N	7f5cb1b2-34c7-42bc-9439-a3a607959941	f	t	\N	\N	\N	e800c4cb-db3a-4a31-8496-6d3b373e78b4	service-account-any1	1761827587779	197e1bb2-3075-4fe9-ada7-fd8e9f40bf44	0
-f9dd5f8d-1448-40b5-ba6a-4dea01409c5d	swaragh091@gmail.com	swaragh091@gmail.com	f	t	\N	Gururaj	H R	e800c4cb-db3a-4a31-8496-6d3b373e78b4	swaragh091@gmail.com	1761828073347	\N	0
 75ac8f0d-5add-4fbe-94d7-3c44a4baed62	noreply@barcodebiosciences.com	noreply@barcodebiosciences.com	f	t	\N	barcode	bioscience	e800c4cb-db3a-4a31-8496-6d3b373e78b4	noreply@barcodebiosciences.com	1761888137100	\N	0
 a671aa2d-2d27-4418-9cef-dc5a42ffcf2e	chethan9006gowda@gmail.com	chethan9006gowda@gmail.com	f	t	\N	Chethan	H R	e800c4cb-db3a-4a31-8496-6d3b373e78b4	chethan9006gowda@gmail.com	1761888726278	\N	0
 59b06eaf-74e2-47de-9b9e-183c4b5cce2b	chehangowda001@gmail.com	chehangowda001@gmail.com	t	t	\N	chethan	chethan	e800c4cb-db3a-4a31-8496-6d3b373e78b4	chehangowda001@gmail.com	1759747117891	\N	0
@@ -10762,6 +10439,8 @@ e6621866-c866-473f-bc37-d4898587e43b	\N	ac235c85-a194-4a4f-8b18-a353fc77074e	f	t
 e937a654-af4e-47fb-9138-6fc41600dd9b	\N	bb59e288-266f-4a1e-9103-9614c35025d9	f	t	\N	\N	\N	e800c4cb-db3a-4a31-8496-6d3b373e78b4	service-account-author	1770354498337	0173cc9c-88a8-487c-a3c6-b9c5fb2ed055	0
 3da08459-7f53-4c4d-8275-9c7531f75564	\N	4ac240c8-6b00-44c1-bcde-cc71760ab9fc	f	t	\N	\N	\N	e800c4cb-db3a-4a31-8496-6d3b373e78b4	service-account-token-test	1770897399211	77fa6a87-4221-416b-b113-a268db28ed6b	0
 67cc72ae-4fa6-4d32-b625-492c39c4277a	\N	73888046-4bf3-4449-944d-67f132b3cc0b	f	t	\N	\N	\N	e800c4cb-db3a-4a31-8496-6d3b373e78b4	service-account-new-token	1770980553979	25d79daa-2326-419a-b646-18fcc33bb3f8	0
+7dc436ae-5e5e-43e3-981b-994ee0ce54f7	gururaj0305@gmail.com	gururaj0305@gmail.com	f	t	\N	Gururaj	HR	e800c4cb-db3a-4a31-8496-6d3b373e78b4	gururaj0305@gmail.com	1775558488793	\N	0
+a54df9d5-ff7c-4355-a05d-d319e83416d0	swaragh091@gmail.com	swaragh091@gmail.com	f	t	\N	Gururaj	HR	e800c4cb-db3a-4a31-8496-6d3b373e78b4	swaragh091@gmail.com	1775559049829	\N	0
 \.
 
 
@@ -10812,6 +10491,7 @@ COPY public.user_group_membership (group_id, user_id, membership_type) FROM stdi
 COPY public.user_required_action (user_id, required_action) FROM stdin;
 49bf45ab-6c52-4742-8cc8-7f7b11640ef1	VERIFY_EMAIL
 75ac8f0d-5add-4fbe-94d7-3c44a4baed62	VERIFY_EMAIL
+7dc436ae-5e5e-43e3-981b-994ee0ce54f7	VERIFY_EMAIL
 \.
 
 
@@ -10940,7 +10620,6 @@ e496503f-280d-43be-a30f-9024d1544351	33c7363b-c8a6-4b2f-ab68-6f9b37839682
 e496503f-280d-43be-a30f-9024d1544351	427fb550-696f-4152-aab4-5deebf724536
 e496503f-280d-43be-a30f-9024d1544351	6280cf0c-6412-4015-b5a4-f7133c1258bb
 e496503f-280d-43be-a30f-9024d1544351	f32174d4-77df-46f1-bfcb-3a21d42e1959
-e496503f-280d-43be-a30f-9024d1544351	f9dd5f8d-1448-40b5-ba6a-4dea01409c5d
 e496503f-280d-43be-a30f-9024d1544351	75ac8f0d-5add-4fbe-94d7-3c44a4baed62
 e496503f-280d-43be-a30f-9024d1544351	a671aa2d-2d27-4418-9cef-dc5a42ffcf2e
 5b57127c-58a6-4737-8588-a7fe04bf48f7	3e8ab0bc-7635-4c1b-abc1-8c430b9ccc16
@@ -10990,6 +10669,8 @@ e496503f-280d-43be-a30f-9024d1544351	e6621866-c866-473f-bc37-d4898587e43b
 e496503f-280d-43be-a30f-9024d1544351	e937a654-af4e-47fb-9138-6fc41600dd9b
 e496503f-280d-43be-a30f-9024d1544351	3da08459-7f53-4c4d-8275-9c7531f75564
 e496503f-280d-43be-a30f-9024d1544351	67cc72ae-4fa6-4d32-b625-492c39c4277a
+e496503f-280d-43be-a30f-9024d1544351	7dc436ae-5e5e-43e3-981b-994ee0ce54f7
+e496503f-280d-43be-a30f-9024d1544351	a54df9d5-ff7c-4355-a05d-d319e83416d0
 \.
 
 
@@ -11005,7 +10686,6 @@ ae8dc4b9-da65-40a4-a270-a643f691ae26	+
 4a337a89-e965-40e9-b06b-e910ea3ab309	http://localhost:2020
 7980964d-0724-4a39-b036-274cbf2805c4	http://localhost:3000
 64455bad-11ea-4329-b885-582a59f3ef01	http://localhost:4000
-f8394892-b347-42ff-b66b-0a2a6e8588a6	http://localhost:5173
 16010462-b770-4ee7-836b-b0258941828e	+
 d77811d7-415f-4d1e-9850-c9426514e0e2	+
 37565ae5-c9b0-40ca-aac2-621f72d2b56a	+
@@ -11083,9 +10763,6 @@ a947f5e2-d347-469f-9a81-d626e4ef3af4	https://auth.local.test:4000
 f4aa8b57-9f49-4387-ac19-812ad5f0090f	https://auth.local.test:4000
 64e1c831-7b65-4b68-bec8-4d9329eb67fb	https://auth.local.test:4000
 0c4d51b6-ce89-49ce-b39f-20d5592087f5	https://auth.local.test:4000
-1ae7f743-0c60-4e49-8359-ed59f3dcc653	https://account.local.test:5174
-63c427ab-a4a2-430b-ab13-99c04b861734	https://admin.local.test:5173
-62181cb8-5777-40b7-b17c-0b6c8b648d4f	https://auth.local.test:4000
 b1302a31-b401-4d5f-bdf2-da43e2ee436c	https://auth.local.test:4000
 59640b1b-5e83-489f-9144-16e4d0e45543	https://auth.local.test
 3555bdac-49ef-4b27-923f-fe05666ce2b2	https://auth.local.test
@@ -11094,6 +10771,20 @@ ab135ac3-c4d5-4a98-9528-1bdc89a60cbd	https://auth.local.test
 0173cc9c-88a8-487c-a3c6-b9c5fb2ed055	https://auth.local.test
 77fa6a87-4221-416b-b113-a268db28ed6b	https://auth.local.test
 25d79daa-2326-419a-b646-18fcc33bb3f8	https://auth.local.test
+985ac8b3-510f-46a5-84ed-843977dcf115	https://auth.gururajhr.in
+6727e456-b726-4690-9350-a7e8e11393d2	https://auth.gururajhr.in
+1ae7f743-0c60-4e49-8359-ed59f3dcc653	https://account.local.test:5174
+f8394892-b347-42ff-b66b-0a2a6e8588a6	http://localhost:5173
+62181cb8-5777-40b7-b17c-0b6c8b648d4f	https://auth.local.test:4000
+63c427ab-a4a2-430b-ab13-99c04b861734	https://admin.local.test:5173
+\.
+
+
+--
+-- Data for Name: workflow_state; Type: TABLE DATA; Schema: public; Owner: keycloak
+--
+
+COPY public.workflow_state (execution_id, resource_id, workflow_id, resource_type, scheduled_step_id, scheduled_step_timestamp) FROM stdin;
 \.
 
 
@@ -11650,6 +11341,14 @@ ALTER TABLE ONLY public.offline_user_session
 
 
 --
+-- Name: org_invitation constraint_org_invitation; Type: CONSTRAINT; Schema: public; Owner: keycloak
+--
+
+ALTER TABLE ONLY public.org_invitation
+    ADD CONSTRAINT constraint_org_invitation PRIMARY KEY (id);
+
+
+--
 -- Name: protocol_mapper constraint_pcm; Type: CONSTRAINT; Schema: public; Owner: keycloak
 --
 
@@ -11786,6 +11485,14 @@ ALTER TABLE ONLY public.client_scope_role_mapping
 
 
 --
+-- Name: workflow_state pk_workflow_state; Type: CONSTRAINT; Schema: public; Owner: keycloak
+--
+
+ALTER TABLE ONLY public.workflow_state
+    ADD CONSTRAINT pk_workflow_state PRIMARY KEY (execution_id);
+
+
+--
 -- Name: default_client_scope r_def_cli_scope_bind; Type: CONSTRAINT; Schema: public; Owner: keycloak
 --
 
@@ -11898,6 +11605,22 @@ ALTER TABLE ONLY public.user_consent
 
 
 --
+-- Name: migration_model uk_migration_update_time; Type: CONSTRAINT; Schema: public; Owner: keycloak
+--
+
+ALTER TABLE ONLY public.migration_model
+    ADD CONSTRAINT uk_migration_update_time UNIQUE (update_time);
+
+
+--
+-- Name: migration_model uk_migration_version; Type: CONSTRAINT; Schema: public; Owner: keycloak
+--
+
+ALTER TABLE ONLY public.migration_model
+    ADD CONSTRAINT uk_migration_version UNIQUE (version);
+
+
+--
 -- Name: org uk_org_alias; Type: CONSTRAINT; Schema: public; Owner: keycloak
 --
 
@@ -11911,6 +11634,14 @@ ALTER TABLE ONLY public.org
 
 ALTER TABLE ONLY public.org
     ADD CONSTRAINT uk_org_group UNIQUE (group_id);
+
+
+--
+-- Name: org_invitation uk_org_invitation_email; Type: CONSTRAINT; Schema: public; Owner: keycloak
+--
+
+ALTER TABLE ONLY public.org_invitation
+    ADD CONSTRAINT uk_org_invitation_email UNIQUE (organization_id, email);
 
 
 --
@@ -11935,6 +11666,14 @@ ALTER TABLE ONLY public.realm
 
 ALTER TABLE ONLY public.user_entity
     ADD CONSTRAINT uk_ru8tt6t700s9v50bu18ws5ha6 UNIQUE (realm_id, username);
+
+
+--
+-- Name: workflow_state uq_workflow_resource; Type: CONSTRAINT; Schema: public; Owner: keycloak
+--
+
+ALTER TABLE ONLY public.workflow_state
+    ADD CONSTRAINT uq_workflow_resource UNIQUE (workflow_id, resource_id);
 
 
 --
@@ -11991,6 +11730,20 @@ CREATE INDEX idx_auth_exec_realm_flow ON public.authentication_execution USING b
 --
 
 CREATE INDEX idx_auth_flow_realm ON public.authentication_flow USING btree (realm_id);
+
+
+--
+-- Name: idx_broker_link_identity_provider; Type: INDEX; Schema: public; Owner: keycloak
+--
+
+CREATE INDEX idx_broker_link_identity_provider ON public.broker_link USING btree (realm_id, identity_provider, broker_user_id);
+
+
+--
+-- Name: idx_broker_link_user_id; Type: INDEX; Schema: public; Owner: keycloak
+--
+
+CREATE INDEX idx_broker_link_user_id ON public.broker_link USING btree (user_id);
 
 
 --
@@ -12096,6 +11849,13 @@ CREATE INDEX idx_defcls_realm ON public.default_client_scope USING btree (realm_
 --
 
 CREATE INDEX idx_defcls_scope ON public.default_client_scope USING btree (scope_id);
+
+
+--
+-- Name: idx_event_entity_user_id_type; Type: INDEX; Schema: public; Owner: keycloak
+--
+
+CREATE INDEX idx_event_entity_user_id_type ON public.event_entity USING btree (user_id, type, event_time);
 
 
 --
@@ -12267,17 +12027,24 @@ CREATE INDEX idx_keycloak_role_realm ON public.keycloak_role USING btree (realm)
 
 
 --
+-- Name: idx_offline_css_by_client; Type: INDEX; Schema: public; Owner: keycloak
+--
+
+CREATE INDEX idx_offline_css_by_client ON public.offline_client_session USING btree (client_id, offline_flag) WHERE ((client_id)::text <> 'external'::text);
+
+
+--
+-- Name: idx_offline_css_by_client_storage_provider; Type: INDEX; Schema: public; Owner: keycloak
+--
+
+CREATE INDEX idx_offline_css_by_client_storage_provider ON public.offline_client_session USING btree (client_storage_provider, external_client_id, offline_flag) WHERE ((client_storage_provider)::text <> 'internal'::text);
+
+
+--
 -- Name: idx_offline_uss_by_broker_session_id; Type: INDEX; Schema: public; Owner: keycloak
 --
 
 CREATE INDEX idx_offline_uss_by_broker_session_id ON public.offline_user_session USING btree (broker_session_id, realm_id);
-
-
---
--- Name: idx_offline_uss_by_last_session_refresh; Type: INDEX; Schema: public; Owner: keycloak
---
-
-CREATE INDEX idx_offline_uss_by_last_session_refresh ON public.offline_user_session USING btree (realm_id, offline_flag, last_session_refresh);
 
 
 --
@@ -12292,6 +12059,27 @@ CREATE INDEX idx_offline_uss_by_user ON public.offline_user_session USING btree 
 --
 
 CREATE INDEX idx_org_domain_org_id ON public.org_domain USING btree (org_id);
+
+
+--
+-- Name: idx_org_invitation_email; Type: INDEX; Schema: public; Owner: keycloak
+--
+
+CREATE INDEX idx_org_invitation_email ON public.org_invitation USING btree (email);
+
+
+--
+-- Name: idx_org_invitation_expires; Type: INDEX; Schema: public; Owner: keycloak
+--
+
+CREATE INDEX idx_org_invitation_expires ON public.org_invitation USING btree (expires_at);
+
+
+--
+-- Name: idx_org_invitation_org_id; Type: INDEX; Schema: public; Owner: keycloak
+--
+
+CREATE INDEX idx_org_invitation_org_id ON public.org_invitation USING btree (organization_id);
 
 
 --
@@ -12533,6 +12321,20 @@ CREATE INDEX idx_user_service_account ON public.user_entity USING btree (realm_i
 
 
 --
+-- Name: idx_user_session_expiration_created; Type: INDEX; Schema: public; Owner: keycloak
+--
+
+CREATE INDEX idx_user_session_expiration_created ON public.offline_user_session USING btree (realm_id, offline_flag, remember_me, created_on, user_session_id, user_id);
+
+
+--
+-- Name: idx_user_session_expiration_last_refresh; Type: INDEX; Schema: public; Owner: keycloak
+--
+
+CREATE INDEX idx_user_session_expiration_last_refresh ON public.offline_user_session USING btree (realm_id, offline_flag, remember_me, last_session_refresh, user_session_id, user_id);
+
+
+--
 -- Name: idx_usr_fed_map_fed_prv; Type: INDEX; Schema: public; Owner: keycloak
 --
 
@@ -12558,6 +12360,20 @@ CREATE INDEX idx_usr_fed_prv_realm ON public.user_federation_provider USING btre
 --
 
 CREATE INDEX idx_web_orig_client ON public.web_origins USING btree (client_id);
+
+
+--
+-- Name: idx_workflow_state_provider; Type: INDEX; Schema: public; Owner: keycloak
+--
+
+CREATE INDEX idx_workflow_state_provider ON public.workflow_state USING btree (resource_id);
+
+
+--
+-- Name: idx_workflow_state_step; Type: INDEX; Schema: public; Owner: keycloak
+--
+
+CREATE INDEX idx_workflow_state_step ON public.workflow_state USING btree (workflow_id, scheduled_step_id);
 
 
 --
@@ -13007,6 +12823,14 @@ ALTER TABLE ONLY public.web_origins
 
 
 --
+-- Name: org_invitation fk_org_invitation_org; Type: FK CONSTRAINT; Schema: public; Owner: keycloak
+--
+
+ALTER TABLE ONLY public.org_invitation
+    ADD CONSTRAINT fk_org_invitation_org FOREIGN KEY (organization_id) REFERENCES public.org(id) ON DELETE CASCADE;
+
+
+--
 -- Name: scope_mapping fk_ouse064plmlr732lxjcn1q5f1; Type: FK CONSTRAINT; Schema: public; Owner: keycloak
 --
 
@@ -13113,4 +12937,6 @@ ALTER TABLE ONLY public.identity_provider_config
 --
 -- PostgreSQL database dump complete
 --
+
+\unrestrict icHDmFlRLCgA4NV9v8V2eCiJLQYr6v0OVcbwwFP9I7wh46OzQiPPkeoStAKwNph
 

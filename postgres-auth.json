@@ -1,0 +1,11 @@
+[
+    {
+        "POSTGRES_DB" : "authzotion_db"
+    },
+    {
+        "POSTGRES_USER" : "postgres"
+    },
+    {
+        "POSTGRES_PASSWORD" : "CHANGE_ME"
+    }
+]

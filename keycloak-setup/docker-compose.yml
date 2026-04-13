@@ -1,21 +1,37 @@
 # ══════════════════════════════════════════════════════════════════════════════
 # Keycloak Setup - Docker Compose
 # ══════════════════════════════════════════════════════════════════════════════
+# Architecture note:
+#   nginx gateway  ──HTTPS──►  internet
+#   nginx gateway  ──HTTP──►   keycloak:8080  (internal Docker network only)
+#
+# Keycloak does NOT terminate TLS itself. nginx terminates TLS and forwards
+# requests via plain HTTP on the isolated Docker bridge network. Keycloak
+# trusts the X-Forwarded-* headers injected by nginx (KC_PROXY_HEADERS).
+# ══════════════════════════════════════════════════════════════════════════════
 
 services:
+  # ─────────────────────────────────────────────────────────────────────────────
+  # PostgreSQL — Keycloak database
+  # ─────────────────────────────────────────────────────────────────────────────
   postgres:
     image: postgres:16-alpine
+    restart: unless-stopped
     environment:
-      POSTGRES_DB: keycloak
-      POSTGRES_USER: keycloak
-      POSTGRES_PASSWORD: keycloak123
+      POSTGRES_DB:       ${KEYCLOAK_DB_NAME:?KEYCLOAK_DB_NAME is required}
+      POSTGRES_USER:     ${KEYCLOAK_DB_USER:?KEYCLOAK_DB_USER is required}
+      POSTGRES_PASSWORD: ${KEYCLOAK_DB_PASSWORD:?KEYCLOAK_DB_PASSWORD is required}
+      POSTGRES_PORT:     ${KEYCLOAK_DB_PORT:?KEYCLOAK_DB_PORT is required}
+      
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./init-keycloak-db.sql:/docker-entrypoint-initdb.d/init.sql
+      # - ./init-keycloak-db.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
     networks:
       - auth-network
-    ports:
-      - "5433:5432"
+    # read_only: true
+    tmpfs:
+      - /tmp
+      - /run/postgresql
     deploy:
       resources:
         limits:
@@ -25,45 +41,68 @@ services:
           memory: 128M
     security_opt:
       - no-new-privileges:true
-    tmpfs:
-      - /tmp
-      - /run/postgresql
     logging:
       driver: json-file
       options:
         max-size: "10m"
         max-file: "3"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U keycloak"]
+      test: ["CMD-SHELL", "pg_isready -U ${KEYCLOAK_DB_USER}"]
       interval: 10s
       timeout: 5s
       retries: 10
       start_period: 60s
 
+  # ─────────────────────────────────────────────────────────────────────────────
+  # Keycloak — Identity & Access Management
+  # ─────────────────────────────────────────────────────────────────────────────
   keycloak:
-    image: quay.io/keycloak/keycloak:latest
-    command: start-dev
+    build:
+      context: .
+    restart: unless-stopped
+    # `start --optimized` requires the kc.sh build step from the Dockerfile.
+    # Do NOT use bare `start` here — that bypasses the optimised distribution.
+    command: ["start", "--optimized"]
     environment:
-      KC_DB: postgres
-      KC_DB_URL: jdbc:postgresql://postgres:5432/keycloak
-      KC_DB_USERNAME: keycloak
-      KC_DB_PASSWORD: keycloak123
-      KEYCLOAK_ADMIN: admin
-      KEYCLOAK_ADMIN_PASSWORD: admin123
-      KC_HOSTNAME_STRICT: false
-      KC_HTTP_ENABLED: true
+      # ── Database ─────────────────────────────────────────────────────────
+      KC_DB:          postgres
+      KC_DB_URL:      jdbc:postgresql://postgres:5432/keycloak
+      KC_DB_USERNAME: ${KEYCLOAK_DB_USER:?KEYCLOAK_DB_USER is required}
+      KC_DB_PASSWORD: ${KEYCLOAK_DB_PASSWORD:?KEYCLOAK_DB_PASSWORD is required}
+
+      # ── Admin bootstrap (only used on first start) ────────────────────
+      KEYCLOAK_ADMIN:          ${KEYCLOAK_ADMIN:?KEYCLOAK_ADMIN is required}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:?KEYCLOAK_ADMIN_PASSWORD is required}
+
+      # ── Hostname (public-facing URL via nginx gateway) ────────────────
+      # Keycloak uses this to generate redirect URIs, token issuers, etc.
+      KC_HOSTNAME: ${KC_HOSTNAME:-keycloak.gururajhr.in}
+
+      # ── Proxy / networking ────────────────────────────────────────────
+      # xforwarded: trust X-Forwarded-Proto/Host/Port from nginx.
+      # This is the correct mode when nginx terminates TLS.
       KC_PROXY_HEADERS: xforwarded
-    ports:
-      - "8081:8080" # HTTP (keep for compatibility)
-      - "8443:8443" # HTTPS (new port for secure connections)
+
+      # HTTP-only internal listener — nginx handles TLS externally.
+      KC_HTTP_ENABLED: true
+
+      # Disable HTTPS listener inside the container; nginx owns HTTPS.
+      KC_HTTPS_ENABLED: false
+
+      # ── Logging ───────────────────────────────────────────────────────
+      KC_LOG_LEVEL: ${KC_LOG_LEVEL:-INFO}
+
+    # No host port mapping — all external traffic must flow through nginx.
+    # Keycloak is reachable at http://keycloak:8080 on the internal network.
+    expose:
+      - "8080"
     depends_on:
       postgres:
         condition: service_healthy
     networks:
       - auth-network
-    volumes:
-      - ./cert.pem:/opt/keycloak/conf/cert.pem:ro
-      - ./key.pem:/opt/keycloak/conf/key.pem:ro
+    tmpfs:
+      - /tmp
     deploy:
       resources:
         limits:
@@ -82,39 +121,12 @@ services:
       test:
         [
           "CMD-SHELL",
-          "exec 3<>/dev/tcp/localhost/8080 && echo -e 'GET /health HTTP/1.1\\r\\nHost: localhost\\r\\nConnection: close\\r\\n\\r\\n' >&3 && cat <&3 | grep -q 'HTTP/1.1 200'",
+          "wget --no-verbose --tries=1 --spider http://127.0.0.1:8080/health/ready || exit 1",
         ]
       interval: 15s
       timeout: 10s
       retries: 10
       start_period: 120s
-
-  # pgadmin:
-  #   image: dpage/pgadmin4
-  #   container_name: pgadmin
-  #   environment:
-  #     PGADMIN_DEFAULT_EMAIL: admin@local.com
-  #     PGADMIN_DEFAULT_PASSWORD: admin
-  #   ports:
-  #     - "5050:80"
-  #   depends_on:
-  #     - postgres
-  #   networks:
-  #     - auth-network
-  #   deploy:
-  #     resources:
-  #       limits:
-  #         cpus: '0.25'
-  #         memory: 256M
-  #       reservations:
-  #         memory: 64M
-  #   security_opt:
-  #     - no-new-privileges:true
-  #   logging:
-  #     driver: json-file
-  #     options:
-  #       max-size: "10m"
-  #       max-file: "3"
 
 volumes:
   postgres_data:
@@ -123,3 +135,4 @@ networks:
   auth-network:
     name: auth-network
     driver: bridge
+

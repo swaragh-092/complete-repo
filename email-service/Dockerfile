@@ -33,6 +33,10 @@ COPY --chown=nodejs:nodejs . .
 # Remove unnecessary files
 RUN rm -rf .git .env *.md logs/*.log
 
+# Create logs directory with correct ownership before switching to non-root user
+# WORKDIR (/app) is root-owned; nodejs user cannot mkdir inside it without this.
+RUN mkdir -p /app/logs && chown -R nodejs:nodejs /app/logs
+
 # Switch to non-root user
 USER nodejs
 

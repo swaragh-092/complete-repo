@@ -12,6 +12,7 @@ import { useSelector } from "react-redux";
 import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
 import MenuOutlinedIcon from "@mui/icons-material/MenuOutlined";
 import MonitorHeartIcon from "@mui/icons-material/MonitorHeart";
+import GroupAddIcon from "@mui/icons-material/GroupAdd";
 
 import { colorCodes } from "../../theme";
 import { useSidebar } from "../../customHooks/useSidebar";
@@ -315,13 +316,14 @@ const SidebarContent = ({ isCollapsed, handleToggle, isMobile }) => {
               })}
           </Box>
 
-          {/* Admin Monitor — visible to org owners and admins only */}
+          {/* Admin Monitor + Invite Members — visible to org owners and admins only */}
           {(() => {
             const orgRole = currentOrganization?.role?.name?.toLowerCase();
             if (!["owner", "admin"].includes(orgRole)) return null;
             return (
               <Box sx={{ borderTop: "1px solid", borderColor: "divider", pt: 1, mt: 1 }}>
                 <Item title="Admin Monitor" to="/admin/monitor" icon={<MonitorHeartIcon />} onClick={isMobile ? handleToggle : undefined} />
+                <Item title="Invite Members" to="/invite-members" icon={<GroupAddIcon />} onClick={isMobile ? handleToggle : undefined} />
               </Box>
             );
           })()}

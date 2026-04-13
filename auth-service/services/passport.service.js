@@ -138,8 +138,8 @@ async function getPassportStrategy(clientKey) {
             });
 
             await TenantMapping.upsert({
-              user_id: user.id,
-              tenant_id: user.tenant_id,
+              user_keycloak_id: user.id,
+              tenant_slug: user.tenant_id,
               client_key: clientKey,
             });
           }

@@ -199,6 +199,8 @@ const Topbar = () => {
 
   const { currentOrganization, organizations, switchOrganization, loading: orgLoading } = useOrganization();
 
+  
+
   console.log('currentOrganization', currentOrganization);
 
 

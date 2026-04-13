@@ -8,6 +8,7 @@ const sequelize = new Sequelize(config.DB_NAME, config.DB_USER, config.DB_PASSWO
     host: config.DB_HOST,
     port: config.DB_PORT,
     dialect: 'postgres',
+    
     logging: config.isProduction ? false : (msg) => logger.debug(msg),
     pool: {
         max: 5,

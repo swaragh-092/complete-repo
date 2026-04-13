@@ -147,6 +147,24 @@ export const authApi = {
     },
 
     /**
+     * Get client credentials (client_id, client_secret, redirect URLs, realm)
+     * Only available after admin approval. Requires the developer email used at registration.
+     * @param {string} clientKey - Client key
+     * @param {string} developerEmail - Email used during registration
+     * @returns {Promise<Object>} Credentials response
+     */
+    async getClientCredentials(clientKey, developerEmail) {
+        try {
+            const response = await api.get(`/auth/clients/${clientKey}/credentials`, {
+                params: { developerEmail },
+            });
+            return response.data.data || response.data;
+        } catch (error) {
+            handleApiError(error);
+        }
+    },
+
+    /**
      * Check if auth service is reachable
      * @returns {Promise<boolean>}
      */

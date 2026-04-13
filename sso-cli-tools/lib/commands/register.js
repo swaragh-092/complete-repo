@@ -1,0 +1,252 @@
+/**
+ * @fileoverview Register Command
+ * @description Direct registration flow for already-developed or production applications.
+ * Unlike `init`, this command does NOT scaffold a new Vite project. It simply:
+ *   1. Collects minimal app info
+ *   2. Submits a registration request to the auth-service
+ *   3. Writes a pre-approval .env with known values
+ *   4. Instructs the developer to run `sso-client pull-env` after admin approval
+ */
+
+import inquirer from 'inquirer';
+import chalk from 'chalk';
+import fs from 'fs';
+import { SSO_CONFIG } from '../config/index.js';
+import { authApi } from '../services/api.js';
+import { logger } from '../utils/logger.js';
+
+/**
+ * Prompt user for registration details (no Vite detection, no scaffolding)
+ * @returns {Promise<Object>} Answers
+ */
+async function promptRegistrationDetails() {
+    return inquirer.prompt([
+        {
+            type: 'input',
+            name: 'appName',
+            message: 'Application name:',
+            validate: input => input.trim().length > 0 || 'App name is required'
+        },
+        {
+            type: 'input',
+            name: 'clientKey',
+            message: 'Client key (unique slug, e.g. my-app):',
+            default: answers => answers.appName.toLowerCase().replace(/\s+/g, '-'),
+            validate: input => /^[a-z0-9-]+$/.test(input) || 'Client key must be lowercase letters, numbers, and hyphens only'
+        },
+        {
+            type: 'confirm',
+            name: 'useDockerUrls',
+            message: 'Is this for Docker / production deployment? (no port in URLs)',
+            default: SSO_CONFIG.dockerMode
+        },
+        {
+            type: 'input',
+            name: 'port',
+            message: 'Development port (used when not Docker):',
+            default: '5173',
+            when: answers => !answers.useDockerUrls,
+            validate: input => {
+                const port = parseInt(input);
+                return (!isNaN(port) && port >= 1000 && port <= 65535) || 'Port must be between 1000 and 65535';
+            },
+            filter: input => parseInt(input)
+        },
+        {
+            type: 'input',
+            name: 'description',
+            message: 'Brief description:',
+            default: answers => `${answers.appName} application`
+        },
+        // Organization Support
+        {
+            type: 'confirm',
+            name: 'requiresOrganization',
+            message: 'Does this app require organization/team support?',
+            default: false
+        },
+        {
+            type: 'list',
+            name: 'organizationModel',
+            message: 'Organization model:',
+            choices: [
+                { name: 'Single Organization (user belongs to one org)', value: 'single' },
+                { name: 'Multi Organization (user can belong to multiple orgs)', value: 'multi' }
+            ],
+            when: answers => answers.requiresOrganization,
+            default: 'single'
+        },
+        {
+            type: 'list',
+            name: 'onboardingFlow',
+            message: 'How do new users join organizations?',
+            choices: [
+                { name: 'Create New Organization (user becomes org owner)', value: 'create_org' },
+                { name: 'Join by Invitation (email-based invites)', value: 'invitation_only' },
+                { name: 'Join by Domain (auto-join based on email domain)', value: 'domain_matching' },
+                { name: 'Both Create and Join (user can choose)', value: 'flexible' }
+            ],
+            when: answers => answers.requiresOrganization,
+            default: 'flexible'
+        },
+        // Developer info
+        {
+            type: 'input',
+            name: 'developerEmail',
+            message: 'Your email (for approval notifications & credential retrieval):',
+            validate: input => input.includes('@') || 'Please enter a valid email'
+        },
+        {
+            type: 'input',
+            name: 'developerName',
+            message: 'Your name:'
+        }
+    ]);
+}
+
+/**
+ * Write a pre-approval .env file with all values that are known before admin approval.
+ * The client_secret and final confirmation values are populated by `sso-client pull-env`
+ * after admin approval.
+ * @param {Object} answers - User answers
+ * @param {string} redirectUrl - Computed redirect URL
+ * @param {string} callbackUrl - Computed callback URL
+ */
+function writePreApprovalEnv(answers, redirectUrl, callbackUrl) {
+    const authBaseUrl = answers.useDockerUrls
+        ? `${SSO_CONFIG.protocol}://auth.${SSO_CONFIG.domain}`
+        : SSO_CONFIG.authServiceUrl;
+
+    const accountUiUrl = answers.useDockerUrls
+        ? `${SSO_CONFIG.protocol}://account.${SSO_CONFIG.domain}`
+        : SSO_CONFIG.accountUiUrl;
+
+    const port = answers.useDockerUrls ? '' : (answers.port || 5173);
+
+    const envLines = [
+        `# SSO Configuration - generated by sso-client register`,
+        `# Run "sso-client pull-env ${answers.clientKey} --email ${answers.developerEmail}" after admin approval`,
+        `# to populate CLIENT_SECRET and confirm all values.`,
+        ``,
+        `# Application`,
+        `VITE_CLIENT_KEY=${answers.clientKey}`,
+        `VITE_APP_NAME=${answers.appName}`,
+        answers.useDockerUrls ? `` : `VITE_PORT=${port}`,
+        ``,
+        `# Auth Service`,
+        `VITE_AUTH_BASE_URL=${authBaseUrl}`,
+        `VITE_ACCOUNT_UI_URL=${accountUiUrl}`,
+        `VITE_REDIRECT_URI=${redirectUrl}`,
+        ``,
+        `# Keycloak / SSO Credentials (populated after admin approval via pull-env)`,
+        `VITE_SSO_REALM=my-projects`,
+        `# CLIENT_SECRET=<run sso-client pull-env to get this>`,
+        ``,
+        `# Organization`,
+        `VITE_REQUIRES_ORGANIZATION=${answers.requiresOrganization ? 'true' : 'false'}`,
+        `VITE_ORGANIZATION_MODEL=${answers.organizationModel || 'none'}`,
+        `VITE_ONBOARDING_FLOW=${answers.onboardingFlow || 'none'}`,
+        ``,
+        `# Environment`,
+        `NODE_ENV=${answers.useDockerUrls ? 'production' : 'development'}`,
+        `NODE_TLS_REJECT_UNAUTHORIZED=0`,
+    ].filter(line => line !== undefined);
+
+    fs.writeFileSync('.env', envLines.join('\n') + '\n');
+    logger.info('.env written with pre-approval configuration');
+}
+
+/**
+ * Execute direct register command (for already-developed or production apps)
+ * @param {Object} options - Commander options
+ */
+export async function registerCommand(options = {}) {
+    logger.step('🔐 SSO Direct Registration\n');
+    console.log(chalk.cyan('Register an existing application with the SSO system.\n'));
+    console.log(chalk.gray('This does NOT scaffold files. Use "sso-client init" for new Vite projects.\n'));
+
+    const answers = await promptRegistrationDetails();
+
+    const port = answers.useDockerUrls ? null : (answers.port || 5173);
+
+    // Compute URLs
+    const redirectUrl = answers.useDockerUrls
+        ? `${SSO_CONFIG.protocol}://${answers.clientKey}.${SSO_CONFIG.domain}/callback`
+        : SSO_CONFIG.getRedirectUrl(answers.clientKey, port);
+
+    const callbackUrl = SSO_CONFIG.getCallbackUrl(answers.clientKey);
+
+    // Summary before submitting
+    logger.section('Registration Summary');
+    logger.keyValue('App Name', answers.appName);
+    logger.keyValue('Client Key', answers.clientKey);
+    logger.keyValue('Redirect URL (frontend)', redirectUrl);
+    logger.keyValue('Callback URL (auth-service ↔ Keycloak)', callbackUrl);
+    if (answers.requiresOrganization) {
+        logger.keyValue('Organization Model', answers.organizationModel);
+        logger.keyValue('Onboarding Flow', answers.onboardingFlow);
+    }
+    logger.blank();
+
+    const { confirm } = await inquirer.prompt([{
+        type: 'confirm',
+        name: 'confirm',
+        message: 'Submit this registration request?',
+        default: true
+    }]);
+
+    if (!confirm) {
+        logger.info('Registration cancelled.');
+        return;
+    }
+
+    try {
+        logger.step('📤 Submitting registration request...\n');
+
+        const requestData = {
+            name: answers.appName,
+            clientKey: answers.clientKey,
+            redirectUrl,
+            callbackUrl,
+            description: answers.description,
+            developerEmail: answers.developerEmail,
+            developerName: answers.developerName,
+            framework: 'Custom',
+            purpose: answers.useDockerUrls ? 'Docker/Production Deployment' : 'Development',
+            requiresOrganization: answers.requiresOrganization || false,
+            organizationModel: answers.organizationModel || null,
+            organizationFeatures: [],
+            onboardingFlow: answers.onboardingFlow || null,
+        };
+
+        const response = await authApi.registerClient(requestData);
+
+        // Write pre-approval .env
+        writePreApprovalEnv(answers, redirectUrl, callbackUrl);
+
+        logger.success('Registration request submitted!\n');
+
+        logger.section('Request Details');
+        logger.keyValue('Request ID', response?.request?.id || 'pending');
+        logger.keyValue('Status', '⏳ pending admin approval');
+        logger.keyValue('Notification', `Email will be sent to ${answers.developerEmail} when approved`);
+
+        logger.section('Next Steps');
+        console.log(chalk.white(`1. Wait for admin approval (check status with: sso-client status ${answers.clientKey})`));
+        console.log(chalk.white(`2. Once approved, fetch all credentials and update .env:`));
+        console.log(chalk.yellow(`   sso-client pull-env ${answers.clientKey} --email ${answers.developerEmail}`));
+        console.log(chalk.white(`3. Add to /etc/hosts (local dev only):`));
+        console.log(chalk.gray(`   echo "127.0.0.1 ${answers.clientKey}.${SSO_CONFIG.domain}" | sudo tee -a /etc/hosts`));
+
+    } catch (error) {
+        if (error.message.includes('409') || error.message.includes('already exists')) {
+            logger.warn('Client key already registered or pending approval');
+            logger.info(`Check status: sso-client status ${answers.clientKey}`);
+            logger.info(`Fetch credentials after approval: sso-client pull-env ${answers.clientKey} --email <your-email>`);
+        } else {
+            logger.error('Registration failed:', error.message);
+        }
+    }
+}
+
+export default registerCommand;

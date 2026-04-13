@@ -21,7 +21,13 @@ services:
       - "443:443"
       - "80:80"
     networks:
-      - auth-network
+      auth-network:
+        aliases:
+          - keycloak.gururajhr.in
+          - auth.gururajhr.in
+          - pms.gururajhr.in
+          - account.gururajhr.in
+          - admin.gururajhr.in
     deploy:
       resources:
         limits:
@@ -49,6 +55,8 @@ services:
       #   condition: service_healthy
       pms-v2:
         condition: service_healthy
+      pms-frontend:
+        condition: service_healthy
       super-administrator:
         condition: service_healthy
 
@@ -63,8 +71,10 @@ services:
     image: postgres:15-alpine
     container_name: sso-postgres-auth
     restart: unless-stopped
+    ports:
+      - "5432:5432"
     environment:
-      POSTGRES_DB: ${AUTH_DB_NAME:-authzotion_db}
+      POSTGRES_DB: ${AUTH_DB_NAME:?AUTH_DB_NAME is required}
       POSTGRES_USER: ${AUTH_DB_USER:-postgres}
       POSTGRES_PASSWORD: ${AUTH_DB_PASSWORD:?AUTH_DB_PASSWORD is required}
     volumes:
@@ -112,7 +122,7 @@ services:
       - "5411:5432"
     environment:
       POSTGRES_USER: ${PMS_DB_USER:-postgres}
-      POSTGRES_PASSWORD: ${PMS_DB_PASSWORD:-1234}
+      POSTGRES_PASSWORD: ${PMS_DB_PASSWORD:?PMS_DB_PASSWORD is required}
     volumes:
       - postgres-pms-data:/var/lib/postgresql/data
       - ./init-multiple-db.sql:/docker-entrypoint-initdb.d/init-multiple-db.sql
@@ -153,7 +163,7 @@ services:
     environment:
       POSTGRES_DB: email_service
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: ${EMAIL_DB_PASSWORD:-1234}
+      POSTGRES_PASSWORD: ${EMAIL_DB_PASSWORD:?EMAIL_DB_PASSWORD is required}
     volumes:
       - postgres-email-data:/var/lib/postgresql/data
     networks:
@@ -218,14 +228,14 @@ services:
       KEYCLOAK_URL: ${EMAIL_KEYCLOAK_URL:-http://keycloak:8080}
       KEYCLOAK_REALM: ${KEYCLOAK_REALM:-my-projects}
       # Use front-facing URL for issuer validation if tokens are issued by it
-      KEYCLOAK_ISSUER_URL: ${FRONTEND_AUTH_URL:-https://keycloak.local.test:8443}
+      KEYCLOAK_ISSUER_URL: ${FRONTEND_AUTH_URL:-https://keycloak.gururajhr.in}
 
       # Database (dedicated)
       DB_HOST: db-email
       DB_PORT: 5432
       DB_NAME: email_service
       DB_USER: postgres
-      DB_PASSWORD: ${EMAIL_DB_PASSWORD:-1234}
+      DB_PASSWORD: ${EMAIL_DB_PASSWORD:?EMAIL_DB_PASSWORD is required}
 
       # Redis (internal service name)
       REDIS_HOST: redis
@@ -252,6 +262,8 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+    volumes:
+      - email-service-logs:/app/logs
     networks:
       - auth-network
     deploy:
@@ -294,7 +306,7 @@ services:
       - "5412:5432"
     environment:
       POSTGRES_USER: ${PMS_DB_USER:-postgres}
-      POSTGRES_PASSWORD: ${PMS_DB_PASSWORD:-1234}
+      POSTGRES_PASSWORD: ${PMS_DB_PASSWORD:?PMS_DB_PASSWORD is required}
     volumes:
       - postgres-super-admin-data:/var/lib/postgresql/data
       - ./init-multiple-db.sql:/docker-entrypoint-initdb.d/init-multiple-db.sql
@@ -393,29 +405,32 @@ services:
       # Internal Docker URL (container to container)
       KEYCLOAK_URL: ${KEYCLOAK_URL:-http://keycloak:8080}
       # External Browser URL (browser to keycloak)
-      FRONTEND_AUTH_URL: ${FRONTEND_AUTH_URL:-https://keycloak.local.test:8443}
+      FRONTEND_AUTH_URL: ${FRONTEND_AUTH_URL:-https://keycloak.gururajhr.in}
       KEYCLOAK_REALM: ${KEYCLOAK_REALM:-my-projects}
       KEYCLOAK_REALM_ID: ${KEYCLOAK_REALM_ID:-}
       KEYCLOAK_ACCOUNT_UI_CLIENT_SECRET: ${KEYCLOAK_ACCOUNT_UI_CLIENT_SECRET:-}
 
       # URLs
-      FRONTEND_URL: ${FRONTEND_URL:-https://admin.local.test}
-      ACCOUNT_UI_URL: ${ACCOUNT_UI_URL:-https://client.local.test}
-      AUTH_SERVICE_URL: ${AUTH_SERVICE_URL:-https://auth.local.test}
+      FRONTEND_URL: ${FRONTEND_URL:-https://admin.gururajhr.in}
+      ACCOUNT_UI_URL: ${ACCOUNT_UI_URL:-https://account.gururajhr.in}
+      AUTH_SERVICE_URL: ${AUTH_SERVICE_URL:-https://auth.gururajhr.in}
 
       # Service Account Identity (for calling other services like email-service)
       AUTH_SERVICE_CLIENT_ID: ${AUTH_SERVICE_CLIENT_ID:-auth-service}
       AUTH_SERVICE_CLIENT_SECRET: ${AUTH_SERVICE_CLIENT_SECRET:-}
 
+      # PMS Frontend SSO client secret (used by migration 20260407000000)
+      FN_PMS_CLIENT_SECRET: ${FN_PMS_CLIENT_SECRET:?FN_PMS_CLIENT_SECRET is required}
+
       # Session
       SESSION_SECRET: ${SESSION_SECRET:?SESSION_SECRET is required}
       SESSION_COOKIE_NAME: ${SESSION_COOKIE_NAME:-auth.sid}
-      SESSION_COOKIE_DOMAIN: ${SESSION_COOKIE_DOMAIN:-.local.test}
+      SESSION_COOKIE_DOMAIN: ${SESSION_COOKIE_DOMAIN:-.gururajhr.in}
       SESSION_COOKIE_SECURE: ${SESSION_COOKIE_SECURE:-true}
       SESSION_COOKIE_SAMESITE: ${SESSION_COOKIE_SAMESITE:-none}
 
       # Refresh Token
-      REFRESH_COOKIE_DOMAIN: ${REFRESH_COOKIE_DOMAIN:-.local.test}
+      REFRESH_COOKIE_DOMAIN: ${REFRESH_COOKIE_DOMAIN:-.gururajhr.in}
       REFRESH_COOKIE_SECURE: ${REFRESH_COOKIE_SECURE:-true}
       REFRESH_COOKIE_SAMESITE: ${REFRESH_COOKIE_SAMESITE:-none}
       REFRESH_COOKIE_MAX_AGE: ${REFRESH_COOKIE_MAX_AGE:-2592000}
@@ -486,11 +501,11 @@ services:
       dockerfile: infrastructure/Dockerfile
       args:
         VITE_CLIENT_KEY: ${VITE_AUTH_UI_CLIENT_KEY:-admin-ui}
-        VITE_AUTH_BASE_URL: ${VITE_AUTH_UI_AUTH_BASE_URL:-https://auth.local.test}
-        VITE_API_URL: ${VITE_AUTH_UI_API_URL:-https://auth.local.test}
-        VITE_AUTH_URL: ${VITE_AUTH_UI_AUTH_URL:-https://keycloak.local.test:8443}
-        VITE_ACCOUNT_UI_URL: ${VITE_LOGIN_ACCOUNT_UI_URL:-https://account.local.test}
-        VITE_CALLBACK_URL: ${VITE_AUTH_UI_CALLBACK_URL:-https://admin.local.test/callback}
+        VITE_AUTH_BASE_URL: ${VITE_AUTH_UI_AUTH_BASE_URL:-https://auth.gururajhr.in}
+        VITE_API_URL: ${VITE_AUTH_UI_API_URL:-https://auth.gururajhr.in}
+        VITE_AUTH_URL: ${VITE_AUTH_UI_AUTH_URL:-https://keycloak.gururajhr.in}
+        VITE_ACCOUNT_UI_URL: ${VITE_LOGIN_ACCOUNT_UI_URL:-https://account.gururajhr.in}
+        VITE_CALLBACK_URL: ${VITE_AUTH_UI_CALLBACK_URL:-https://admin.gururajhr.in/callback}
     container_name: sso-auth-ui
     restart: unless-stopped
     # Ports removed - accessed via Gateway
@@ -541,9 +556,9 @@ services:
       dockerfile: infrastructure/Dockerfile
       args:
         VITE_CLIENT_KEY: ${VITE_LOGIN_CLIENT_KEY:-account-ui}
-        VITE_AUTH_BASE_URL: ${VITE_LOGIN_AUTH_BASE_URL:-https://auth.local.test/auth}
-        VITE_ACCOUNT_UI_URL: ${VITE_LOGIN_ACCOUNT_UI_URL:-https://account.local.test}
-        VITE_REDIRECT_URI: ${VITE_LOGIN_REDIRECT_URI:-https://account.local.test/callback}
+        VITE_AUTH_BASE_URL: ${VITE_LOGIN_AUTH_BASE_URL:-https://auth.gururajhr.in/auth}
+        VITE_ACCOUNT_UI_URL: ${VITE_LOGIN_ACCOUNT_UI_URL:-https://account.gururajhr.in}
+        VITE_REDIRECT_URI: ${VITE_LOGIN_REDIRECT_URI:-https://account.gururajhr.in/callback}
     container_name: sso-centralized-login
     restart: unless-stopped
     # Ports removed - accessed via Gateway
@@ -685,7 +700,7 @@ services:
       DB_HOST: db-pms
       DB_PORT: 5432
       DB_USER: ${PMS_DB_USER:-postgres}
-      DB_PASSWORD: ${PMS_DB_PASSWORD:-1234}
+      DB_PASSWORD: ${PMS_DB_PASSWORD:?PMS_DB_PASSWORD is required}
       DB_NAME: pms_v2
       REDIS_HOST: redis
       REDIS_PORT: 6379
@@ -700,7 +715,7 @@ services:
       AUTH_SERVICE_URL: http://auth-service:4000
 
       # Super Administrator Service URL
-      SUPER_ADMIN_URL: http://super-administrator:4010
+      SUPER_ADMIN_URL: http://super_admin:4010
     networks:
       - auth-network
     deploy:
@@ -734,6 +749,51 @@ services:
       start_period: 30s
 
   # ─────────────────────────────────────────────────────────────────────────────
+  # PMS Frontend (React SPA)
+  # ─────────────────────────────────────────────────────────────────────────────
+  pms-frontend:
+    build:
+      context: ./fn-pms-version-2
+      dockerfile: Dockerfile
+    image: pms-frontend:latest
+    container_name: pms-frontend
+    restart: unless-stopped
+    expose:
+      - "80"
+    networks:
+      - auth-network
+    deploy:
+      resources:
+        limits:
+          cpus: "0.10"
+          memory: 64M
+        reservations:
+          memory: 32M
+    security_opt:
+      - no-new-privileges:true
+    tmpfs:
+      - /tmp
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "--no-verbose",
+          "--tries=1",
+          "--spider",
+          "http://127.0.0.1:80/",
+        ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  # ─────────────────────────────────────────────────────────────────────────────
   # Super Administrator
   # ─────────────────────────────────────────────────────────────────────────────
   super-administrator:
@@ -750,35 +810,35 @@ services:
         condition: service_healthy
     environment:
       NODE_ENV: ${NODE_ENV:-production}
-      ENV: ${ENV}
+      ENV: ${ENV:-production}
       PORT: 4010
 
       DB_HOST: db-super-admin
       DB_PORT: 5432
-      DB_USER: ${PMS_DB_USER}
-      DB_PASSWORD: ${PMS_DB_PASSWORD}
+      DB_USER: ${PMS_DB_USER:-postgres}
+      DB_PASSWORD: ${PMS_DB_PASSWORD:?PMS_DB_PASSWORD is required}
       DB_NAME: super_administrator
       DB_TYPE: postgres
       DB_ZONE: "+05:30"
-      DB_PREFIX: ${DB_PREFIX}
+      DB_PREFIX: ${DB_PREFIX:-}
 
       REDIS_HOST: redis
       REDIS_PORT: 6379
 
-      ENC_KEY: ${ENC_KEY}
-      ENC_IV: ${ENC_IV}
+      ENC_KEY: ${ENC_KEY:?ENC_KEY is required}
+      ENC_IV: ${ENC_IV:?ENC_IV is required}
 
-      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET}
-      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
-      ACCESS_TOKEN_EXPIRE_TIME: ${ACCESS_TOKEN_EXPIRE_TIME}
-      REFRESH_TOKEN_EXPIRE_TIME: ${REFRESH_TOKEN_EXPIRE_TIME}
-      RESET_PASSWORD_TOKEN_EXPIRE_TIME: ${RESET_PASSWORD_TOKEN_EXPIRE_TIME}
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:?JWT_ACCESS_SECRET is required}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:?JWT_REFRESH_SECRET is required}
+      ACCESS_TOKEN_EXPIRE_TIME: ${ACCESS_TOKEN_EXPIRE_TIME:-15m}
+      REFRESH_TOKEN_EXPIRE_TIME: ${REFRESH_TOKEN_EXPIRE_TIME:-30d}
+      RESET_PASSWORD_TOKEN_EXPIRE_TIME: ${RESET_PASSWORD_TOKEN_EXPIRE_TIME:-1h}
 
       GLOBAL: http://localhost:8080/
       APP: http://localhost:8080/
       APP_NAME: nodejs-starter
       LOGO: images/logo.webp
-      FRONT_END_DOMAIN: ${FRONT_END_DOMAIN}
+      FRONT_END_DOMAIN: ${FRONT_END_DOMAIN:-https://admin.gururajhr.in}
     networks:
       - auth-network
     ports:
@@ -836,3 +896,5 @@ volumes:
     name: sso-postgres-super-admin-data
   postgres-email-data:
     name: sso-postgres-email-data
+  email-service-logs:
+    name: sso-email-service-logs

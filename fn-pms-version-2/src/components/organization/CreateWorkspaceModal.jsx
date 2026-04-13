@@ -85,6 +85,7 @@ export default function CreateWorkspaceModal({
   onCreated,
   orgId 
 }) {
+  console.log(orgId);
   const { createWorkspace, loading: contextLoading } = useWorkspace();
   const { enqueueSnackbar } = useSnackbar();
   

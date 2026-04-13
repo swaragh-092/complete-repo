@@ -86,7 +86,7 @@ export default function Profile() {
     return new Date(dateString).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
   };
 
-  const accountUrl = import.meta.env.VITE_ACCOUNT_UI_URL || 'https://account.local.test:5174';
+  const accountUrl = import.meta.env.VITE_ACCOUNT_UI_URL || 'https://account.gururajhr.in';
 
   const quickActions = [
     { title: 'Edit Profile', description: 'Update your personal info', icon: <PersonIcon />, url: `${accountUrl}/profile` },

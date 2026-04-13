@@ -155,8 +155,10 @@ class OrganizationService {
             // 8. Setup Tenant Mapping (Important for multi-tenant support)
             if (client_key) {
                 await TenantMapping.upsert({
-                    user_id: user.keycloak_id,
-                    tenant_id: tenantId,
+                    user_keycloak_id: user.keycloak_id,
+                    user_id: userMetadata.id,
+                    org_id: newOrganization.id,
+                    tenant_slug: tenantId,
                     client_key: client_key
                 }, { transaction });
             }

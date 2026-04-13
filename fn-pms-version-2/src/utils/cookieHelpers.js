@@ -21,7 +21,7 @@ export function setCookie(name, value, maxAge = 60480 * 60, options = {}) {
     path: "/",
     sameSite: "Lax",
     secure: window.location.protocol === "https:",
-    domain: window.location.hostname.includes(".local.test") ? ".local.test" : undefined, // Don't set domain for localhost
+    domain: window.location.hostname.endsWith(".gururajhr.in") ? ".gururajhr.in" : undefined,
   };
 
   const cookieOptions = { ...defaults, ...options };

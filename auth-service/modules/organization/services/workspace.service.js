@@ -18,6 +18,7 @@ const { AppError } = require('../../../middleware/errorHandler');
 const logger = require('../../../utils/logger');
 const AuditLogService = require('../../../services/audit.service');
 const KeycloakService = require('../../../services/keycloak.service');
+const SettingsService = require('./settings.service');
 
 /**
  * Helper function to check if user is a super admin

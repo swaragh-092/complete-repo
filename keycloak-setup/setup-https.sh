@@ -44,13 +44,15 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
 mkcert -key-file key.pem -cert-file cert.pem \
-  "*.local.test" \
-  "local.test" \
-  "keycloak.local.test" \
-  "auth.local.test" \
-  "account.local.test" \
-  "admin.local.test" \
-  "pms.local.test" \
+  "*.gururajhr.in" \
+  "gururajhr.in" \
+  "keycloak.gururajhr.in" \
+  "auth.gururajhr.in" \
+  "account.gururajhr.in" \
+  "admin.gururajhr.in" \
+  "pms.gururajhr.in" \
+  "org.gururajhr.in" \
+  "email.gururajhr.in" \
   "localhost" \
   "127.0.0.1"
 

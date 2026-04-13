@@ -5,37 +5,44 @@
 // components/Layout.jsx
 // Modified:
 
-import { Outlet, useNavigation } from "react-router-dom";
-import { useState } from "react";
+import { Outlet, useNavigation, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
 
 import Sidebar from "../pages/global/Sidebar";
 import Topbar from "../pages/global/Topbar";
 import LoadingFallbackLayout from "./skeleton/LoadingFallbackLayout";
+import { useOrganization } from "../context/OrganizationContext";
 
 export function LayoutWrapper({ children }) {
   const [isSidebar, setIsSidebar] = useState(true);
+  const { currentOrganization, loading } = useOrganization();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!loading && !currentOrganization) {
+      navigate("/select-organization", { replace: true });
+    }
+  }, [loading, currentOrganization, navigate]);
+
+  const hasOrg = !!currentOrganization;
+
   return (
-    <>
-      <div className="app">
-        <Sidebar isSidebar={isSidebar} />
-        <main className="content">
-          <Topbar setIsSidebar={setIsSidebar} />
-          {children}
-        </main>
-      </div>
-    </>
+    <div className="app">
+      {hasOrg && <Sidebar isSidebar={isSidebar} />}
+      <main className="content">
+        <Topbar setIsSidebar={setIsSidebar} />
+        {hasOrg ? children : null}
+      </main>
+    </div>
   );
 }
 
 export default function Layout() {
   const navigation = useNavigation();
 
-
   return (
-    <>
-      <LayoutWrapper>
-        {navigation.state === "loading" ? <LoadingFallbackLayout /> :<Outlet />}
-      </LayoutWrapper>
-    </>
+    <LayoutWrapper>
+      {navigation.state === "loading" ? <LoadingFallbackLayout /> : <Outlet />}
+    </LayoutWrapper>
   );
 }

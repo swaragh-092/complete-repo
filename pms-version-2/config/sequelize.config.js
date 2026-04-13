@@ -7,7 +7,7 @@
 module.exports = {
   development: {
     username: "postgres",
-    password: "1234",
+    password: "CHANGE_ME",
     database: "pms_v2",
     host: "localhost",
     port: 5411, // or whatever port you exposed
@@ -16,7 +16,7 @@ module.exports = {
   },
   test: {
     username: "postgres",
-    password: "1234",
+    password: "CHANGE_ME",
     database: "pms_v2",
     host: "localhost",
     port: 5411, // or whatever port you exposed
@@ -25,7 +25,7 @@ module.exports = {
   },
   production: {
     username: "postgres",
-    password: "1234",
+    password: "CHANGE_ME",
     database: "pms_v2",
     host: "db-pms",
     dialect: "postgres",

@@ -32,6 +32,7 @@ const config = {
   validateOnVisibility: false, // Disabled - was causing session_deleted_while_hidden errors
   enableIdleTimeout: true,
   skipValidationWhenHidden: true, // Skip validation when tab is hidden
+  persistRefreshToken: true, // Store refresh token in localStorage so it survives page refresh
   
   // API configuration
   api: {
