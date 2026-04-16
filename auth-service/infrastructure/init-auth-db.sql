@@ -1807,36 +1807,6 @@ CREATE TABLE public.workspaces (
 ALTER TABLE public.workspaces OWNER TO postgres;
 
 --
--- Name: global_settings; Type: TABLE; Schema: public; Owner: postgres
---
-
-CREATE TYPE public.enum_global_settings_type AS ENUM ('number', 'boolean', 'string', 'json');
-CREATE TYPE public.enum_global_settings_category AS ENUM ('limits', 'security', 'features', 'branding', 'system');
-
-CREATE TABLE public.global_settings (
-    id uuid NOT NULL DEFAULT gen_random_uuid(),
-    key character varying(255) NOT NULL,
-    value jsonb NOT NULL,
-    type public.enum_global_settings_type DEFAULT 'string'::public.enum_global_settings_type,
-    category public.enum_global_settings_category DEFAULT 'system'::public.enum_global_settings_category,
-    description text,
-    is_system boolean DEFAULT false,
-    is_public boolean DEFAULT false,
-    is_active boolean NOT NULL DEFAULT true,
-    updated_by uuid,
-    created_at timestamp with time zone NOT NULL DEFAULT now(),
-    updated_at timestamp with time zone NOT NULL DEFAULT now(),
-    CONSTRAINT global_settings_pkey PRIMARY KEY (id),
-    CONSTRAINT global_settings_key_key UNIQUE (key)
-);
-
-ALTER TABLE public.global_settings OWNER TO postgres;
-
-CREATE UNIQUE INDEX global_settings_key ON public.global_settings USING btree (key);
-CREATE INDEX global_settings_category ON public.global_settings USING btree (category);
-CREATE INDEX global_settings_is_public ON public.global_settings USING btree (is_public);
-
---
 -- Name: audit_logs id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 

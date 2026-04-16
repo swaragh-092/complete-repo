@@ -1140,14 +1140,6 @@ router.post(
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('\u{1F534} KEYCLOAK REFRESH ERROR:', JSON.stringify({
-          status: response.status,
-          statusText: response.statusText,
-          error: errorText,
-          clientKey,
-          clientId: client.client_id,
-          realm: realmName,
-        }));
         logger.error('Keycloak refresh failed', {
           status: response.status,
           statusText: response.statusText,

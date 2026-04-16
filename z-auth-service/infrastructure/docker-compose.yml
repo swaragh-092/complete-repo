@@ -1,0 +1,110 @@
+# ═══════════════════════════════════════════════════════
+# Docker Compose for Auth Service
+# ═══════════════════════════════════════════════════════
+
+services:
+  # ─────────────────────────────────────────────────────
+  # Auth Service (Node.js Application)
+  # ─────────────────────────────────────────────────────
+  auth-service:
+    build:
+      context: ..
+      dockerfile: infrastructure/Dockerfile
+    container_name: auth-service
+    restart: unless-stopped
+    ports:
+      - "${PORT:-4000}:4000"
+    environment:
+      - NODE_ENV=${NODE_ENV:-production}
+      - PORT=4000
+      # Database
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=${DB_NAME:-authzotion_db}
+      - DB_USER=${DB_USER:-postgres}
+      - DB_PASSWORD=${DB_PASSWORD:-postgres}
+      # Keycloak
+      - KEYCLOAK_URL=${KEYCLOAK_URL}
+      - KEYCLOAK_REALM=${KEYCLOAK_REALM}
+      - KEYCLOAK_REALM_ID=${KEYCLOAK_REALM_ID}
+      - KEYCLOAK_ACCOUNT_UI_CLIENT_SECRET=${KEYCLOAK_ACCOUNT_UI_CLIENT_SECRET}
+      # URLs
+      - FRONTEND_URL=${FRONTEND_URL}
+      - AUTH_SERVICE_URL=${AUTH_SERVICE_URL}
+      # Session
+      - SESSION_SECRET=${SESSION_SECRET}
+      - SESSION_COOKIE_NAME=${SESSION_COOKIE_NAME:-auth.sid}
+      - SESSION_COOKIE_DOMAIN=${SESSION_COOKIE_DOMAIN}
+      - SESSION_COOKIE_SECURE=${SESSION_COOKIE_SECURE:-false}
+      - SESSION_COOKIE_SAMESITE=${SESSION_COOKIE_SAMESITE:-lax}
+      # Refresh Token
+      - REFRESH_COOKIE_DOMAIN=${REFRESH_COOKIE_DOMAIN}
+      - REFRESH_COOKIE_SECURE=${REFRESH_COOKIE_SECURE:-false}
+      - REFRESH_COOKIE_SAMESITE=${REFRESH_COOKIE_SAMESITE:-lax}
+      - REFRESH_COOKIE_MAX_AGE=${REFRESH_COOKIE_MAX_AGE:-2592000}
+      # CORS
+      - TRUST_PROXY=${TRUST_PROXY:-true}
+      - CORS_FALLBACK_ORIGINS=${CORS_FALLBACK_ORIGINS}
+      # SMTP
+      - SMTP_HOST=${SMTP_HOST}
+      - SMTP_PORT=${SMTP_PORT}
+      - SMTP_USER=${SMTP_USER}
+      - SMTP_PASS=${SMTP_PASS}
+      - FROM_EMAIL=${FROM_EMAIL}
+      # Security
+      - FP_SALT=${FP_SALT}
+      - DEVICE_TRUST_DURATION_DAYS=${DEVICE_TRUST_DURATION_DAYS:-30}
+      - DEVICE_MAX_PER_USER=${DEVICE_MAX_PER_USER:-10}
+      - DEVICE_SIMILARITY_THRESHOLD=${DEVICE_SIMILARITY_THRESHOLD:-85}
+      # Risk Scoring
+      - RISK_NEW_USER_WEIGHT=${RISK_NEW_USER_WEIGHT:-40}
+      - RISK_NEW_DEVICE_WEIGHT=${RISK_NEW_DEVICE_WEIGHT:-25}
+      - RISK_LOCATION_WEIGHT=${RISK_LOCATION_WEIGHT:-15}
+      - RISK_TIME_WEIGHT=${RISK_TIME_WEIGHT:-10}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - auth-network
+    volumes:
+      - auth-logs:/app/logs
+
+  # ─────────────────────────────────────────────────────
+  # PostgreSQL Database
+  # ─────────────────────────────────────────────────────
+  postgres:
+    image: postgres:15-alpine
+    container_name: auth-postgres
+    restart: unless-stopped
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    environment:
+      - POSTGRES_DB=${DB_NAME:-authzotion_db}
+      - POSTGRES_USER=${DB_USER:-postgres}
+      - POSTGRES_PASSWORD=${DB_PASSWORD:-postgres}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - auth-network
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-authzotion_db}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+# ═══════════════════════════════════════════════════════
+# Networks
+# ═══════════════════════════════════════════════════════
+networks:
+  auth-network:
+    driver: bridge
+
+# ═══════════════════════════════════════════════════════
+# Volumes
+# ═══════════════════════════════════════════════════════
+volumes:
+  postgres-data:
+    driver: local
+  auth-logs:
+    driver: local

@@ -17,6 +17,13 @@ COPY snippets/ /etc/nginx/snippets/
 # Set proper permissions on certs (read-only for safety)
 RUN chmod 600 /etc/nginx/certs/*.pem
 
+# Drop substitution script into nginx's entrypoint hooks directory.
+# nginx's own /docker-entrypoint.sh runs all scripts in /docker-entrypoint.d/
+# alphabetically before starting nginx — 40- prefix ensures it runs after
+# nginx's built-in 10/15/20/30 scripts.
+COPY docker-entrypoint.sh /docker-entrypoint.d/40-envsubst-domain.sh
+RUN chmod +x /docker-entrypoint.d/40-envsubst-domain.sh
+
 EXPOSE 80 443
 
 # Health check (use 127.0.0.1 explicitly to force IPv4)

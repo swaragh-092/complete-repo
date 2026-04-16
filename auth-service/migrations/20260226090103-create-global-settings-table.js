@@ -38,11 +38,6 @@ module.exports = {
         type: Sequelize.BOOLEAN,
         defaultValue: false,
       },
-      is_active: {
-        type: Sequelize.BOOLEAN,
-        allowNull: false,
-        defaultValue: true,
-      },
       updated_by: {
         type: Sequelize.UUID,
         allowNull: true,
@@ -80,7 +75,6 @@ module.exports = {
         description: 'Maximum number of workspaces allowed per organization',
         is_system: true,
         is_public: false,
-        is_active: true,
         created_at: new Date(),
         updated_at: new Date()
       }

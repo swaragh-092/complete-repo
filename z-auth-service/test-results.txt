@@ -1,0 +1,260 @@
+FAIL modules/organization/tests/services/memberLookup.service.test.js
+  ● MemberLookupService › lookup() › should return correct user+workspace pairs for given user_ids and workspace_ids
+
+    TypeError: UserMetadata.findAll is not a function
+
+      44 |         if (hasUserIds && userIdType === 'keycloak_id') {
+      45 |             const { UserMetadata } = models;
+    > 46 |             const users = await UserMetadata.findAll({
+         |                                              ^
+      47 |                 where: { keycloak_id: { [Op.in]: userIds } },
+      48 |                 attributes: ['id', 'keycloak_id']
+      49 |             });
+
+      at Function.findAll [as lookup] (modules/organization/services/memberLookup.service.js:46:46)
+      at Object.lookup (modules/organization/tests/services/memberLookup.service.test.js:60:54)
+
+  ● MemberLookupService › lookup() › should filter by workspace_ids only when user_ids not provided
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: "Alex Turner"
+    Received: "alex@test.com"
+
+       99 |
+      100 |             expect(result.members).toHaveLength(1);
+    > 101 |             expect(result.members[0].user.name).toBe('Alex Turner');
+          |                                                 ^
+      102 |
+      103 |             // Verify WHERE clause only included workspace_id
+      104 |             const whereClause = mockFindAll.mock.calls[0][0].where;
+
+      at Object.toBe (modules/organization/tests/services/memberLookup.service.test.js:101:49)
+
+  ● MemberLookupService › lookup() › should filter by user_ids only when workspace_ids not provided
+
+    TypeError: UserMetadata.findAll is not a function
+
+      44 |         if (hasUserIds && userIdType === 'keycloak_id') {
+      45 |             const { UserMetadata } = models;
+    > 46 |             const users = await UserMetadata.findAll({
+         |                                              ^
+      47 |                 where: { keycloak_id: { [Op.in]: userIds } },
+      48 |                 attributes: ['id', 'keycloak_id']
+      49 |             });
+
+      at Function.findAll [as lookup] (modules/organization/services/memberLookup.service.js:46:46)
+      at Object.lookup (modules/organization/tests/services/memberLookup.service.test.js:123:54)
+
+  ● MemberLookupService › lookup() › should return empty members array for non-existent IDs
+
+    TypeError: UserMetadata.findAll is not a function
+
+      44 |         if (hasUserIds && userIdType === 'keycloak_id') {
+      45 |             const { UserMetadata } = models;
+    > 46 |             const users = await UserMetadata.findAll({
+         |                                              ^
+      47 |                 where: { keycloak_id: { [Op.in]: userIds } },
+      48 |                 attributes: ['id', 'keycloak_id']
+      49 |             });
+
+      at Function.findAll [as lookup] (modules/organization/services/memberLookup.service.js:46:46)
+      at Object.lookup (modules/organization/tests/services/memberLookup.service.test.js:138:54)
+
+  ● MemberLookupService › lookup() › should gracefully handle Keycloak failures by falling back to email-only name
+
+    TypeError: UserMetadata.findAll is not a function
+
+      44 |         if (hasUserIds && userIdType === 'keycloak_id') {
+      45 |             const { UserMetadata } = models;
+    > 46 |             const users = await UserMetadata.findAll({
+         |                                              ^
+      47 |                 where: { keycloak_id: { [Op.in]: userIds } },
+      48 |                 attributes: ['id', 'keycloak_id']
+      49 |             });
+
+      at Function.findAll [as lookup] (modules/organization/services/memberLookup.service.js:46:46)
+      at Object.lookup (modules/organization/tests/services/memberLookup.service.test.js:171:54)
+
+PASS modules/organization/tests/organizations.routes.test.js
+  ● Console
+
+    console.log
+      [dotenv@17.0.1] injecting env (48) from .env – [tip] encrypt with dotenvx: https://dotenvx.com
+
+      at _log (node_modules/dotenv/lib/main.js:102:11)
+
+PASS modules/organization/tests/routes/onboarding.routes.test.js
+  ● Console
+
+    console.error
+      TEST ERROR HIT: AppError: "name" length must be at least 2 characters long
+          at /home/sr-user91/Videos/complete-repo/auth-service/modules/organization/routes/onboarding.routes.js:54:11
+          at fn (/home/sr-user91/Videos/complete-repo/auth-service/middleware/asyncHandler.js:20:19)
+          at Layer.handleRequest (/home/sr-user91/Videos/complete-repo/auth-service/node_modules/router/lib/layer.js:152:17)
+          at next (/home/sr-user91/Videos/complete-repo/auth-service/node_modules/router/lib/route.js:157:13)
+          at Route.dispatch (/home/sr-user91/Videos/complete-repo/auth-service/node_modules/router/lib/route.js:117:3)
+          at handle (/home/sr-user91/Videos/complete-repo/auth-service/node_modules/router/index.js:435:11)
+          at Layer.handleRequest (/home/sr-user91/Videos/complete-repo/auth-service/node_modules/router/lib/layer.js:152:17)
+          at /home/sr-user91/Videos/complete-repo/auth-service/node_modules/router/index.js:295:15
+          at processParams (/home/sr-user91/Videos/complete-repo/auth-service/node_modules/router/index.js:582:12)
+          at next (/home/sr-user91/Videos/complete-repo/auth-service/node_modules/router/index.js:291:5)
+          at next (/home/sr-user91/Videos/complete-repo/auth-service/modules/organization/tests/routes/onboarding.routes.test.js:17:9)
+          at Layer.handleRequest (/home/sr-user91/Videos/complete-repo/auth-service/node_modules/router/lib/layer.js:152:17)
+          at trimPrefix (/home/sr-user91/Videos/complete-repo/auth-service/node_modules/router/index.js:342:13)
+          at /home/sr-user91/Videos/complete-repo/auth-service/node_modules/router/index.js:297:9
+          at processParams (/home/sr-user91/Videos/complete-repo/auth-service/node_modules/router/index.js:582:12)
+          at next (/home/sr-user91/Videos/complete-repo/auth-service/node_modules/router/index.js:291:5)
+          at Function.handle (/home/sr-user91/Videos/complete-repo/auth-service/node_modules/router/index.js:186:3)
+          at router (/home/sr-user91/Videos/complete-repo/auth-service/node_modules/router/index.js:60:12)
+          at Layer.handleRequest (/home/sr-user91/Videos/complete-repo/auth-service/node_modules/router/lib/layer.js:152:17)
+          at trimPrefix (/home/sr-user91/Videos/complete-repo/auth-service/node_modules/router/index.js:342:13)
+          at /home/sr-user91/Videos/complete-repo/auth-service/node_modules/router/index.js:297:9
+          at processParams (/home/sr-user91/Videos/complete-repo/auth-service/node_modules/router/index.js:582:12)
+          at next (/home/sr-user91/Videos/complete-repo/auth-service/node_modules/router/index.js:291:5)
+          at /home/sr-user91/Videos/complete-repo/auth-service/node_modules/body-parser/lib/read.js:132:5
+          at AsyncResource.runInAsyncScope (node:async_hooks:211:14)
+          at invokeCallback (/home/sr-user91/Videos/complete-repo/auth-service/node_modules/raw-body/index.js:238:16)
+          at done (/home/sr-user91/Videos/complete-repo/auth-service/node_modules/raw-body/index.js:227:7)
+          at IncomingMessage.onEnd (/home/sr-user91/Videos/complete-repo/auth-service/node_modules/raw-body/index.js:287:7)
+          at IncomingMessage.emit (node:events:507:28)
+          at endReadableNT (node:internal/streams/readable:1696:12)
+          at processTicksAndRejections (node:internal/process/task_queues:90:21) {
+        statusCode: 400,
+        code: 'VALIDATION_ERROR',
+        details: null,
+        isOperational: true
+      }
+
+      94 | app.use('/api/org-onboarding', onboardingRouter);
+      95 | app.use((err, req, res, next) => {
+    > 96 |     console.error('TEST ERROR HIT:', err);
+         |             ^
+      97 |     errorHandler(err, req, res, next);
+      98 | });
+      99 |
+
+      at error (modules/organization/tests/routes/onboarding.routes.test.js:96:13)
+      at Layer.handleError (node_modules/router/lib/layer.js:116:17)
+      at trimPrefix (node_modules/router/index.js:340:13)
+      at node_modules/router/index.js:297:9
+      at processParams (node_modules/router/index.js:582:12)
+      at next (node_modules/router/index.js:291:5)
+      at node_modules/router/index.js:688:15
+      at next (node_modules/router/index.js:276:14)
+      at next (node_modules/router/lib/route.js:132:14)
+
+PASS modules/organization/tests/services/invitation.service.test.js
+  ● Console
+
+    console.log
+      2026-02-26 15:08:09 error: Invitation creation failed
+
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+
+    console.log
+      2026-02-26 15:08:09 error: Invitation creation failed
+
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+
+    console.log
+      2026-02-26 15:08:09 info: 📧 Invitation email sent successfully to:
+
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+
+    console.log
+      2026-02-26 15:08:09 info: Invitation revoked successfully
+
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+
+    console.log
+      2026-02-26 15:08:09 info: 📧 Invitation email sent successfully to:
+
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+
+    console.log
+      2026-02-26 15:08:09 error: 📧 Failed to send invitation email: SMTP connection failed
+
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+
+PASS modules/organization/tests/services/membership.service.test.js
+  ● Console
+
+    console.log
+      2026-02-26 15:08:09 info: ⚠️ Single org mode: User already belongs to another organization
+
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+
+    console.log
+      2026-02-26 15:08:09 info: ✅ Auto-set primary organization for user undefined to org-1
+
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+
+PASS modules/organization/tests/services/settings.service.test.js
+PASS modules/organization/tests/services/organization.service.test.js
+  ● Console
+
+    console.log
+      [dotenv@17.0.1] injecting env (48) from .env – [tip] encrypt with dotenvx: https://dotenvx.com
+
+      at _log (node_modules/dotenv/lib/main.js:102:11)
+
+    console.log
+      2026-02-26 15:08:09 info: ✓ Generated unique tenant_id: mycompany-mm39szxx-1550cd
+
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+
+    console.log
+      2026-02-26 15:08:09 info: ✓ Generated unique tenant_id: mycompany-mm39szxz-e2hez9
+
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+
+    console.log
+      2026-02-26 15:08:09 warn: ⚠️ tenant_id collision detected, retrying... (attempt 1)
+
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+
+    console.log
+      2026-02-26 15:08:09 warn: ⚠️ tenant_id collision detected, retrying... (attempt 2)
+
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+
+    console.log
+      2026-02-26 15:08:09 info: ✓ Generated unique tenant_id: testorg-mm39szy1-0231fd
+
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+
+    console.log
+      2026-02-26 15:08:09 error: Organization creation failed
+
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+
+PASS modules/organization/tests/config/loadClients.cache.test.js
+  ● Console
+
+    console.log
+      [dotenv@17.0.1] injecting env (48) from .env – [tip] encrypt with dotenvx: https://dotenvx.com
+
+      at _log (node_modules/dotenv/lib/main.js:102:11)
+
+    console.log
+      [dotenv@17.0.1] injecting env (0) from .env – [tip] encrypt with dotenvx: https://dotenvx.com
+
+      at _log (node_modules/dotenv/lib/main.js:102:11)
+
+    console.log
+      [dotenv@17.0.1] injecting env (0) from .env – [tip] encrypt with dotenvx: https://dotenvx.com
+
+      at _log (node_modules/dotenv/lib/main.js:102:11)
+
+    console.log
+      [dotenv@17.0.1] injecting env (0) from .env – [tip] encrypt with dotenvx: https://dotenvx.com
+
+      at _log (node_modules/dotenv/lib/main.js:102:11)
+
+
+Test Suites: 1 failed, 7 passed, 8 total
+Tests:       5 failed, 48 passed, 53 total
+Snapshots:   0 total
+Time:        8.535 s, estimated 32 s
+Ran all test suites matching /modules\/organization/i.

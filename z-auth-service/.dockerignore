@@ -1,0 +1,45 @@
+# Dependencies
+node_modules
+.pnp
+.pnp.js
+
+# Testing
+coverage
+.nyc_output
+
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Environment & Secrets (CRITICAL for security)
+.env
+.env.test
+.env.production
+.env.local
+
+# Build artifacts
+dist
+build
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Docker
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# IDE configs
+.vscode
+.idea
+*.swp
+*.swo
+
+# Misc
+.DS_Store
+Thumbs.db

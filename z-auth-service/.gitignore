@@ -1,0 +1,55 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Build outputs
+dist/
+build/
+
+# Environment files (IMPORTANT: Contains secrets)
+.env
+.env.local
+.env.*.local
+!.env.example
+!.env.docker.example
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+combined.log
+error.log
+
+# IDE & Editors
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Testing
+coverage/
+.nyc_output/
+
+# Certificates
+*.pem
+*.key
+*.crt
+
+# Database dumps
+*.dump
+*.sql.gz
+
+# Debug
+.npm
+.eslintcache
+
+# Docker overrides
+docker-compose.override.yml

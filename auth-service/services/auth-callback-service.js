@@ -135,9 +135,8 @@ class AuthCallbackService {
         if (client.requires_tenant) {
           await TenantMapping.upsert(
             {
-              user_keycloak_id: user.id,
-              org_id: pendingInvitation.org_id,
-              tenant_slug: pendingInvitation.Organization.tenant_id,
+              user_id: user.id,
+              tenant_id: pendingInvitation.Organization.tenant_id,
               client_key: client.client_key,
             },
             { transaction }
