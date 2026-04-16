@@ -358,6 +358,8 @@ router.get(
     passport.authenticate(clientKey, { session: false })(req, res, async (authError) => {
       // ✅ Session is NOW created! req.user is populated!
 
+      console.log(" find me authError:", authError);
+
       if (authError) {
         logger.error('Passport authentication error', {
           error: authError.message,
@@ -1124,6 +1126,8 @@ router.post(
       // Request new tokens from Keycloak
       // KEYCLOAK_URL must use HTTPS (e.g., https://keycloak:8443) so that
       // Keycloak computes an issuer matching the token's issuer claim.
+
+
       const response = await fetch(
         `${KEYCLOAK_URL}/realms/${realmName}/protocol/openid-connect/token`,
         {
@@ -1137,6 +1141,10 @@ router.post(
           }),
         }
       );
+
+
+      console.log("response from keycloak:", response.status, response.statusText);
+      
 
       if (!response.ok) {
         const errorText = await response.text();

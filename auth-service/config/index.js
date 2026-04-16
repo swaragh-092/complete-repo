@@ -9,6 +9,12 @@ const FRONTEND_AUTH_URL = process.env.FRONTEND_AUTH_URL || KEYCLOAK_URL;
 const KEYCLOAK_ADMIN_CLIENT_ID = process.env.KEYCLOAK_ADMIN_CLIENT_ID || 'admin-cli';
 const KEYCLOAK_ADMIN_USERNAME = process.env.KEYCLOAK_ADMIN_USERNAME || 'admin';
 const KEYCLOAK_ADMIN_PASSWORD = process.env.KEYCLOAK_ADMIN_PASSWORD || 'admin123';
+const KEYCLOAK_PUBLIC_URL = process.env.KEYCLOAK_PUBLIC_URL;
+
+if (!KEYCLOAK_PUBLIC_URL) {
+  console.error('CRITICAL: KEYCLOAK_PUBLIC_URL environment variable is not set!');
+  // Allow startup to continue for development, but log a warning
+}
 
 // SECURITY: No fallback - this MUST be set via environment variable
 const KEYCLOAK_ACCOUNT_UI_CLIENT_SECRET = process.env.KEYCLOAK_ACCOUNT_UI_CLIENT_SECRET;
@@ -150,5 +156,6 @@ module.exports = {
   REDIRECT_URL_SUCCESS,
   CORS_ORIGINS,
   DEFAULT_DEV_ORIGINS,
-  getKeycloakService
+  getKeycloakService,
+  KEYCLOAK_PUBLIC_URL
 };

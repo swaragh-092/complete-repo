@@ -357,6 +357,7 @@ services:
       KEYCLOAK_REALM: ${KEYCLOAK_REALM:?KEYCLOAK_REALM is required}
       KEYCLOAK_REALM_ID: ${KEYCLOAK_REALM_ID}
       KEYCLOAK_ACCOUNT_UI_CLIENT_SECRET: ${KEYCLOAK_ACCOUNT_UI_CLIENT_SECRET}
+      KEYCLOAK_PUBLIC_URL: ${KEYCLOAK_PUBLIC_URL:?KEYCLOAK_PUBLIC_URL is required}
 
       # URLs
       FRONTEND_URL: ${ADMIN_FRONTEND_URL:?ADMIN_FRONTEND_URL is required}
@@ -628,7 +629,7 @@ services:
 
   pms-v2:
     build:
-      context: ./pms-version-2
+      context: ./pms-version-3
       dockerfile: Dockerfile
     image: pms/nodejs:latest
     restart: unless-stopped
@@ -647,8 +648,8 @@ services:
       DB_PREFIX: pms
       DB_HOST: ${DATABASE_HOST:?DATABASE_HOST is required}
       DB_PORT: ${DATABASE_PORT:?DATABASE_PORT is required}
-      DATABASE_USER: ${DATABASE_USER:?DATABASE_USER is required}
-      DATABASE_PASSWORD: ${DATABASE_PASSWORD:?DATABASE_PASSWORD is required}
+      DB_USER: ${DATABASE_USER:?DATABASE_USER is required}
+      DB_PASSWORD: ${DATABASE_PASSWORD:?DATABASE_PASSWORD is required}
       DB_NAME: pms_v2
       REDIS_HOST: redis
       REDIS_PORT: 6379

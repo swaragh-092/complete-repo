@@ -24,6 +24,8 @@ const dataValidation = async (req, res, next) => {
       });
     }
 
+    const start = performance.now();
+
     // Call auth-service to validate token and get user data
     const authenticate = await fetch(`${DOMAIN.auth}/auth/me`, {
       method: "GET",
@@ -46,6 +48,10 @@ const dataValidation = async (req, res, next) => {
         message: "Invalid or expired token. Please login again.",
       });
     }
+
+    const end = performance.now();
+
+    console.log(`API took ${end - start} ms for auth-service /auth/me validation`);
 
     const authData = await authenticate.json();
 
@@ -86,7 +92,13 @@ const dataValidation = async (req, res, next) => {
     // Extract subdomain from host header
     const subdomain = req.headers.host?.split(".")[0] || "final-fn-pms";
 
+    const startagain = performance.now();
+
     req.tenantConfig = await getRequiredData(subdomain, MODULE_CODE, req);
+
+    const endagain = performance.now();
+ 
+    console.log(`API took ${endagain - startagain} ms for tenant config fetch for super admin`);      
 
     namespace.run(() => {
       namespace.set("organization_id", req.organization_id);
@@ -108,6 +120,8 @@ module.exports = dataValidation;
 async function getRequiredData(subdomain, moduleCode, req) {
   const cacheKey = `app_config:${req.organization_id}:${subdomain}:${moduleCode}`;
 
+  return {};
+
   //  Try Redis first
   const redis = getRedis();
   const cached = await redis.get(cacheKey);
@@ -121,6 +135,7 @@ async function getRequiredData(subdomain, moduleCode, req) {
   // Call Super Admin service (only on Redis cache miss)
   let response;
   try {
+    
     response = await fetch(superAdminUrl);
   } catch (err) {
     // Super Admin service is unreachable (network error, service down, etc.)

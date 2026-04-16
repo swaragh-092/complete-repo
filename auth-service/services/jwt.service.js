@@ -1,6 +1,6 @@
 const jwt = require('jsonwebtoken');
 const jwksClient = require('jwks-rsa');
-const { KEYCLOAK_URL, FRONTEND_AUTH_URL } = require('../config');
+const { KEYCLOAK_URL, FRONTEND_AUTH_URL, KEYCLOAK_PUBLIC_URL } = require('../config');
 const logger = require('../utils/logger');
 
 // Cache clients per realm
@@ -44,7 +44,7 @@ async function verifyJwt(token, realm) {
     return new Promise((resolve, reject) => {
       // Build allowed issuers list
       const allowedIssuers = [
-        `${FRONTEND_AUTH_URL}/realms/${realm}`,
+        `${KEYCLOAK_PUBLIC_URL}/realms/${realm}`,
         `${KEYCLOAK_URL}/realms/${realm}`,
       ];
 
@@ -53,6 +53,8 @@ async function verifyJwt(token, realm) {
         allowedIssuers.push(`http://localhost:8081/realms/${realm}`);
         allowedIssuers.push(`http://keycloak.local.test:8081/realms/${realm}`);
       }
+
+
 
       jwt.verify(
         token,

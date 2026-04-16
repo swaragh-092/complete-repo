@@ -1,11 +1,14 @@
 const jwt = require('jsonwebtoken');
 const passport = require('passport');
 const OpenIdConnectStrategy = require('passport-openidconnect');
-const { KEYCLOAK_URL, FRONTEND_AUTH_URL, loadClients } = require('../config');
+const { KEYCLOAK_URL, FRONTEND_AUTH_URL, loadClients, KEYCLOAK_PUBLIC_URL } = require('../config');
 const { verifyJwt } = require('./jwt.service');
 const { UserMetadata, TenantMapping } = require('../config/database');
 const logger = require('../utils/logger');
 const { AppError } = require('../middleware/errorHandler');
+
+
+console.log('🔐 Initializing Passport service with Keycloak URL:', KEYCLOAK_URL);
 
 const passportStrategies = {};
 
@@ -32,8 +35,8 @@ async function getPassportStrategy(clientKey) {
 
     logger.debug('Initializing Passport strategy', { clientKey, callbackUrl: client.callback_url });
     console.log('🔧 PASSPORT CONFIG:', {
-      issuer: `${FRONTEND_AUTH_URL}/realms/${client.realm}`,
-      authorizationURL: `${FRONTEND_AUTH_URL}/realms/${client.realm}/protocol/openid-connect/auth`,
+      issuer: `${KEYCLOAK_PUBLIC_URL}/realms/${client.realm}`,
+      authorizationURL: `${KEYCLOAK_PUBLIC_URL}/realms/${client.realm}/protocol/openid-connect/auth`,
       tokenURL: `${KEYCLOAK_URL}/realms/${client.realm}/protocol/openid-connect/token`,
       callbackURL: client.callback_url,
       clientID: client.client_id,
@@ -42,8 +45,8 @@ async function getPassportStrategy(clientKey) {
 
     passportStrategies[clientKey] = new OpenIdConnectStrategy(
       {
-        issuer: `${FRONTEND_AUTH_URL}/realms/${client.realm}`,
-        authorizationURL: `${FRONTEND_AUTH_URL}/realms/${client.realm}/protocol/openid-connect/auth`,
+        issuer: `${KEYCLOAK_PUBLIC_URL}/realms/${client.realm}`,
+        authorizationURL: `${KEYCLOAK_PUBLIC_URL}/realms/${client.realm}/protocol/openid-connect/auth`,
         tokenURL: `${KEYCLOAK_URL}/realms/${client.realm}/protocol/openid-connect/token`,
         userInfoURL: `${KEYCLOAK_URL}/realms/${client.realm}/protocol/openid-connect/userinfo`,
         clientID: client.client_id,

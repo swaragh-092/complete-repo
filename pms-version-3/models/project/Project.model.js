@@ -51,6 +51,11 @@ module.exports = (sequelize, DataTypes, tablePrefix, commonFields) => {
         allowNull: false,
         defaultValue: "private",
       },
+      type: {
+        type: DataTypes.ENUM("application", "site"),
+        allowNull: false,
+        defaultValue: "site",
+      },
       ...commonFields(),
     },
     {
