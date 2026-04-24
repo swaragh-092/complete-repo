@@ -19,6 +19,20 @@ const displayColumns = [
   { field: "description", headerName: "Overview", flex: 1 },
   { field: "code", headerName: "Project Code", flex: 1 },
   {
+    field: "type",
+    headerName: "Type",
+    flex: 0.5,
+    type: "singleSelect",
+    valueOptions: [
+      { value: "application", label: "📱" },
+      { value: "site", label: "🌐" },
+    ],
+    renderCell: (params) => {
+      const type = params.row.type;
+      return type === "site" ? "🌐" : type === "application" ? "📱" : "Unknown";
+    },
+  },
+  {
     field: "start_date",
     headerName: "Date Started",
     flex: 1,
@@ -54,6 +68,11 @@ const displayColumns = [
     field: "is_completed",
     headerName: "Status",
     flex: 0.8,
+    type: "singleSelect",
+    valueOptions: [
+      { value: true, label: "Completed" },
+      { value: false, label: "Ongoing" },
+    ],
     renderCell: (params) => {
       return params.row.is_completed ? "Completed" : "Ongoing";
     },
@@ -62,6 +81,8 @@ const displayColumns = [
     field: "critical_high_issues_count",
     headerName: "Critical/High Issues",
     flex: 0.8,
+    sortable: false,
+    filterable: false,
     renderCell: (params) => {
       return params.row.critical_high_issues_count || "0";
     },
@@ -70,6 +91,8 @@ const displayColumns = [
     field: "overdue_tasks_count",
     headerName: "Overdue User Stories",
     flex: 0.8,
+    sortable: false,
+    filterable: false,
     renderCell: (params) => {
       return params.row.overdue_tasks_count || "0";
     },
@@ -80,6 +103,7 @@ const displayColumns = [
     minWidth: 100,
     flex: 0.2,
     sortable: false,
+    filterable: false,
     renderCell: (params) => (
       <Box display="flex" justifyContent="center" alignItems="center" width="100%" height="100%">
         <Button
@@ -120,12 +144,17 @@ export default function ProjectList({ onProjectCreated = () => {} }) {
       <Box>
         <Box display="flex" alignItems="center" justifyContent="space-between">
           <Heading title={"Projects"} level={2} />
-          <Box display="flex" gap={1}>
+          <Box display="flex" gap={1} alignItems="center">
             {urlHealth && <DoButton onclick={handleRemoveFilter}>Remove Filter</DoButton>}
             <DoButton onclick={() => setCreateProjectDialog(true)}>Create Project</DoButton>
           </Box>
         </Box>
-        <DataTable columns={displayColumns} fetchEndpoint={BACKEND_ENDPOINT["projects"](urlHealth)} refresh={refresh} setRefresh={setRefresher} />
+        <DataTable 
+          columns={displayColumns} 
+          fetchEndpoint={BACKEND_ENDPOINT["projects"](urlHealth)} 
+          refresh={refresh} 
+          setRefresh={setRefresher} 
+        />
       </Box>
 
       <CreateDialog
@@ -153,6 +182,16 @@ const projectFormFields = [
   { type: "text", name: "name" },
   { type: "textarea", name: "description", label: "Description" },
   { type: "text", name: "code", label: "Code", validationName: "lettersAndUnderscoreValidation" },
+  { 
+    type: "select", 
+    name: "type", 
+    label: "Type", 
+    options: [
+      { value: "site", label: "Site" },
+      { value: "application", label: "Application" }
+    ],
+    defaultValue: "site"
+  },
   { type: "date", name: "estimatedStartDate", label: "Estimated Start Date", validationName: "futureDate" },
   { type: "date", name: "estimatedEndDate", label: "Estimated End Date", validationName: "futureDate" },
 ];

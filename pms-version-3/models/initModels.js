@@ -186,6 +186,31 @@ module.exports = function initModels(sequelize) {
     historyCommonFields,
   );
 
+  // site (Site-type project entities)
+  db.Page = require("./site/Page.model")(
+    sequelize,
+    Sequelize.DataTypes,
+    TABLE_PREFIX,
+    commonFields,
+  );
+  db.Section = require("./site/Section.model")(
+    sequelize,
+    Sequelize.DataTypes,
+    TABLE_PREFIX,
+    commonFields,
+  );
+  db.Component = require("./site/Component.model")(
+    sequelize,
+    Sequelize.DataTypes,
+    TABLE_PREFIX,
+    commonFields,
+  );
+  db.SiteItemDependency = require("./site/SiteItemDependency.model")(
+    sequelize,
+    Sequelize.DataTypes,
+    TABLE_PREFIX,
+  );
+
   Object.keys(db).forEach((modelName) => {
     if (db[modelName].associate) {
       db[modelName].associate(db);

@@ -1127,6 +1127,25 @@ class UserStoryService {
       },
     );
 
+    // Also stop any running component timers for this user (cross-type mutex)
+    try {
+      const { Component } = req.db;
+      if (Component && req.user?.id) {
+        const runningComponents = await Component.findAll({
+          where: { timer_status: 'running', timer_started_by: req.user.id },
+        });
+        for (const comp of runningComponents) {
+          const elapsedMin = comp.timer_started_at
+            ? Math.floor((now.getTime() - new Date(comp.timer_started_at).getTime()) / 60000)
+            : 0;
+          await comp.update(
+            { timer_status: 'stopped', timer_started_at: null, total_work_time: (comp.total_work_time || 0) + elapsedMin },
+            withContext(req),
+          );
+        }
+      }
+    } catch (_) { /* cross-model stop is best-effort */ }
+
     userStory.live_status = "running";
     userStory.taken_at = now;
     if (userStory.status === "defined") {

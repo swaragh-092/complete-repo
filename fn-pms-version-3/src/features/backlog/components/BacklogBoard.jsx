@@ -1,8 +1,8 @@
 // Author: Copilot
-// Description: Backlog Management Board — User Stories as sprint work items
-// Version: 2.0.0
+// Description: Backlog Management Board — branches on project type (application vs. site)
+// Version: 2.1.0
 
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Box, Typography, Paper, Accordion, AccordionSummary, AccordionDetails, Chip, Alert, IconButton, Tooltip, Button, Stack, LinearProgress } from "@mui/material";
 import { ExpandMore, Add, DragIndicator, PlayArrow, Stop } from "@mui/icons-material";
@@ -12,6 +12,9 @@ import { useBacklogStories, useMoveStoryToSprint } from "../hooks/useBacklog";
 import CreateSprintModal from "../../sprints/components/CreateSprintModal";
 import AddStoriesToSprintModal from "../../sprints/components/AddStoriesToSprintModal";
 import { showToast } from "../../../util/feedback/ToastService";
+import ComponentBacklogBoard from "./ComponentBacklogBoard";
+import backendRequest from "../../../util/request";
+import BACKEND_ENDPOINT from "../../../util/urls";
 
 const priorityColors = { critical: "error", high: "warning", medium: "info", low: "default" };
 
@@ -131,12 +134,9 @@ const SprintSection = ({ sprint, onStart, onEnd, onAddStories, navigate, project
   );
 };
 
-const BacklogBoard = () => {
-  const { projectId } = useParams();
-  const navigate = useNavigate();
-  const [createSprintOpen, setCreateSprintOpen] = useState(false);
-  const [addStoriesSprintId, setAddStoriesSprintId] = useState(null);
+// ── Application-type backlog (User Stories) ───────────────────────────────────
 
+const ApplicationBacklogBoard = ({ projectId, navigate, createSprintOpen, setCreateSprintOpen, addStoriesSprintId, setAddStoriesSprintId }) => {
   const { data: sprintsData } = useSprints(projectId);
   const { data: backlogData, isLoading } = useBacklogStories(projectId);
   const moveStoryMutation = useMoveStoryToSprint();
@@ -153,21 +153,12 @@ const BacklogBoard = () => {
     return backlogData?.data?.data || [];
   }, [backlogData]);
 
-  // Map sprintId → stories for sprint sections (comes from backlog stories with sprint_id set)
-  // Sprint stories come from useSprintStories but here we just show the backlog.
-  // For the sprint accordion we show stories already assigned to each sprint.
-  // We need all project stories to group them — use a combined query here.
-  // For simplicity: the backlog endpoint returns only sprint_id=null stories.
-  // Sprint story counts come from SprintDetail. Accordions redirect to SprintBoard.
-
   const onDragEnd = (result) => {
     const { source, destination, draggableId } = result;
     if (!destination) return;
     if (source.droppableId === destination.droppableId && source.index === destination.index) return;
-
     const destId = destination.droppableId;
     const sprintId = destId === "backlog" ? null : destId;
-
     moveStoryMutation.mutate(
       { story_id: draggableId, sprint_id: sprintId },
       {
@@ -197,18 +188,14 @@ const BacklogBoard = () => {
 
   return (
     <Box sx={{ p: 2, height: "100%", overflowY: "auto" }}>
-      {/* Header */}
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-        <Typography variant="h5" fontWeight="bold">
-          Backlog
-        </Typography>
+        <Typography variant="h5" fontWeight="bold">Backlog</Typography>
         <Button variant="contained" size="small" startIcon={<Add />} onClick={() => setCreateSprintOpen(true)}>
           Create Sprint
         </Button>
       </Box>
 
       <DragDropContext onDragEnd={onDragEnd}>
-        {/* Sprint Sections */}
         {sprints.length > 0 && (
           <Box mb={3}>
             {sprints.map((sprint) => (
@@ -217,7 +204,6 @@ const BacklogBoard = () => {
           </Box>
         )}
 
-        {/* Backlog Section */}
         <Paper variant="outlined" sx={{ p: 2 }}>
           <Typography variant="h6" gutterBottom>
             Backlog ({backlogStories.length})
@@ -244,6 +230,30 @@ const BacklogBoard = () => {
       {addStoriesSprintId && <AddStoriesToSprintModal open={!!addStoriesSprintId} onClose={() => setAddStoriesSprintId(null)} projectId={projectId} sprintId={addStoriesSprintId} />}
     </Box>
   );
+};
+
+const BacklogBoard = () => {
+  const { projectId } = useParams();
+  const navigate = useNavigate();
+  const [createSprintOpen, setCreateSprintOpen] = useState(false);
+  const [addStoriesSprintId, setAddStoriesSprintId] = useState(null);
+  const [projectType, setProjectType] = useState(null);
+
+  // Fetch project to determine type (application vs. site)
+  useEffect(() => {
+    if (!projectId) return;
+    backendRequest({ endpoint: BACKEND_ENDPOINT.project_detail(projectId) }).then((res) => {
+      if (res.success) setProjectType(res.data?.type || "application");
+    });
+  }, [projectId]);
+
+  // While loading project type render a minimal loader
+  if (projectType === null) return <LinearProgress />;
+
+  // Site-type projects use the component backlog
+  if (projectType === "site") return <ComponentBacklogBoard projectId={projectId} />;
+
+  return <ApplicationBacklogBoard projectId={projectId} navigate={navigate} createSprintOpen={createSprintOpen} setCreateSprintOpen={setCreateSprintOpen} addStoriesSprintId={addStoriesSprintId} setAddStoriesSprintId={setAddStoriesSprintId} />;
 };
 
 // Need navigate in StoryCard — passed as prop from BacklogBoard

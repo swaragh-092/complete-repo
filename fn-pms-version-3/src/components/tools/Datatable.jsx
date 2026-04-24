@@ -42,7 +42,7 @@ const CustomFooter = ({ selectedRows, selectedAction }) => {
   );
 };
 
-export default function DataTable({ columns, fetchEndpoint, selectedAction = false, refresh, setRefresh = () => {}, dataPath = null, defaultPageSize = 10, transformRows = null }) {
+export default function DataTable({ columns, fetchEndpoint, selectedAction = false, refresh, setRefresh = () => {}, dataPath = null, defaultPageSize = 10, transformRows = null, extraParams = "" }) {
   // datapath represents the where the actal data will be in response and should be array
   const theme = useTheme();
   const colors = colorCodes(theme.palette.mode);
@@ -54,7 +54,7 @@ export default function DataTable({ columns, fetchEndpoint, selectedAction = fal
 
   const callFetchData = async (querySets) => {
     setLoading(true);
-    const data = await fetchData(fetchEndpoint, querySets, dataPath);
+    const data = await fetchData(fetchEndpoint, querySets + extraParams, dataPath);
     setLoading(false);
     setResponseData(data);
   };
@@ -87,13 +87,16 @@ export default function DataTable({ columns, fetchEndpoint, selectedAction = fal
   const handleFilterChange = useMemo(
     () =>
       debounce((filterModel = "") => {
-        const searchOperator = filterModel?.items[0]?.operator || "";
-        const searchField = filterModel?.items[0]?.field || "";
-        const searchText = filterModel?.items[0]?.value || "";
+        // Only handle search if there's actual search criteria
+        if (filterModel?.items?.[0]) {
+          const searchOperator = filterModel?.items[0]?.operator || "";
+          const searchField = filterModel?.items[0]?.field || "";
+          const searchText = filterModel?.items[0]?.value || "";
 
-        setQueryData((prev) => {
-          return { ...prev, searchOperator, searchField, searchText };
-        });
+          setQueryData((prev) => {
+            return { ...prev, searchOperator, searchField, searchText };
+          });
+        }
       }, 500),
     [],
   );

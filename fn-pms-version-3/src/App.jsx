@@ -24,11 +24,14 @@ import ErrorComponent from "./pages/error/Error";
 import ToastContainer from "./components/feedback/ToastContainer";
 import AlertDialog from "./components/feedback/AlertDialog";
 import ConfirmDialog from "./components/feedback/ConfirmDialog";
+import ActiveTimerWidget from "./components/pms/ActiveTimerWidget";
 
 // ─── Loaders (eager — required at router init time) ──────────────────────────
 import { projectFetchLoader } from "./pages/pms/projects/ProjectDetail";
 import { featureFetchLoader } from "./pages/pms/features/FeatureDetialView";
 import { userStoryFetchLoader } from "./pages/pms/userStories/UserStoryDetail";
+import { pageFetchLoader } from "./pages/pms/site/pages/PageDetailView";
+import { componentFetchLoader } from "./pages/pms/site/components/ComponentDetail";
 
 // ─── Page components (lazy — code-split into separate chunks) ─────────────────
 const Dash = lazy(() => import("./pages/Dash"));
@@ -57,6 +60,11 @@ const AdminMonitor = lazy(() => import("./pages/pms/admin/AdminMonitor"));
 const UserStoryList = lazy(() => import("./pages/pms/userStories/UserStoryList"));
 const UserStoryDetail = lazy(() => import("./pages/pms/userStories/UserStoryDetail"));
 const Notification = lazy(() => import("./pages/pms/notification/Notification"));
+
+// ─── Site project type pages ──────────────────────────────────────────────────
+const PagesList = lazy(() => import("./pages/pms/site/pages/PagesList"));
+const PageDetailView = lazy(() => import("./pages/pms/site/pages/PageDetailView"));
+const ComponentDetail = lazy(() => import("./pages/pms/site/components/ComponentDetail"));
 const Login = lazy(() => import("./pages/Login"));
 const Callback = lazy(() => import("./pages/Callback"));
 const Profile = lazy(() => import("./pages/Profile"));
@@ -155,6 +163,11 @@ const router = createBrowserRouter(
         <Route path={paths.user_stories} element={<UserStoryList />} />
         <Route path={paths.user_story_detail().path} element={<UserStoryDetail />} loader={userStoryFetchLoader} />
 
+        {/* Site project type */}
+        <Route path={paths.pages} element={<PagesList />} />
+        <Route path={paths.page_detail().path} element={<PageDetailView />} loader={pageFetchLoader} />
+        <Route path={paths.component_detail().path} element={<ComponentDetail />} loader={componentFetchLoader} />
+
         <Route path="/profile" element={<Profile />} />
         <Route path="/settings" element={<Settings />} />
         <Route path="/invite-members" element={<InviteMembers />} />
@@ -212,6 +225,7 @@ function App() {
                 <ConfirmDialog />
                 <AlertDialog />
                 <ToastContainer />
+                <ActiveTimerWidget />
               </WorkspaceProvider>
             </OrganizationProvider>
           </SnackbarProvider>

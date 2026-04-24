@@ -32,4 +32,9 @@ router.use("/user-story", require("./userStory/userStory.route"));
 router.use("/work-items", require("./issue/unifiedIssue.route"));
 router.use("/notification", require("./notification/notification.route"));
 
+// Site-type project routes
+router.use("/page", require("./site/page.route"));
+router.use("/section", require("./site/section.route"));
+router.use("/component", require("./site/component.route"));
+
 module.exports = router;

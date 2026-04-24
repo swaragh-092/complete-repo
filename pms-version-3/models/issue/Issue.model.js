@@ -96,6 +96,24 @@ module.exports = (sequelize, DataTypes, tablePrefix, commonFields) => {
         defaultValue: 65535.0,
       },
 
+      // Site-type linked work items (page_id / section_id / component_id are
+      // mutually exclusive with user_story_id — enforced by DB CHECK constraint)
+      page_id: {
+        type: DataTypes.UUID,
+        allowNull: true,
+        comment: "Linked Page (Site-type projects)",
+      },
+      section_id: {
+        type: DataTypes.UUID,
+        allowNull: true,
+        comment: "Linked Section (Site-type projects)",
+      },
+      component_id: {
+        type: DataTypes.UUID,
+        allowNull: true,
+        comment: "Linked Component (Site-type projects)",
+      },
+
       ...commonFields(),
     },
     {
@@ -177,6 +195,25 @@ module.exports = (sequelize, DataTypes, tablePrefix, commonFields) => {
     Issue.belongsTo(models.ProjectMember, {
       foreignKey: "assignee_id",
       as: "assignee",
+    });
+
+    // Site-type linked items
+    Issue.belongsTo(models.Page, {
+      foreignKey: "page_id",
+      as: "page",
+      onDelete: "SET NULL",
+    });
+
+    Issue.belongsTo(models.Section, {
+      foreignKey: "section_id",
+      as: "linkedSection",
+      onDelete: "SET NULL",
+    });
+
+    Issue.belongsTo(models.Component, {
+      foreignKey: "component_id",
+      as: "component",
+      onDelete: "SET NULL",
     });
   };
 

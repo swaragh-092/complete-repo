@@ -207,9 +207,21 @@ router.put(
     description().optional(),
     enumValue("status", ["active", "inactive"]).optional(),
     body("parentFeatureId").optional().isUUID().withMessage("parentFeatureId must be a valid UUID"),
+    body("assignee_id").optional().isUUID().withMessage("assignee_id must be a valid UUID"),
+    enumValue("priority", ["low", "medium", "high", "critical"]).optional(),
   ],
   validationMiddleware("Feature", "Update"),
   featureController.updateFeature,
+);
+
+/**
+ * POST /{moduleCode}/feature/:featureId/approve — approve or reject a feature
+ */
+router.post(
+  "/:featureId/approve",
+  [uuid("featureId")],
+  validationMiddleware("Feature", "Approve"),
+  featureController.approveFeature,
 );
 
 /**
@@ -316,6 +328,8 @@ router.post(
     description().optional(),
     uuid("departmentId", "body"),
     body("parentFeatureId").optional().isUUID().withMessage("parentFeatureId must be a valid UUID"),
+    body("assignee_id").optional().isUUID().withMessage("assignee_id must be a valid UUID"),
+    enumValue("priority", ["low", "medium", "high", "critical"]).optional(),
   ],
   validationMiddleware("Feature", "Create"),
   featureController.createProjectFeature,

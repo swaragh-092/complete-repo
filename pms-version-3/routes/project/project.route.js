@@ -208,6 +208,7 @@ router.post(
   [
     validate.name("name"),
     validate.description("description"),
+    validate.enumValue("type", ["application", "site"]),
     validate.dateFuture("estimatedStartDate"),
     validate.dateGreaterThan("estimatedEndDate", "estimatedStartDate"),
     validate.permissionCode(),
@@ -305,6 +306,7 @@ router.put(
     validate.uuid("id", "params"),
     validate.name("name").optional(),
     validate.description("description").optional(),
+    validate.enumValue("type", ["application", "site"]).optional(),
     validate.dateFuture("estimatedStartDate").optional(),
     validate
       .dateGreaterThan("estimatedEndDate", "estimatedStartDate")

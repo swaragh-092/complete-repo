@@ -14,13 +14,14 @@ import backendRequest from "../../../util/request";
 import { useOrganization } from "../../../context/OrganizationContext";
 
 // import { useLoaderData } from "react-router-dom";
-import { Typography, Stack, Chip, Box, useTheme, CircularProgress } from "@mui/material";
+import { Typography, Stack, Chip, Box, LinearProgress, useTheme, CircularProgress } from "@mui/material";
 import { format } from "date-fns";
 import { useEffect, useState } from "react";
 import DoButton from "../../../components/button/DoButton";
 import ProjectMembersList from "./members/ProjectMembersList";
 import EditDialog from "../../../components/pms/EditDialog";
 import ProjectFeatures from "./features/ProjectFeatures";
+import ProjectPages from "./pages/ProjectPages";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { colorCodes } from "../../../theme";
 import { showToast } from "../../../util/feedback/ToastService";
@@ -59,6 +60,7 @@ export default function ProjectDetail() {
   const setProject = setProjectOverride;
 
   const [isLoading, setLoading] = useState(false);
+  const [projectProgress, setProjectProgress] = useState(null);
 
   const [editProjectDialog, setEditProjectDialog] = useState(false);
   const revalidator = useRevalidator();
@@ -78,6 +80,12 @@ export default function ProjectDetail() {
       }
     });
   }, [project?.id, isOrgApprover]);
+
+  useEffect(() => {
+    if (!project?.id || project.type !== "site") return;
+    backendRequest({ endpoint: BACKEND_ENDPOINT.project_progress(project.id) })
+      .then((res) => { if (res?.success) setProjectProgress(res.data); });
+  }, [project?.id, project?.type]);
 
   const onEditSuccess = (updatedData) => {
     setEditProjectDialog(false);
@@ -167,6 +175,23 @@ export default function ProjectDetail() {
           </Box>
         </Box>
         <Stack spacing={3} mt={3}>
+          {/* Site project progress bar */}
+          {project.type === "site" && projectProgress && (
+            <Box maxWidth={500}>
+              <Box display="flex" justifyContent="space-between" mb={0.5}>
+                <Typography variant="caption" color="text.secondary">
+                  Site Progress ({projectProgress.completedItems}/{projectProgress.totalItems} items across all pages &amp; global components)
+                </Typography>
+                <Typography variant="caption" fontWeight="bold">{projectProgress.progress}%</Typography>
+              </Box>
+              <LinearProgress
+                variant="determinate"
+                value={projectProgress.progress}
+                color={projectProgress.progress === 100 ? "success" : "primary"}
+                sx={{ borderRadius: 1, height: 8 }}
+              />
+            </Box>
+          )}
           {/* Project Info */}
           <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
             <InfoBox label="Project Name" value={project.name} />
@@ -210,7 +235,11 @@ export default function ProjectDetail() {
         }}
       >
         <ProjectMembersList projectId={project.id} setTaskRefresher={setTaskRefresher} />
-        <ProjectFeatures projectId={project.id} setTaskRefresher={setTaskRefresher} />
+        {project.type === "site" ? (
+          <ProjectPages projectId={project.id} setTaskRefresher={setTaskRefresher} />
+        ) : (
+          <ProjectFeatures projectId={project.id} setTaskRefresher={setTaskRefresher} />
+        )}
       </Box>
 
       {/* <TaskList project_id={project.id} canApprove={canApprove} refresh={taskRefresh} setRefresher={setTaskRefresher} /> */}
@@ -246,6 +275,15 @@ const projectFormFields = [
   { type: "text", name: "name", label: "Name" },
   { type: "textarea", name: "description", label: "Description" },
   { type: "text", name: "code", label: "Code", validationName: "lettersAndUnderscoreValidation" },
+  { 
+    type: "select", 
+    name: "type", 
+    label: "Type", 
+    options: [
+      { value: "site", label: "Site" },
+      { value: "application", label: "Application" }
+    ]
+  },
   { type: "date", name: "estimatedStartDate", label: "Estimated Start Date", validationName: "futureDate", lookFor: "estimated_start_date" },
   { type: "date", name: "estimatedEndDate", label: "Estimated End Date", validationName: "futureDate", lookFor: "estimated_end_date" },
 ];

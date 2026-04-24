@@ -240,6 +240,24 @@ const BACKEND_ENDPOINT = {
   edit_feature_detail: (id) => {
     return { path: domain + `/feature/${id}`, method: "PUT" };
   },
+  approve_feature: (id) => {
+    return { path: domain + `/feature/${id}/approve`, method: "POST" };
+  },
+  approve_page: (id) => {
+    return { path: domain + `/page/${id}/approve`, method: "POST" };
+  },
+  approve_component: (id) => {
+    return { path: domain + `/component/${id}/approve`, method: "POST" };
+  },
+  component_helpers: (componentId) => {
+    return { path: domain + `/component/${componentId}/helper`, method: "GET" };
+  },
+  create_component_helper: (componentId) => {
+    return { path: domain + `/component/${componentId}/helper`, method: "POST" };
+  },
+  accept_reject_component_helper: (helperComponentId, action) => {
+    return { path: domain + `/component/${helperComponentId}/helper/${action}`, method: "POST" };
+  },
 
   // projects
   // project_members: (id) => {
@@ -268,8 +286,23 @@ const BACKEND_ENDPOINT = {
     return { path: domain + `/project/${projectId}/complete`, method: "POST" };
   },
 
-  projects: (health = null) => {
-    return { path: domain + `/project${health ? `/health/${health}` : ""}`, method: "GET" };
+  projects: (health = null, type = null) => {
+    let path = domain + `/project`;
+    const params = [];
+    
+    if (health) {
+      params.push(`health=${health}`);
+    }
+    
+    if (type && type !== "all") {
+      params.push(`type=${type}`);
+    }
+    
+    if (params.length > 0) {
+      path += `?${params.join("&")}`;
+    }
+    
+    return { path, method: "GET" };
   },
 
   createProject: { path: domain + "/project/register", method: "POST" },
@@ -282,6 +315,93 @@ const BACKEND_ENDPOINT = {
   delete_project: (id) => {
     return { path: domain + `/project/${id}`, method: "DELETE" };
   },
+
+  // ── Site project type — Pages ───────────────────────────────────────────────
+  pages_by_project_dept: (projectId, departmentId) => {
+    return { path: domain + `/page/project/${projectId}/department/${departmentId}`, method: "GET" };
+  },
+  create_page: (departmentId) => {
+    return { path: domain + `/page/department/${departmentId}`, method: "POST" };
+  },
+  page_detail: (id) => {
+    return { path: domain + `/page/${id}`, method: "GET" };
+  },
+  update_page: (id) => {
+    return { path: domain + `/page/${id}`, method: "PATCH" };
+  },
+  delete_page: (id) => {
+    return { path: domain + `/page/${id}`, method: "DELETE" };
+  },
+
+  // ── Site project type — Sections ─────────────────────────────────────────
+  sections_by_page: (pageId) => {
+    return { path: domain + `/section/page/${pageId}`, method: "GET" };
+  },
+  create_section: (pageId) => {
+    return { path: domain + `/section/page/${pageId}`, method: "POST" };
+  },
+  section_detail: (id) => {
+    return { path: domain + `/section/${id}`, method: "GET" };
+  },
+  update_section: (id) => {
+    return { path: domain + `/section/${id}`, method: "PATCH" };
+  },
+  delete_section: (id) => {
+    return { path: domain + `/section/${id}`, method: "DELETE" };
+  },
+
+  // ── Site project type — Components (flat: page-direct) ───────────────────
+  // Primary endpoints (new architecture: Page → Components/Tasks)
+  components_by_page: (pageId) => {
+    return { path: domain + `/component/page/${pageId}`, method: "GET" };
+  },
+  tasks_by_page: (pageId) => {
+    return { path: domain + `/component/page/${pageId}?type=task`, method: "GET" };
+  },
+  create_component: (pageId) => {
+    return { path: domain + `/component/page/${pageId}`, method: "POST" };
+  },
+  global_components: (projectId) => {
+    return { path: domain + `/component/project/${projectId}/global`, method: "GET" };
+  },
+  create_global_component: (projectId) => {
+    return { path: domain + `/component/project/${projectId}/global`, method: "POST" };
+  },
+  // Legacy (section-based — kept for backward compat)
+  components_by_section: (sectionId) => {
+    return { path: domain + `/component/section/${sectionId}`, method: "GET" };
+  },
+  component_detail: (id) => {
+    return { path: domain + `/component/${id}`, method: "GET" };
+  },
+  update_component: (id) => {
+    return { path: domain + `/component/${id}`, method: "PATCH" };
+  },
+  delete_component: (id) => {
+    return { path: domain + `/component/${id}`, method: "DELETE" };
+  },
+  start_component_timer: (id) => {
+    return { path: domain + `/component/${id}/timer/start`, method: "POST" };
+  },
+  stop_component_timer: (id) => {
+    return { path: domain + `/component/${id}/timer/stop`, method: "POST" };
+  },
+  active_component_timer: () => {
+    return { path: domain + `/component/user/active-timer`, method: "GET" };
+  },
+  page_progress: (pageId) => {
+    return { path: domain + `/component/page/${pageId}/progress`, method: "GET" };
+  },
+  project_progress: (projectId) => {
+    return { path: domain + `/component/project/${projectId}/progress`, method: "GET" };
+  },
+
+  // ── Site project type — Component Backlog ────────────────────────────────
+  component_backlog: (projectId) => {
+    return { path: domain + `/backlog/project/${projectId}/components`, method: "GET" };
+  },
+  prioritize_component: { path: domain + `/backlog/component/prioritize`, method: "PUT" },
+  move_component_to_sprint: { path: domain + `/backlog/component/move-to-sprint`, method: "PUT" },
 
   login: { path: domain + "/auth/login", method: "POST" },
   register: { path: domain + "/auth/register", method: "POST" },
@@ -352,6 +472,19 @@ export const paths = {
   user_stories: "/user-stories",
   user_story_detail: (id = null) => {
     return { path: "/user-story/:id", actualPath: `/user-story/${id}` };
+  },
+
+  // site project type — pages, sections, components
+  pages: "/pages",
+  page_detail: (id = null) => {
+    return { path: "/page/:id", actualPath: `/page/${id}` };
+  },
+  section_detail: (id = null) => {
+    return { path: "/section/:id", actualPath: `/section/${id}` };
+  },
+  components: "/components",
+  component_detail: (id = null) => {
+    return { path: "/component/:id", actualPath: `/component/${id}` };
   },
 
   invite_members: "/invite-members",

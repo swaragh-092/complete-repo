@@ -68,6 +68,10 @@ module.exports = async function paginate(
     switch (searchOperator) {
       case "equals":
       case "is": // alias for equals
+        if (searchText === "" || searchText === null || searchText === undefined) {
+          operatorCondition = null;
+          break;
+        }
         operatorCondition = { [Op.eq]: searchText };
         break;
 
@@ -144,7 +148,9 @@ module.exports = async function paginate(
         operatorCondition = { [Op.like]: `%${searchText}%` };
         break;
     }
-    where[searchField] = operatorCondition;
+    if (operatorCondition !== null) {
+      where[searchField] = operatorCondition;
+    }
   }
 
   const possibleOrders = ["asc", "desc"];

@@ -103,6 +103,8 @@ exports.updateFeature = async (req, res) => {
       "name",
       "description",
       "status",
+      "priority",
+      "assignee_id",
       { field: "parentFeatureId", as: "parent_feature_id", source: "body" },
     ];
     const data = fieldPicker(req, allowedFileds);
@@ -114,6 +116,33 @@ exports.updateFeature = async (req, res) => {
     return ResponseService.apiResponse({ res, ...result, ...thisAction });
   } catch (err) {
     console.error("Error updating feature:", err);
+    return ResponseService.apiResponse({
+      res,
+      success: false,
+      status: 500,
+      ...thisAction,
+    });
+  }
+};
+
+// Approve / Reject Feature
+exports.approveFeature = async (req, res) => {
+  const thisAction = { usedFor: "Feature", action: "approve" };
+  try {
+    const { status, comments } = req.body;
+    if (!["approved", "rejected"].includes(status)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid status. Must be 'approved' or 'rejected'.",
+      });
+    }
+    const result = await FeatureService.approveFeature(
+      req,
+      req.params.featureId,
+      { status, comments },
+    );
+    return ResponseService.apiResponse({ res, ...result, ...thisAction });
+  } catch (err) {
     return ResponseService.apiResponse({
       res,
       success: false,
@@ -170,9 +199,11 @@ exports.createProjectFeature = async (req, res) => {
     const allowedFileds = [
       "name",
       "description",
+      "priority",
       { field: "projectId", as: "project_id", source: "params" },
       { field: "departmentId", as: "department_id", source: "body" },
       { field: "parentFeatureId", as: "parent_feature_id", source: "body" },
+      { field: "assignee_id", as: "assignee_id", source: "body" },
     ];
     const data = fieldPicker(req, allowedFileds);
     const result = await FeatureService.createFeature(req, data);

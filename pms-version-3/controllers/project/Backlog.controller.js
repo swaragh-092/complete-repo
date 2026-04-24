@@ -6,6 +6,7 @@
 const {
   BacklogService,
   StoryBacklogService,
+  ComponentBacklogService,
 } = require("../../services/project/Backlog.service");
 const ResponseService = require("../../services/Response");
 const { sendErrorResponse } = require("../../util/helper");
@@ -130,6 +131,53 @@ class BacklogController {
       const result = await StoryBacklogService.moveStoryToSprint(
         req,
         story_id,
+        sprint_id ?? null,
+      );
+      return ResponseService.apiResponse({ res, ...result, ...thisAction });
+    } catch (err) {
+      return sendErrorResponse(thisAction, err, res);
+    }
+  }
+
+  // ── Component Backlog (Site-type projects) ───────────────────────────────────
+
+  static async listComponents(req, res) {
+    const thisAction = { usedFor: "Backlog", action: "List Components" };
+    try {
+      const projectId = req.params.projectId;
+      const result = await ComponentBacklogService.getComponentBacklog(req, projectId);
+      return ResponseService.apiResponse({ res, ...result, ...thisAction });
+    } catch (err) {
+      return sendErrorResponse(thisAction, err, res);
+    }
+  }
+
+  static async prioritizeComponent(req, res) {
+    const thisAction = { usedFor: "Backlog", action: "Prioritize Component" };
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty())
+        return sendErrorResponse(thisAction, { message: errors.array()[0].msg }, res);
+
+      const { component_id, board_order } = req.body;
+      const result = await ComponentBacklogService.prioritizeComponent(req, component_id, board_order);
+      return ResponseService.apiResponse({ res, ...result, ...thisAction });
+    } catch (err) {
+      return sendErrorResponse(thisAction, err, res);
+    }
+  }
+
+  static async moveComponentToSprint(req, res) {
+    const thisAction = { usedFor: "Backlog", action: "Move Component to Sprint" };
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty())
+        return sendErrorResponse(thisAction, { message: errors.array()[0].msg }, res);
+
+      const { component_id, sprint_id } = req.body;
+      const result = await ComponentBacklogService.moveComponentToSprint(
+        req,
+        component_id,
         sprint_id ?? null,
       );
       return ResponseService.apiResponse({ res, ...result, ...thisAction });

@@ -1,5 +1,5 @@
 {
   "dependencies": {
-    "@keycloak/keycloak-admin-client": "^26.5.5"
+    "@keycloak/keycloak-admin-client": "^26.6.1"
   }
 }

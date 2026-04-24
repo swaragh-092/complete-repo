@@ -72,4 +72,36 @@ router.post(
   BacklogController.moveStoryToSprint,
 );
 
+// ── Component Backlog endpoints (Site-type projects) ─────────────────────────
+
+// List Backlog Components
+router.get(
+  "/project/:projectId/components",
+  [param("projectId", "Project ID must be a UUID").isUUID()],
+  validationMiddleware("Backlog", "List Components"),
+  BacklogController.listComponents,
+);
+
+// Reorder Component in Backlog
+router.patch(
+  "/component/prioritize",
+  [
+    body("component_id", "component_id must be a UUID").isUUID(),
+    body("board_order", "board_order must be a number").isFloat(),
+  ],
+  validationMiddleware("Backlog", "Prioritize Component"),
+  BacklogController.prioritizeComponent,
+);
+
+// Move Component to Sprint (or back to Backlog)
+router.post(
+  "/component/move-to-sprint",
+  [
+    body("component_id", "component_id must be a UUID").isUUID(),
+    body("sprint_id").optional({ nullable: true }).isUUID(),
+  ],
+  validationMiddleware("Backlog", "Move Component to Sprint"),
+  BacklogController.moveComponentToSprint,
+);
+
 module.exports = router;

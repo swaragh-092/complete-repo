@@ -18,6 +18,7 @@ exports.postCreateProject = async (req, res) => {
       "name",
       "code",
       "description",
+      "type",
       { field: "estimatedStartDate", as: "estimated_start_date" },
       { field: "estimatedEndDate", as: "estimated_end_date" },
     ];
@@ -63,6 +64,7 @@ exports.updateProject = async (req, res) => {
       "name",
       "code",
       "description",
+      "type",
       { field: "estimatedStartDate", as: "estimated_start_date" },
       { field: "estimatedEndDate", as: "estimated_end_date" },
     ];

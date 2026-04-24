@@ -333,6 +333,7 @@ export default function UserStoryList() {
     },
     { type: "text", name: "story_points", label: "Story Points", required: false, validationName: "number" },
     { type: "date", name: "due_date", label: "Due Date", required: false, validationName: "futureDate" },
+    { type: "member_picker", name: "assigned_to", label: "Assign To", required: false, projectId: state.projectId, departmentId: workspaceId },
   ];
 
   return (

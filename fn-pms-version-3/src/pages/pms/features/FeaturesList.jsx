@@ -7,7 +7,7 @@
 import { Link, useSearchParams } from "react-router-dom";
 import BACKEND_ENDPOINT, { paths } from "../../../util/urls";
 import { useCallback, useEffect, useState } from "react";
-import { Box, Button, FormControl, InputLabel, LinearProgress, MenuItem, Select, Tooltip, Typography } from "@mui/material";
+import { Box, Button, Chip, FormControl, InputLabel, LinearProgress, MenuItem, Select, Tooltip, Typography } from "@mui/material";
 import Heading from "../../../components/Heading";
 import DoButton from "../../../components/button/DoButton";
 import DataTable from "../../../components/tools/Datatable";
@@ -20,6 +20,12 @@ import { showToast } from "../../../util/feedback/ToastService";
 const displayColumns = [
   { field: "name", headerName: "Name", flex: 1 },
   { field: "description", headerName: "Overview", flex: 1 },
+  {
+    field: "assignee_id",
+    headerName: "Assigned To",
+    flex: 0.8,
+    valueGetter: (_, row) => row.assignee_id || "",
+  },
   { field: "user_stories_count", headerName: "User Stories", flex: 0.4, filterable: false },
   {
     field: "total_points",
@@ -58,14 +64,22 @@ const displayColumns = [
   },
 ];
 
-const formFields = [
+const getFormFields = (projectId, departmentId) => [
   { type: "text", name: "name" },
   { type: "textarea", name: "description", label: "Description", require: false },
+  {
+    type: "member_picker",
+    name: "assignee_id",
+    label: "Assign To",
+    required: false,
+    projectId,
+    departmentId,
+  },
 ];
 
 export default function FeaturesList() {
   const { currentWorkspace } = useWorkspace();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const urlProjectId = searchParams.get("projectId");
 
   const [projects, setProjects] = useState([]);
@@ -105,7 +119,8 @@ export default function FeaturesList() {
         endpoint: BACKEND_ENDPOINT.get_department_projects(workspaceId),
       });
       if (res?.success) {
-        const list = res.data || [];
+        // Only show application-type projects here; site projects go to /pages
+        const list = (res.data || []).filter((p) => p.type === "application" || !p.type);
         setProjects(list);
         // Prefer the URL projectId; fall back to first project in the list
         if (urlProjectId && list.some((p) => p.id === urlProjectId)) {
@@ -154,15 +169,25 @@ export default function FeaturesList() {
                 value={selectedProjectId}
                 label="Select Project"
                 onChange={(e) => {
-                  setSelectedProjectId(e.target.value);
+                  const newId = e.target.value;
+                  setSelectedProjectId(newId);
+                  setSearchParams({ projectId: newId });
+                  setRefresher(true);
                 }}
               >
                 {projects.length === 0 ? (
-                  <MenuItem disabled>No projects available</MenuItem>
+                  <MenuItem disabled>
+                    <Typography variant="body2" color="text.secondary">
+                      No application projects — <Link to="/pages" style={{ color: "inherit" }}>check Pages for site projects</Link>
+                    </Typography>
+                  </MenuItem>
                 ) : (
                   projects.map((p) => (
                     <MenuItem key={p.id} value={p.id}>
-                      {p.name}
+                      <Box display="flex" alignItems="center" gap={1} width="100%">
+                        <span style={{ flex: 1 }}>{p.name}</span>
+                        <Chip label="App" size="small" color="primary" variant="outlined" sx={{ fontSize: 10, height: 18 }} />
+                      </Box>
                     </MenuItem>
                   ))
                 )}
@@ -190,7 +215,7 @@ export default function FeaturesList() {
             <>
               <DataTable columns={displayColumns} fetchEndpoint={BACKEND_ENDPOINT.project_features(selectedProjectId)} refresh={refresh} setRefresh={setRefresher} />
               <CreateDialog
-                formFields={formFields}
+                formFields={getFormFields(selectedProjectId, currentWorkspace?.id)}
                 isOpen={createFormDialog}
                 onClose={() => setCreateFormDialog(false)}
                 usefor="Feature"
@@ -198,8 +223,8 @@ export default function FeaturesList() {
                   setCreateFormDialog(false);
                   setRefresher(true);
                 }}
-                backendEndpoint={BACKEND_ENDPOINT.add_feature_to_project(currentWorkspace.id)}
-                extraData={{ projectId: selectedProjectId }}
+                backendEndpoint={BACKEND_ENDPOINT.create_project_feature(selectedProjectId)}
+                extraData={{ departmentId: currentWorkspace.id }}
               />
             </>
           ) : (

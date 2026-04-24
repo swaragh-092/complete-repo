@@ -55,6 +55,15 @@ module.exports = (sequelize, DataTypes, tablePrefix, commonFields) => {
         type: DataTypes.UUID,
         allowNull: true,
       },
+      approval_status: {
+        type: DataTypes.ENUM('pending', 'approved', 'rejected', 'not_required'),
+        defaultValue: 'not_required',
+        allowNull: false,
+      },
+      approved_by: {
+        type: DataTypes.UUID,
+        allowNull: true,
+      },
       ...commonFields(),
     },
     {

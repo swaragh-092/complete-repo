@@ -46,6 +46,9 @@ async function verifyJwt(token, realm) {
       const allowedIssuers = [
         `${KEYCLOAK_PUBLIC_URL}/realms/${realm}`,
         `${KEYCLOAK_URL}/realms/${realm}`,
+        // Keycloak sometimes mints tokens with the public hostname but on http:8080
+        // (KC_HOSTNAME set without KC_HOSTNAME_STRICT_HTTPS). Accept this variant too.
+        `${KEYCLOAK_PUBLIC_URL.replace(/^https?:\/\//, 'http://')}:8080/realms/${realm}`,
       ];
 
       // For local development: also accept localhost:8081 and keycloak.local.test:8081

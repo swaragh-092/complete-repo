@@ -16,3 +16,8 @@ export const moveStoryToSprint = (data) => api.post(`/backlog/story/move-to-spri
 
 // ─── Board Story move ────────────────────────────────────────────────
 export const moveStoryOnBoard = (data) => api.post(`/board/move-story`, data);
+
+// ─── Component Backlog (Site project type) ───────────────────────────────────
+export const getComponentBacklog = (projectId) => api.get(`/backlog/project/${projectId}/components`);
+export const prioritizeComponent = (data) => api.put(`/backlog/component/prioritize`, data);
+export const moveComponentToSprint = (data) => api.put(`/backlog/component/move-to-sprint`, data);

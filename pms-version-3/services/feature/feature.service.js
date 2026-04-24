@@ -442,6 +442,30 @@ class FeatureService {
       data: mapping,
     };
   }
+
+  /**
+   * Approve or reject a feature (called by project lead)
+   */
+  async approveFeature(req, featureId, { status, comments }) {
+    const { Feature } = req.db;
+    const feature = await Feature.findByPk(featureId);
+    if (!feature) {
+      return { success: false, status: 404, message: "Feature not found" };
+    }
+
+    if (status === "approved") {
+      feature.approval_status = "approved";
+      feature.approved_by = req.user?.id;
+      feature.status = "inactive"; // mark as closed/done on approval
+    } else {
+      feature.approval_status = "rejected";
+      feature.status = "active"; // revert to active on rejection
+    }
+
+    await feature.save();
+
+    return { success: true, status: 200, data: feature };
+  }
 }
 
 module.exports = new FeatureService();

@@ -357,9 +357,22 @@ class ProjectService {
         }
       }
 
+      // Handle type filter from query parameters
+      if (query && query.type && query.type !== "all") {
+        // Extract only the type value, removing any query string parameters
+        const projectType = query.type.split('?')[0];
+        // Only apply filter if it's a valid enum value
+        if (projectType === 'site' || projectType === 'application') {
+          whereFilters.type = projectType;
+        }
+      }
+
+      // Remove type from query to prevent it from being treated as search parameter
+      const { type, ...queryWithoutType } = query || {};
+
       const result = await paginateHelperFunction({
         model: Project,
-        query,
+        query: queryWithoutType,
         whereFilters,
         extrasInQuery,
       });
@@ -389,7 +402,7 @@ class ProjectService {
             where: memberFilter,
           },
         ],
-        attributes: ["id", "name", "is_completed"],
+        attributes: ["id", "name", "is_completed", "type"],
       });
 
       return { status: 200, data: projects, success: true };

@@ -657,7 +657,7 @@ services:
       # Keycloak Client Credentials (service-to-service auth)
       KEYCLOAK_URL: http://keycloak:8080
       KEYCLOAK_REALM: my-projects
-      SERVICE_CLIENT_ID: pms-service
+      SERVICE_CLIENT_ID: pms-backend
       SERVICE_CLIENT_SECRET: ${PMS_SERVICE_CLIENT_SECRET:?PMS_SERVICE_CLIENT_SECRET is required}
 
       # Auth Service URL
@@ -702,7 +702,7 @@ services:
   # ─────────────────────────────────────────────────────────────────────────────
   pms-frontend:
     build:
-      context: ./fn-pms-version-2
+      context: ./fn-pms-version-3
       dockerfile: Dockerfile
     image: pms-frontend:latest
     container_name: pms-frontend
@@ -821,6 +821,43 @@ services:
       timeout: 10s
       retries: 3
       start_period: 30s
+
+  version-control:
+    image: gitea/gitea:latest
+    container_name: gitea
+    restart: always
+
+    environment:
+      USER_UID: 1000
+      USER_GID: 1000
+
+      GITEA__database__DB_TYPE: postgres
+      GITEA__database__HOST: ${DATABASE_HOST}:${DATABASE_PORT}
+      GITEA__database__NAME: gitea
+      GITEA__database__USER: ${DATABASE_USER}
+      GITEA__database__PASSWD: ${DATABASE_PASSWORD}
+
+    volumes:
+      - ./gitea:/data
+
+    ports:
+      - "3001:3000"   # safer (avoid conflict)
+      - "2222:22"     # safer SSH port
+
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+    networks:
+      - auth-network
+
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  
 
 # ══════════════════════════════════════════════════════════════════════════════
 # NETWORKS

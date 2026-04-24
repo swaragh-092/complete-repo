@@ -235,4 +235,96 @@ class StoryBacklogService {
   }
 }
 
-module.exports = { BacklogService, StoryBacklogService };
+// ──────────────────────────────────────────────────────────────────────────────
+// Component-Backlog helpers for Site-type projects
+// Mirrors StoryBacklogService but operates on pms_components.
+// ──────────────────────────────────────────────────────────────────────────────
+
+class ComponentBacklogService {
+  /**
+   * Get Component Backlog for a Site-type project (components with sprint_id IS NULL,
+   * plus components in completed sprints for replanning).
+   */
+  static async getComponentBacklog(req, projectId) {
+    const { Component, Sprint } = req.db;
+
+    const completedSprints = await Sprint.findAll({
+      where: { project_id: projectId, status: 'completed' },
+      attributes: ['id'],
+    });
+    const completedSprintIds = completedSprints.map((s) => s.id);
+
+    const whereClause = {
+      project_id: projectId,
+      component_for: 'normal',
+      parent_component_id: null,
+    };
+
+    if (completedSprintIds.length > 0) {
+      whereClause[Op.or] = [
+        { sprint_id: null },
+        { sprint_id: { [Op.in]: completedSprintIds } },
+      ];
+    } else {
+      whereClause.sprint_id = null;
+    }
+
+    const components = await Component.findAll({
+      where: whereClause,
+      order: [['board_order', 'ASC'], ['updated_at', 'DESC']],
+      include: [
+        { association: 'section', attributes: ['id', 'name', 'page_id'] },
+        { association: 'sprint', attributes: ['id', 'name', 'status'] },
+        { association: 'subComponents', attributes: ['id', 'title', 'status', 'sort_order'] },
+      ],
+    });
+
+    return { success: true, data: components };
+  }
+
+  /**
+   * Reorder a Component in the backlog.
+   */
+  static async prioritizeComponent(req, componentId, newOrder) {
+    const { Component } = req.db;
+
+    const component = await Component.findByPk(componentId);
+    if (!component) {
+      return { success: false, status: 404, message: 'Component not found' };
+    }
+
+    component.board_order = newOrder;
+    await component.save(withContext(req));
+
+    return { success: true, message: 'Backlog reordered', data: { id: component.id, board_order: component.board_order } };
+  }
+
+  /**
+   * Move a Component to a Sprint (or back to backlog).
+   */
+  static async moveComponentToSprint(req, componentId, sprintId) {
+    const { Component, Sprint } = req.db;
+
+    const component = await Component.findByPk(componentId);
+    if (!component) {
+      return { success: false, status: 404, message: 'Component not found' };
+    }
+
+    if (sprintId) {
+      const sprint = await Sprint.findByPk(sprintId);
+      if (!sprint) {
+        return { success: false, status: 404, message: 'Sprint not found' };
+      }
+      if (sprint.status === 'completed') {
+        return { success: false, status: 400, message: 'Cannot move component to a completed sprint' };
+      }
+    }
+
+    component.sprint_id = sprintId ?? null;
+    await component.save(withContext(req));
+
+    return { success: true, data: component };
+  }
+}
+
+module.exports = { BacklogService, StoryBacklogService, ComponentBacklogService };

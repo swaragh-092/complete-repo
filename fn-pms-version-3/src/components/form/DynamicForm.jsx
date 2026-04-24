@@ -14,6 +14,7 @@ import CircularProgress from "@mui/material/CircularProgress";
 import Validator from "../../util/validation";
 import SelectField from "../formFields/SelectField";
 import AutoCompleteSelectSearch from "../formFields/AutoCompleteSelectSearch";
+import MemberPicker from "../pms/MemberPicker";
 
 //fields = [
 //   { type: "text", name: "name" },
@@ -86,6 +87,18 @@ export default function DynamicForm({ fields, initialData = {}, onSubmit, onSucc
             {...field} // extra required fields other than what normal = [ fetchUrl, mapResponse ( this maps response with option and value ) ]
             // mapResponse={(i) => ({ id: i.id, label: i.name })}  # this is exaple for mapResponse
             required={field.required !== false}
+            value={formData[field.name] || ""}
+            onChange={handleInputChange}
+            errorMessage={errorMessageFormat(validationErrors[field.name], validationErrors.version)}
+          />
+        ) : field.type === "member_picker" ? (
+          <MemberPicker
+            key={field.name}
+            name={field.name}
+            label={field.label || "Assign To"}
+            projectId={field.projectId}
+            departmentId={field.departmentId}
+            required={field.required === true}
             value={formData[field.name] || ""}
             onChange={handleInputChange}
             errorMessage={errorMessageFormat(validationErrors[field.name], validationErrors.version)}

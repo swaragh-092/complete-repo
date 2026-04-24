@@ -87,3 +87,29 @@ export const useMoveStoryOnBoard = () => {
     },
   });
 };
+
+// ── Component Backlog (Site project type) ────────────────────────────────────
+
+export const componentBacklogKeys = {
+  all: ["component-backlog"],
+  list: (projectId) => [...componentBacklogKeys.all, "list", projectId],
+};
+
+export const useComponentBacklog = (projectId) => {
+  return useQuery({
+    queryKey: componentBacklogKeys.list(projectId),
+    queryFn: () => backlogService.getComponentBacklog(projectId),
+    enabled: !!projectId,
+  });
+};
+
+export const useMoveComponentToSprint = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data) => backlogService.moveComponentToSprint(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: componentBacklogKeys.all });
+      queryClient.invalidateQueries({ queryKey: sprintStoryKeys.stories });
+    },
+  });
+};
